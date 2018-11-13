@@ -1,2 +1,6 @@
+# Temp files
 *~
+*.o
 
+# Executables
+RatesMC2

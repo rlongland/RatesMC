@@ -9,8 +9,8 @@
 */
 
 #include "RatesMC2.h"
-#include "Reaction.h"
-#include "Resonance.h"
+#include "include/Reaction.h"
+#include "include/Resonance.h"
 
 using namespace std;
 
