@@ -104,17 +104,16 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
   R -> setSpins(j0,j1,j2);
 
-  infile >> Qin;
-  infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-  infile >> Qout;
-  infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+  // Entrance and exit particle separation energies
+  Qin = readDouble(infile);
+  Qout = readDouble(infile);
   R -> setSeparationEnergies(Qin, Qout);
 
-  infile >> R0;
-  infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+  // The R0 radius
+  R0 = readDouble(infile);
 
-  infile >> gindex;
-  infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+  // Index of the gamma-ray channel
+  gindex = readInt(infile);
   R -> setGammaIndex(gindex);
 
   // Ignore a line
@@ -126,32 +125,24 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 }
 
 // Read an integer from a single line
-int readInt(){
+int readInt(std::ifstream &infile){
 
-  /*
-  string input;
+  
+  int input;
   infile >> input;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
-  int ret = (int)input;
-  */
-  int ret = 0;
-  return ret;
+  return input;
 
 }
 // Read a double from a single line
-double readDouble(){
+double readDouble(std::ifstream &infile){
 
-  /*
-  string input;
+  double input;
   infile >> input;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
-  double ret = (double)input;
-  cout << "Read " << ret << endl;
-  */
-  double ret = 0;
-  return ret;
+  return input;
 
 }
 

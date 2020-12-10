@@ -13,8 +13,8 @@ using std::endl;
 // The welcome screen
 void WelcomeScreen();
 // Read integer and double from single line
-int readInt();
-double readDouble();
+int readInt(std::ifstream &s);
+double readDouble(std::ifstream &s);
 // Read input file
 int ReadInputFile(std::string inputfilename, Reaction *R);
 

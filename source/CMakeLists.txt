@@ -7,3 +7,7 @@ set(SOURCE_FILES ${CPP_FILES} ${H_FILES})
 include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/include)
 
 add_executable(RatesMC2 RatesMC2.cpp ${SOURCE_FILES}) # be sure there's exactly one main() function in the source files
+
+## Copy the RatesMC.in file over if needed
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/RatesMC.in
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
