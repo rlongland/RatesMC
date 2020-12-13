@@ -7,7 +7,7 @@
 // program control parameters
 extern int NSamples,NHists;
 extern int NTemps;
-extern double CutoffE[2],EMin,R0;
+extern double EMin,R0;
 extern double EPS;
 
 // Include correlations
@@ -32,6 +32,10 @@ int readInt(std::ifstream &in);
 double readDouble(std::ifstream &in);
 // Skip n lines
 void skipLines(std::ifstream &in, int n);
+// Count entries in a line
+int countEntries(std::ifstream &in);
+// Read a non-resonant line
+void readNonResonant(std::ifstream &in, Reaction &R, int part);
 
 // Count the number of numbers in a single line
 class NumberCounter{

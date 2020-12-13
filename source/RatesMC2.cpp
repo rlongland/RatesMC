@@ -34,6 +34,9 @@ int main(int argc, char** argv){
     ifilename = argv[1];
   }
 
+  // Keep all of the settings in a settings class
+  // Settings Set;
+  
   // Make a reaction. This is where everything is held
   Reaction Reac;
   

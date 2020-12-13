@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <limits>
+#include <vector>
+#include <sstream>
 
 #include "Utilities.h"
 
@@ -38,10 +40,53 @@ void skipLines(std::ifstream &infile, int nlines){
   
 }
 
+// Count the number of entries on a line
+int countEntries(std::ifstream &infile){
+
+  std::string line;
+  std::vector<std::string> entries;
+
+  // First save position
+  int place=infile.tellg();
+
+  std::getline(infile, line);
+  std::stringstream ss(line);
+  std::string entry;
+  while( ss >> entry ){
+    entries.push_back(entry);
+    //std::cout << entry << " ";
+  }
+  //std::cout << "\n";
+
+  // Return to saved position in file
+  infile.seekg(place);
+  
+  return entries.size();
+  
+}
+
+void readNonResonant(std::ifstream &infile, Reaction &R, int part){
+
+  int ne = countEntries(infile);
+  std::cout << "There are " << ne << " entries\n";
+  if(ne != 5){
+    std::cout << "  ERROR: There should be 5 numbers in the non-resonant input lines\n";
+    exit(EXIT_FAILURE);
+  }
+
+  double s, sp, spp, ds, cutoffe;
+  infile >> s >> sp >> spp >> ds >> cutoffe;
+  infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+  R.setNonResonant(s,sp,spp,ds,cutoffe,part);
+
+}
+
 int ReadInputFile(std::string inputfilename, Reaction *R){
 
   std::cout << "The input file name is: " << inputfilename << std::endl;
 
+  int ne;  // for counting entries
+  
   // Start by opening input file (reactions.dat)
   std::ifstream infile;
   infile.open(inputfilename.c_str(),std::ifstream::in);
@@ -121,6 +166,14 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   bool bEnergyCorrelations = (bool)itmp;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
+  // Skip 3 lines
+  skipLines(infile, 3);
+
+  // Non-resonant line 1
+  readNonResonant(infile, *R, 0);
+  
+  // Non-resonant line 2
+  readNonResonant(infile, *R, 1);
   
   return 0;
 }

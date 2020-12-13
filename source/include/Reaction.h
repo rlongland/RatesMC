@@ -21,6 +21,7 @@ class Reaction{
   void setSeparationEnergies(double qin, double qout){Q=qin; Qexit=qout;}
   void setR0(double r0){R0=r0;}
   void setGammaIndex(int gindex){Gamma_index = gindex;}
+  void setNonResonant(double, double, double, double, double, int);
   
   // Print a summary of the reaction
   void printReaction();
@@ -28,7 +29,7 @@ class Reaction{
  private:
 
   std::string Name;
-  double M0,M1,M2,J0,J1,J2,R0,Q,dQ,Qexit,dQexit,S[2],Sp[2],Spp[2],dS[2];
+  double M0,M1,M2,J0,J1,J2,R0,Q,dQ,Qexit,dQexit,S[2],Sp[2],Spp[2],dS[2],CutoffE[2];
   int Z0, Z1, Z2, NRes,ULNRes,Gamma_index;
   int *NChannels;
 
