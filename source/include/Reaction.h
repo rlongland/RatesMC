@@ -1,7 +1,9 @@
-#ifndef _Resonance_h_
-#define _Resonance_h_
+#ifndef _Reaction_h_
+#define _Reaction_h_
 
 #include <iostream>
+#include <vector>
+#include "Resonance.h"
 
 class Reaction{
 
@@ -22,6 +24,7 @@ class Reaction{
   void setR0(double r0){R0=r0;}
   void setGammaIndex(int gindex){Gamma_index = gindex;}
   void setNonResonant(double, double, double, double, double, int);
+  void addResonance(int, double, double, double, double);
   
   // Print a summary of the reaction
   void printReaction();
@@ -32,6 +35,7 @@ class Reaction{
   double M0,M1,M2,J0,J1,J2,R0,Q,dQ,Qexit,dQexit,S[2],Sp[2],Spp[2],dS[2],CutoffE[2];
   int Z0, Z1, Z2, NRes,ULNRes,Gamma_index;
   int *NChannels;
+  std::vector<Resonance> Resonances;
 
 
 };

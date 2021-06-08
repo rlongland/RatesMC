@@ -36,6 +36,8 @@ void skipLines(std::ifstream &in, int n);
 int countEntries(std::ifstream &in);
 // Read a non-resonant line
 void readNonResonant(std::ifstream &in, Reaction &R, int part);
+// Read all of the standard resonances
+void readResonanceBlock(std::ifstream &in, Reaction &R);
 
 // Count the number of numbers in a single line
 class NumberCounter{

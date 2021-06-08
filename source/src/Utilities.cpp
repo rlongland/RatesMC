@@ -81,6 +81,28 @@ void readNonResonant(std::ifstream &infile, Reaction &R, int part){
 
 }
 
+/* 
+   This is where Victor need to work on reading all of the "standard" resonances
+   1) Start by just reading 5 of them
+   2) Then add the ability to add up until the end of the block (check for ****?)
+   3) Include error checking. Do the numbers make sense?
+*/
+
+void readResonanceBlock(std::ifstream &infile, Reaction &R){
+
+  double E_cm, dE_cm, wg, dwg;
+  
+  for(int i=0; i<5; i++){
+
+    infile >> E_cm >> dE_cm >> wg >> dwg;
+    infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+    std::cout << E_cm << " " << dE_cm << " " << wg << " " << dwg << "\n";
+    R.addResonance(i, E_cm, dE_cm, wg, dwg);
+
+  }
+
+}
+
 int ReadInputFile(std::string inputfilename, Reaction *R){
 
   std::cout << "The input file name is: " << inputfilename << std::endl;
@@ -174,6 +196,12 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   
   // Non-resonant line 2
   readNonResonant(infile, *R, 1);
+
+  // Skip 5 lines
+  skipLines(infile, 5);
+
+  // Read all of the resonances <- VICTOR'S PROJECT
+  readResonanceBlock(infile, *R);
   
   return 0;
 }

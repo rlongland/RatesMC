@@ -8,6 +8,7 @@
 */
 #include <iostream>
 #include "stdio.h"
+#include "Resonance.h"
 #include "Reaction.h"
 
 using std::cout;
@@ -24,6 +25,14 @@ void Reaction::setNonResonant(double s, double sp, double spp, double ds, double
   CutoffE[part] = cutoffe;
 }
 
+void Reaction::addResonance(int i, double E_cm, double dE_cm, double wg, double dwg){
+
+  // Make a resonance
+  Resonance Res(i, E_cm, dE_cm, wg, dwg);
+  Res.print();
+  // Add that resonance to the list of resonances
+  Resonances.push_back(Res);
+}
 
 void Reaction::getName(){
   cout << "The reaction name is: " << Name << "\n";
