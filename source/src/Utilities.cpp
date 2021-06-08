@@ -68,7 +68,7 @@ int countEntries(std::ifstream &infile){
 void readNonResonant(std::ifstream &infile, Reaction &R, int part){
 
   int ne = countEntries(infile);
-  std::cout << "There are " << ne << " entries\n";
+  //std::cout << "There are " << ne << " entries\n";
   if(ne != 5){
     std::cout << "  ERROR: There should be 5 numbers in the non-resonant input lines\n";
     exit(EXIT_FAILURE);
@@ -90,17 +90,39 @@ void readNonResonant(std::ifstream &infile, Reaction &R, int part){
 
 void readResonanceBlock(std::ifstream &infile, Reaction &R){
 
-  double E_cm, dE_cm, wg, dwg;
-  
-  for(int i=0; i<5; i++){
+  double E_cm, dE_cm, wg, dwg,
+    Jr, G1, dG1, G2, dG2, G3, dG3, Exf;
+  int i,L1, L2, L3, Int;
 
-    infile >> E_cm >> dE_cm >> wg >> dwg;
+  i=0;
+  while(true){
+
+    // First try to read resonance energy to see if it's a real resonance input
+    std::string data;
+    infile >> data;
+    if(!std::isdigit( data[0]) ) {
+      //std::cout << "Found end of resonances!\n" << data << "\n";
+      break;
+    }
+    
+    // If this looks like a resonance, read a single line
+    E_cm = std::stod(data);
+    infile >> dE_cm >> wg >> dwg >> Jr 
+	   >> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
+	   >> Exf >> Int;
+   
     infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-    std::cout << E_cm << " " << dE_cm << " " << wg << " " << dwg << "\n";
-    R.addResonance(i, E_cm, dE_cm, wg, dwg);
 
+    // Add this resonance to the list of resonances stored in the
+    // reaction
+    R.addResonance(i++, E_cm, dE_cm, wg, dwg, Jr,
+		   G1, dG1, L1, G2, dG2, L2, G3, dG3, L3,
+		   Exf, Int);
+    
   }
 
+  
+  
 }
 
 int ReadInputFile(std::string inputfilename, Reaction *R){
@@ -123,7 +145,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   infile >> name;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
   R -> setName(name);
-  R -> getName();
+  //R -> getName();
 
   // Blank line
   infile >> dummy;

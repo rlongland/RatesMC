@@ -25,11 +25,18 @@ void Reaction::setNonResonant(double s, double sp, double spp, double ds, double
   CutoffE[part] = cutoffe;
 }
 
-void Reaction::addResonance(int i, double E_cm, double dE_cm, double wg, double dwg){
+void Reaction::addResonance(int i, double E_cm, double dE_cm, double wg, double dwg, double Jr,
+			    double G1, double dG1, int L1, double G2, double dG2, int L2,
+			    double G3, double dG3, int L3, double Exf, int Int){
 
+  double G[3] = {G1, G2, G3};
+  double dG[3] = {dG1, dG2, dG3};
+  int L[3] = {L1, L2, L3};
+  
   // Make a resonance
-  Resonance Res(i, E_cm, dE_cm, wg, dwg);
-  Res.print();
+  Resonance Res(i, E_cm, dE_cm, wg, dwg, Jr,
+		G, dG, L, Exf, Int);
+  //Res.print();
   // Add that resonance to the list of resonances
   Resonances.push_back(Res);
 }
@@ -56,5 +63,13 @@ void Reaction::printReaction(){
   cout << " Part 1: " << S[0] << "  " << Sp[0] << "  " << Spp[0] << "  " << dS[0] << "  " << CutoffE[0] << "\n";
   cout << " Part 2: " << S[1] << "  " << Sp[1] << "  " << Spp[1] << "  " << dS[1] << "  " << CutoffE[1] << "\n";
   cout << "\n";
+
+  cout << "--------------------------------------------------" << "\n";
+  cout << " Resonances:\n";
+  // Loop through all regular resonances
+  std::vector<Resonance>::iterator res;
+  for(res = Resonances.begin(); res < Resonances.end(); res++){
+    res->print();
+  }
 
 }
