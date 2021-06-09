@@ -88,13 +88,39 @@ void readNonResonant(std::ifstream &infile, Reaction &R, int part){
    3) Include error checking. Do the numbers make sense?
 */
 
-void readResonanceBlock(std::ifstream &infile, Reaction &R){
+void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 
-  double E_cm, dE_cm, wg, dwg,
-    Jr, G1, dG1, G2, dG2, G3, dG3, Exf;
+  double E_cm, dE_cm, wg, dwg, Jr,
+    G1, dG1, PT1=0.0, DPT1=0.0, G2, dG2, PT2=0.0, DPT2=0.0,
+    G3, dG3, PT3=0.0, DPT3=0.0, Exf;
   int i,L1, L2, L3, Int;
 
   i=0;
+  // Read the number of entries on the first resonance line. This
+  // gives us another check on whether it's an upper limit or normal
+  // resonance
+  int nEnt = countEntries(infile);
+  std::cout << "Reading resoances:\n";
+  std::cout << "There are " << countEntries(infile) << " entries in this section\n";
+  if(!isUpperLimit){
+    isUpperLimit = false;
+    std::cout << "Normal resonances\n";
+    if(nEnt != 16){
+      std::cout << "ERROR! The number of columns in the resonance section is wrong\n";
+      std::cout << "       Expect N=16; Got N=" << nEnt << "\n";
+    }
+  } else {
+    isUpperLimit = true;
+    std::cout << "Upper limit resonances\n";
+    if(nEnt == 17){
+      std::cout << "WARNING: It looks like you're using an old version of RatesMC input without DPT\n";
+    } else if (nEnt == 20) {
+    } else {
+      std::cout << "ERROR! The number of columns in the upper limit resonance section is wrong\n";
+      std::cout << "       Expect N=17 or 20; Got N=" << nEnt << "\n";
+    }
+  }
+     
   while(true){
 
     // First try to read resonance energy to see if it's a real resonance input
@@ -107,17 +133,38 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R){
     
     // If this looks like a resonance, read a single line
     E_cm = std::stod(data);
-    infile >> dE_cm >> wg >> dwg >> Jr 
-	   >> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
-	   >> Exf >> Int;
+    if(!isUpperLimit){
+      infile >> dE_cm >> wg >> dwg >> Jr 
+	     >> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
+	     >> Exf >> Int;
+    } else {
+      // Upper limit resonances.
+      // Old style with no DPT
+      if(nEnt == 17){
+	infile >> dE_cm >> Jr 
+	       >> G1 >> dG1 >> L1 >> PT1 >> G2 >> dG2 >> L2 >> PT2
+	       >> G3 >> dG3 >> L3 >> PT3
+	       >> Exf >> Int;
+	
+      }
+      // New style with DPT
+      else if(nEnt == 20){
+	infile >> dE_cm >> Jr 
+	       >> G1 >> dG1 >> L1 >> PT1 >> DPT1 >> G2 >> dG2 >> L2 >> PT2 >> DPT2
+	       >> G3 >> dG3 >> L3 >> PT3 >> DPT3
+	       >> Exf >> Int;
+      }
+    }
    
     infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
     // Add this resonance to the list of resonances stored in the
     // reaction
     R.addResonance(i++, E_cm, dE_cm, wg, dwg, Jr,
-		   G1, dG1, L1, G2, dG2, L2, G3, dG3, L3,
-		   Exf, Int);
+		   G1, dG1, L1, PT1, DPT1,
+		   G2, dG2, L2, PT2, DPT2,
+		   G3, dG3, L3, PT3, DPT3,
+		   Exf, Int, isUpperLimit);
     
   }
 
@@ -222,8 +269,13 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   // Skip 5 lines
   skipLines(infile, 5);
 
-  // Read all of the resonances <- VICTOR'S PROJECT
-  readResonanceBlock(infile, *R);
+  // Read all of the resonances 
+  readResonanceBlock(infile, *R, false);
+
+  // Skip 4 lines
+  skipLines(infile, 4);
+  // Read the upper limit resonances
+  readResonanceBlock(infile, *R, true);
   
   return 0;
 }

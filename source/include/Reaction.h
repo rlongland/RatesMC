@@ -25,8 +25,10 @@ class Reaction{
   void setGammaIndex(int gindex){Gamma_index = gindex;}
   void setNonResonant(double, double, double, double, double, int);
   void addResonance(int, double, double, double, double, double,
-		    double, double, int, double, double, int, double, double, int,
-		    double, int);
+		    double, double, int, double, double,
+		    double, double, int, double, double,
+		    double, double, int, double, double,
+		    double, bool, bool);
   
   // Print a summary of the reaction
   void printReaction();

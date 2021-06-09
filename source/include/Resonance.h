@@ -9,8 +9,8 @@ class Resonance{
 
   // Constructor
   Resonance(int index=0, double E_cm=0.0, double dE_cm=0.0, double wg=0.0, double dwg=0.0, double Jr=0.0,
-	    double G[3]={}, double dG[3]={}, int L[3]={0},
-	    double Exf=0, int Int=0); 
+	    double G[3]={}, double dG[3]={}, int L[3]={0}, double PT[3]={}, double dPT[3]={},
+	    double Exf=0, bool bInt=false, bool bUpperLimit=false); 
   // Destructor
   ~Resonance();
 
@@ -28,13 +28,13 @@ class Resonance{
  private:
 
   // Resonance control and bookkeeping
-  bool bInt_flag, bisECorr;
+  bool bInt_flag, bisECorr, bUpperLimit;
   bool ErrorFlag;
   
   // Resonance parameters
   int index;
   int L[3];
-  double E_cm, dE_cm, wg, dwg, Jr, G[3], dG[3], Exf, PTMean[3], dPTMean[3];
+  double E_cm, dE_cm, wg, dwg, Jr, G[3], dG[3], Exf, PT[3], dPT[3];
   bool bwg_known;
   bool bUseInrate;
   
