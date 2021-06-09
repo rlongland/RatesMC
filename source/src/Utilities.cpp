@@ -7,7 +7,7 @@
 #include "Utilities.h"
 
 double EPS=1.0e-5;
-
+std::ofstream logfile;
 
 // Read an integer from a single line
 int readInt(std::ifstream &infile){

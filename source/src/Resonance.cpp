@@ -8,8 +8,10 @@
 */
 #include <iostream>
 #include <iomanip>
+#include <fstream>
 #include "stdio.h"
 #include "Resonance.h"
+#include "Utilities.h"
 
 using std::cout;
 using std::endl;
@@ -50,5 +52,21 @@ void Resonance::print(){
   cout << "           Integrated = " << bInt_flag << "\n";
   //  cout << "--------------------------------------------------" << "\n";
   cout << "\n";
+
+}
+void Resonance::write(){
+
+  //  logfile << "--------------------------------------------------" << "\n";
+  //logfile << "     This is resonance: " << index << "\n";
+  logfile << " Resonace " << std::setw(3) << index <<"    E_cm = " << E_cm  << " +/- " << dE_cm << "\n";
+  logfile << "                 wg   = " << wg << " +/- " << dwg << "\n";
+  logfile << "                 Jr   = " << Jr << "\n";
+  logfile << "                 G1   = " << G[0] << " +/- " << dG[0] << " (L = " << L[0] << ")\n";
+  logfile << "                 G2   = " << G[1] << " +/- " << dG[1] << " (L = " << L[1] << ")\n";
+  logfile << "                 G3   = " << G[2] << " +/- " << dG[2] << " (L = " << L[2] << ")\n";
+  logfile << "                 Exf  = " << Exf << "\n";
+  logfile << "           Integrated = " << bInt_flag << "\n";
+  //  logfile << "--------------------------------------------------" << "\n";
+  logfile << "\n";
 
 }

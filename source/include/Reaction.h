@@ -30,6 +30,7 @@ class Reaction{
   
   // Print a summary of the reaction
   void printReaction();
+  void writeReaction();
   
  private:
 

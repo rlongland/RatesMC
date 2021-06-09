@@ -23,6 +23,7 @@ class Resonance{
 
   // print a summary of the resonance
   void print();
+  void write();
   
  private:
 

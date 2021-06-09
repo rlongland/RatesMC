@@ -24,9 +24,13 @@ int main(int argc, char** argv){
   // Write the welcome screen
   WelcomeScreen();
 
+  // Log file
+  //std::ofstream logfile;
+  logfile.open("RatesMC.log");
+  
+  // Input and output files
   std::string ofilename;
   std::string ifilename;
-  
   if(argc==1){
     ifilename = "RatesMC.in";
     ofilename = "RatesMC.out";
@@ -38,18 +42,20 @@ int main(int argc, char** argv){
   // Settings Set;
   
   // Make a reaction. This is where everything is held
-  Reaction Reac;
+  Reaction *Reac = new Reaction();
   
   // Open the input file
-  int ret = ReadInputFile(ifilename, &Reac);
+  int ret = ReadInputFile(ifilename, Reac);
   
-  Reac.printReaction();
+  Reac -> writeReaction();
   
   /*
     Testing of a few things
   */
   DirectCapture DC;
 
+  logfile.close();
+  
   return 1;
 }
 

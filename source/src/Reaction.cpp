@@ -7,9 +7,12 @@
    ======================================================================
 */
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 #include "stdio.h"
 #include "Resonance.h"
 #include "Reaction.h"
+#include "Utilities.h"
 
 using std::cout;
 using std::endl;
@@ -70,6 +73,35 @@ void Reaction::printReaction(){
   std::vector<Resonance>::iterator res;
   for(res = Resonances.begin(); res < Resonances.end(); res++){
     res->print();
+  }
+
+}
+
+void Reaction::writeReaction(){
+
+  logfile << "--------------------------------------------------" << "\n";
+  logfile << "     This is reaction: " << Name << "\n";
+  logfile << "   Z0        Z1       Z2" << "\n";
+  logfile << std::setw(5) << Z0 << "     " << std::setw(5) << Z1 << "    " << std::setw(5) << Z2 << "\n";
+  logfile << "   M0        M1       M2" << "\n";
+  logfile << M0 << "   " << M1 << "   " << M2 << "\n";
+  logfile << "   S_entrance = " << Q << "\n";
+  logfile << "   S_exit     = " << Qexit << "\n";
+  logfile << "   The gamma ray channel is channel " << Gamma_index << "\n";
+  logfile << "--------------------------------------------------" << "\n";
+
+  logfile << " Direct Capture part     \n";
+  logfile << "          S0       S'       S''    dS   CutoffE\n";
+  logfile << " Part 1: " << S[0] << "  " << Sp[0] << "  " << Spp[0] << "  " << dS[0] << "  " << CutoffE[0] << "\n";
+  logfile << " Part 2: " << S[1] << "  " << Sp[1] << "  " << Spp[1] << "  " << dS[1] << "  " << CutoffE[1] << "\n";
+  logfile << "\n";
+
+  logfile << "--------------------------------------------------" << "\n";
+  logfile << " Resonances:\n";
+  // Loop through all regular resonances
+  std::vector<Resonance>::iterator res;
+  for(res = Resonances.begin(); res < Resonances.end(); res++){
+    res->write();
   }
 
 }
