@@ -109,3 +109,92 @@ void Reaction::writeReaction(){
   }
 
 }
+
+//----------------------------------------------------------------------
+// Calculate the direct capture, non-resonant part of the reaction rate
+// NOT WORKING!
+double Reaction::calcNonResonant(){
+
+  /*
+  double mue = M0*M1/(M0+M1);
+  double cutoff_T = 19.92*pow(CutoffE[j],1.5)/sqrt(pow(Z0*Z1,2.)*mue);
+
+  double ADRate,mu,sigma;
+  // e designates exact numbers
+  double C1e,C2e,C3e,C4e,C5e,C6e,C7e;
+
+  C1e = 7.8324e9*pow((pow(Z0*Z1,2.)*mue),1./6.) *S[j] / sqrt(mue);
+  C2e = 4.2475*pow((pow(Z0*Z1,2.)*mue),1./3.);
+  C3e = 9.810e-2*pow((pow(Z0*Z1,2.)*mue),-1./3.);
+  C4e = 0.1220*(Sp[j]/S[j])*pow((pow(Z0*Z1,2.)*mue),1./3.);
+  C5e = 8.377e-2*(Sp[j]/S[j]);
+  C6e = 7.442e-3*(Spp[j]/S[j])*pow((pow(Z0*Z1,2.)*mue),2./3.);
+  C7e = 1.299e-2*(Spp[j]/S[j])*pow((pow(Z0*Z1,2.)*mue),1./3.);
+  */
+
+  /*cout << C1e << "\t" << C2e << "\t" << C3e << "\t" << C4e << "\t" <<
+    C5e << "\t" << C6e << "\t" << C7e << endl;
+    cout << "Cutoff T = " << cutoff_T << endl;*/
+
+  // New way of doing things: calculate the rate and then sample from
+  // the end.
+
+  /*
+  // Turn off the error handler in case exp returns zero
+  gsl_set_error_handler_off();
+  ADRate = (C1e/pow(Temp,2./3.))*gsl_sf_exp(-C2e/pow(Temp,1./3.)-
+					    pow(Temp/cutoff_T,2.))*
+    (1 + C3e*pow(Temp,1./3.) + C4e*pow(Temp,2./3.) + C5e*Temp +
+     C6e*pow(Temp,4./3.) + C7e*pow(Temp,5./3.));
+
+  gsl_set_error_handler(NULL); // Turn error handler back on again
+  */
+  
+  /*cout << (C1e/pow(Temp,2./3.))*exp(-C2e/pow(Temp,1./3.)-
+    pow(Temp/cutoff_T,2.)) << endl;
+    cout << C3e*pow(Temp,1./3.) << endl;
+    cout << C4e*pow(Temp,2./3.) << endl;
+    cout <<  C5e*Temp << endl;
+
+    cout << "ADRate = " << ADRate << endl;
+    cout << "About to Lognormalise" << endl;*/
+
+  /*
+  // If ADRate is negative, set to zero, this is unphysical
+  if(ADRate < 0.){
+    ErrorFlag = true;
+    logfile << "\tWARNING: The non-resonant part caused a negative rate, \n\t\tsetting to zero." << endl;
+    ADRate = 0.0;
+    for(int i=0;i<NSamples;i++){
+      DRate[i]=0.0;
+    }
+  } else {
+    LogNormalise(ADRate,dS[j]*ADRate,mu,sigma);
+    // if mu and sigma return as zero, the rate is zero (very small)
+    if((mu==0. && sigma==0.)){
+      ADRate=0.0;
+      for(int i=0;i<NSamples;i++){
+	DRate[i]=0.0;
+      }
+    } else {
+      for(int i=0;i<NSamples;i++){
+	DRate[i] = gsl_ran_lognormal(r,mu,sigma)/(1.5399e11/pow(mue*Temp,1.5));
+	//cout << DRate[i] << endl;
+      }
+    }
+  }
+
+
+  ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
+  */
+  return 0.0;
+}
+
+//----------------------------------------------------------------------
+// Prepare the Monte Carlo samples. 
+void Reaction::prepareSamples(){
+
+  cout << "Preparing " << NSamples << " samples\n";
+  
+  
+}

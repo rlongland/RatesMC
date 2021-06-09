@@ -12,6 +12,8 @@
 #include <fstream>
 #include <limits>
 
+#include "omp.h"
+
 #include "RatesMC2.h"
 #include "Utilities.h"
 #include "Reaction.h"
@@ -24,8 +26,7 @@ int main(int argc, char** argv){
   // Write the welcome screen
   WelcomeScreen();
 
-  // Log file
-  //std::ofstream logfile;
+  // Open log file
   logfile.open("RatesMC.log");
   
   // Input and output files
@@ -37,23 +38,49 @@ int main(int argc, char** argv){
   } else {
     ifilename = argv[1];
   }
-
-  // Keep all of the settings in a settings class
-  // Settings Set;
   
   // Make a reaction. This is where everything is held
   Reaction *Reac = new Reaction();
   
   // Open the input file
   int ret = ReadInputFile(ifilename, Reac);
-  
+  // Write the reaction information to log file for diagnostics
   Reac -> writeReaction();
-  
-  /*
-    Testing of a few things
-  */
-  DirectCapture DC;
 
+ 
+  // Prepare MC samples
+  //  - For each resonance, sample all input parameters
+  //  - Store every input parameter in a matrix (column = parameter, row = sample)
+  //  - 
+  Reac -> prepareSamples();
+
+
+  // Loop through temperatures (this is parallelization happens)
+  // At each temperature
+  //  - Calculate rate
+  //  - Store in rate matrix
+  //  - 
+  // First define the temperatures
+  defineTemperatures();
+  logfile << "--------------------------------------------------\n";
+  logfile << "There are " << Temp.size() << " temperatures:\n";
+
+  // Now do the big loop in parallel!!
+  omp_set_num_threads(2);
+#pragma omp parallel
+  {
+#pragma omp for
+    for(double T : Temp){
+      int ID = omp_get_thread_num();
+#pragma omp critical
+      std::cout << "(" << ID << ") " << T << "\n";
+    }
+  }
+  std::cout << "\n";
+
+  
+  
+  // Close the logfile
   logfile.close();
   
   return 1;

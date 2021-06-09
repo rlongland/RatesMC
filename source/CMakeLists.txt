@@ -6,6 +6,9 @@ file(GLOB H_FILES include/*.h)
 set(SOURCE_FILES ${CPP_FILES} ${H_FILES})
 include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/include)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
+
+
 add_executable(RatesMC2 RatesMC2.cpp ${SOURCE_FILES}) # be sure there's exactly one main() function in the source files
 
 ## Copy the RatesMC.in file over if needed

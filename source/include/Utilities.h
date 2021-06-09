@@ -23,6 +23,8 @@ extern double HistT, HistMin, HistMax;
 extern std::ofstream logfile;
 extern std::ofstream testfile;
 
+// Other program-wide variables
+extern std::vector<double> Temp;
 
 // Read input file
 int ReadInputFile(std::string inputfilename, Reaction *R);
@@ -38,6 +40,8 @@ int countEntries(std::ifstream &in);
 void readNonResonant(std::ifstream &in, Reaction &R, int part);
 // Read all of the standard resonances
 void readResonanceBlock(std::ifstream &in, Reaction &R);
+// Define the temperature array
+void defineTemperatures();
 
 // Count the number of numbers in a single line
 class NumberCounter{

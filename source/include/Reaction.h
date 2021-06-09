@@ -29,10 +29,14 @@ class Reaction{
 		    double, double, int, double, double,
 		    double, double, int, double, double,
 		    double, bool, bool);
+  double calcNonResonant();
+  void prepareSamples();
   
+
   // Print a summary of the reaction
   void printReaction();
   void writeReaction();
+
   
  private:
 
@@ -41,7 +45,6 @@ class Reaction{
   int Z0, Z1, Z2, NRes,ULNRes,Gamma_index;
   int *NChannels;
   std::vector<Resonance> Resonances;
-
 
 };
 
