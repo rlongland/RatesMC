@@ -66,16 +66,14 @@ int main(int argc, char** argv){
   logfile << "There are " << Temp.size() << " temperatures:\n";
 
   // Now do the big loop in parallel!!
-  omp_set_num_threads(2);
-#pragma omp parallel
-  {
-#pragma omp for
-    for(double T : Temp){
-      int ID = omp_get_thread_num();
-#pragma omp critical
-      std::cout << "(" << ID << ") " << T << "\n";
-    }
+  omp_set_num_threads(4);
+#pragma omp parallel for ordered
+  for(double T : Temp){
+    int ID = omp_get_thread_num();
+#pragma omp ordered
+    std::cout << "(" << ID << ") " << T << "\n";
   }
+  
   std::cout << "\n";
 
   
