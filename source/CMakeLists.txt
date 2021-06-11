@@ -7,6 +7,7 @@ set(SOURCE_FILES ${CPP_FILES} ${H_FILES})
 include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/include)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
+link_libraries(gsl)
 
 
 add_executable(RatesMC2 RatesMC2.cpp ${SOURCE_FILES}) # be sure there's exactly one main() function in the source files

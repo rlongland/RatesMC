@@ -46,6 +46,9 @@ class Reaction{
   int *NChannels;
   std::vector<Resonance> Resonances;
 
+  // Reaction-wide Monte Carlo
+  std::vector<std::vector<double> > Ref_sample;
+
 };
 
 

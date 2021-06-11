@@ -47,7 +47,9 @@ int main(int argc, char** argv){
   // Write the reaction information to log file for diagnostics
   Reac -> writeReaction();
 
- 
+  // Set up the random sampler
+  setupRandom();
+  
   // Prepare MC samples
   //  - For each resonance, sample all input parameters
   //  - Store every input parameter in a matrix (column = parameter, row = sample)
@@ -66,11 +68,14 @@ int main(int argc, char** argv){
   logfile << "There are " << Temp.size() << " temperatures:\n";
 
   // Now do the big loop in parallel!!
-  omp_set_num_threads(4);
+  //omp_set_num_threads(4);
 #pragma omp parallel for ordered
   for(double T : Temp){
     int ID = omp_get_thread_num();
-#pragma omp ordered
+
+    // print out the thread number and temperature
+    // #pragma omp ordered
+#pragma omp critical
     std::cout << "(" << ID << ") " << T << "\n";
   }
   

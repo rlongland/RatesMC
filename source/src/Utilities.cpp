@@ -3,10 +3,13 @@
 #include <limits>
 #include <vector>
 #include <sstream>
+#include <gsl/gsl_rng.h>
 
 #include "Utilities.h"
 
 double EPS=1.0e-5;
+gsl_rng * r;
+
 std::ofstream logfile;
 int NSamples;
 int NTemps;
@@ -296,5 +299,51 @@ void defineTemperatures(){
 			 3.5,4,5,6,7,8,9,10};
   
   Temp = defaultT;
+
+}
+
+//----------------------------------------------------------------------
+// Setup the random sampler
+void setupRandom(){
+  
+   // set-up the GSL random sampler
+  const gsl_rng_type * T;
+  /* create a generator chosen by the
+     environment variable GSL_RNG_TYPE */
+  gsl_rng_env_setup();
+  T = gsl_rng_default;
+  r = gsl_rng_alloc (T);
+  // Get a seed from either /dev/random, or the clock
+  unsigned long int seed = random_seed();
+  // Set the seed in the RNG
+  gsl_rng_set(r,seed);
+
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Function to find the random seed
+// Courtesy of Robert G. Brown
+
+#include <sys/time.h>
+
+unsigned long int random_seed()
+{
+
+  unsigned int seed;
+  int iret=0;
+  struct timeval tv;
+  FILE *devrandom;
+
+  if ((devrandom = fopen("/dev/random","r")) == NULL) {
+    gettimeofday(&tv,0);
+    seed = tv.tv_sec + tv.tv_usec;
+    //   if(verbose == D_SEED) printf("Got seed %u from gettimeofday()\n",seed);
+  } else {
+    iret = fread(&seed,sizeof(seed),1,devrandom);
+    //   if(verbose == D_SEED) printf("Got seed %u from /dev/random\n",seed);
+    fclose(devrandom);
+  }
+  if(iret < 0)std::cout << "WARNING! There could be a problem with the random numbers!\n";
+  return(seed);
 
 }

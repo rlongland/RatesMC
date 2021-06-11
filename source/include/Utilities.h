@@ -2,8 +2,11 @@
 #define _Utilities_h_
 
 #include "Reaction.h"
+#include <gsl/gsl_rng.h>
 
-  
+// Random number generator
+extern gsl_rng * r;
+
 // program control parameters
 extern int NSamples,NHists;
 extern int NTemps;
@@ -42,6 +45,9 @@ void readNonResonant(std::ifstream &in, Reaction &R, int part);
 void readResonanceBlock(std::ifstream &in, Reaction &R);
 // Define the temperature array
 void defineTemperatures();
+// Setup the random number generator
+void setupRandom();
+unsigned long int random_seed();
 
 // Count the number of numbers in a single line
 class NumberCounter{
