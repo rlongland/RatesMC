@@ -202,20 +202,23 @@ void Reaction::prepareSamples(){
   // are three sets for each partial width. The first ones are
   // recycled for resonance strengths with the assumption that those
   // are correlated with entrance channel partial widths
+  //
+  // These are stored by [row][column] where each row is a sample
   std::vector<double> row;
   row.resize(3);
-  for(int i=0;i<NSamples;i++){
+  for(int s=0;s<NSamples;s++){
     for(int j=0; j<3; j++){
       row[j] = gsl_ran_gaussian(r,1.0);
     }
     Ref_sample.push_back(row);
   }
-
-  for(int i=0; i<NSamples; i++){
+  /*
+  for(int s=0; s<NSamples; s++){
     for(int j=0; j<3; j++){
-      cout << Ref_sample[i][j] << "  ";
+      cout << Ref_sample[s][j] << "  ";
     }
     cout << "\n";
   }
+  */
   
 }
