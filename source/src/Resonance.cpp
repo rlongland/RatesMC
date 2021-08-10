@@ -48,7 +48,8 @@ Resonance::Resonance(int index, double E_cm, double dE_cm, double wg, double dwg
 
 Resonance::~Resonance(){}
 
-void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double smallestdE, double smallestdwg){
+void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double smallestdE,
+			    double smallestdwg, double smallestdG[3]){
 
   double mu, sigma;
   
@@ -70,6 +71,7 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
   }
   */
 
+  // ------------------------------
   // Now the resonance strength if it's known
   if(wg > 0.0){
     wg_sample.resize(NSamples);
@@ -87,20 +89,50 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
       x2 = corr*Ref_sample[s][1] + x2*sqrt(1.-gsl_pow_2(corr));
       // Convert normally distributed sample into lognormal for this resonance
       wg_sample[s] = gsl_sf_exp(mu + sigma*x2);
-
     }
 
-    
+    /*    
     std::cout << "index: " << index << "\n";
     if(index==2 && bUpperLimit==false){
       for(int s=0; s<NSamples; s++)
 	testfile << wg_sample[s] << "\n";
     }
-    
-
+    */
     
   }
 
+  //------------------------------
+  // Now the partial widths
+  for(int channel=0; channel<3; channel++){
+    std::vector<double> G_temp;
+    G_temp.resize(NSamples);
+    // G_sample.resize(NSamples);
+    // First if this channel is NOT an upper limit
+    if(dG[channel] > 0.0){
+      logNormalize(G[channel], dG[channel], mu, sigma);
+      corr = smallestdG[channel] * G[channel]/dG[channel];
+      for(int s=0; s<NSamples; s++){
+	double x2 = gsl_ran_gaussian(r,1.0);
+	x2 = corr*Ref_sample[s][channel+1] + x2*sqrt(1.-gsl_pow_2(corr));
+	G_temp[s] = gsl_sf_exp(mu + x2*sigma);
+      }
+
+    } else {       // Or if it is an upper limit
+
+
+    }
+    
+    G_sample.push_back(G_temp);
+  } // end for(int channel=0; channel<3; channel++)
+
+  /*
+  if(index==0 && bUpperLimit==false){
+    for(int s=0; s<NSamples; s++)
+      testfile << G_sample[0][s] << "  " << G_sample[1][s] << "  " << G_sample[2][s] << "\n";
+  }
+  */
+
+  
 }
 
 

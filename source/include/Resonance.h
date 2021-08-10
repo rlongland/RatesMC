@@ -22,7 +22,8 @@ class Resonance{
   // Setters
   void setIndex(int i){index=i;}
 
-  void makeSamples(std::vector<std::vector<double> > Ref_sample, double smallestdE, double smallestdwg);
+  void makeSamples(std::vector<std::vector<double> > Ref_sample, double smallestdE,
+		   double smallestdwg, double smallestdG[3]);
   
   // print a summary of the resonance
   void print();

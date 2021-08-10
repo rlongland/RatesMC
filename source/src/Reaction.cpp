@@ -20,7 +20,15 @@
 using std::cout;
 using std::endl;
 
-Reaction::Reaction(){}
+Reaction::Reaction(){
+
+  smallestdE = 0.0;
+  smallestdwg = 0.0;
+  for(int i=0; i<3; i++)
+    smallestdG[i] = 0.0;
+
+}
+
 Reaction::~Reaction(){}
 
 void Reaction::setNonResonant(double s, double sp, double spp, double ds, double cutoffe, int part){
@@ -30,8 +38,6 @@ void Reaction::setNonResonant(double s, double sp, double spp, double ds, double
   dS[part] = ds;
   CutoffE[part] = cutoffe;
 
-  smallestdE = 0.0;
-  smallestdwg = 0.0;
 }
 
 void Reaction::addResonance(int i, double E_cm, double dE_cm, double wg, double dwg, double Jr,
@@ -227,7 +233,7 @@ void Reaction::prepareSamples(){
   */
   // For each resonance, go through and calculate all random samples
   for(Resonance Res : Resonances){
-    Res.makeSamples(Ref_sample, smallestdE, smallestdwg);
+    Res.makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
   }
 
   

@@ -48,6 +48,7 @@ class Reaction{
   int *NChannels;
   double smallestdE;
   double smallestdwg;
+  double smallestdG[3];
   std::vector<Resonance> Resonances;
 
   // Reaction-wide Monte Carlo
