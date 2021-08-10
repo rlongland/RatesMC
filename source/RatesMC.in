@@ -15,7 +15,7 @@
 2		! Gamma-ray channel number (=2 if ejectile is a g-ray; =3 otherwise)
 ****************************************************************************************************************
 1.0		! Minimum energy for numerical integration (keV)
-300		! Number of random samples (>5000 for better statistics)
+3000		! Number of random samples (>5000 for better statistics)
 1		! =0 for rate output at all temperatures; =NT for rate output at selected temperatures
 0 1             ! (Res, E) =0 for no correlation. =1 for correlation
 ****************************************************************************************************************
@@ -84,17 +84,17 @@ Ecm	 DEcm	wg	Dwg	 Jr    G1	DG1	L1    G2      DG2   L2   G3      DG3     L3  Exf 
 Upper Limits of Resonances
 Note: enter partial width upper limit by chosing non-zero value for PT, where PT=<theta^2> for particles and...
 Note: ...PT=<B> for g-rays [enter: "upper_limit 0.0"]; for each resonance: # upper limits < # open channels!  
-Ecm	DEcm   Jr   G1        DG1    L1   PT       G2      DG2     L2  PT   G3     DG3    L3  PT   Exf  Int
-  37.1  1.7    0    1.1e-19   0.0    2    0.0045   0.37    0.06    1   0    1.0e4  0.2e4  0   0    0.0  0
- 138.0  1.5    0    1.2e-6    0.0    1    0.0045   0.3     0.15    1   0    0      0      0   0    0.0  0
- 167.3  3.0    6    2.3e-8    0.0    4    0.0045   7.3e-3  3.6e-3  1   0    0      0      0   0    0.0  0
+Ecm	DEcm  Jr G1       DG1  L1  PT     DPT  G2      DG2     L2  PT DPT G3     DG3    L3  PT DPT  Exf  Int
+  37.1  1.7   0  1.1e-19  0.0  2   0.0045 -3   0.37    0.06    1   0  0   1.0e4  0.2e4  0   0  0    0.0  0
+ 138.0  1.5   0  1.2e-6   0.0  1   0.0045 -3   0.3     0.15    1   0  0   0      0      0   0  0    0.0  0
+ 167.3  3.0   6  2.3e-8   0.0  4   0.0045 -3   7.3e-3  3.6e-3  1   0  0   0      0      0   0  0    0.0  0
 ****************************************************************************************************************
 Interference between Resonances [numerical integration only]
 Note: + for positive, - for negative interference; +- if interference sign is unknown
-Ecm	DEcm   Jr   G1        DG1    L1   PT       G2      DG2     L2  PT   G3     DG3    L3  PT   Exf  
+Ecm	DEcm   Jr   G1        DG1    L1   PT DPT   G2    DG2   L2  PT DPT  G3   DG3  L3  PT DPT  Exf  
 !+- 
-0.0     0.0    0.0  0.0       0.0    0    0        0.0     0.0     0   0    0.0    0.0    0   0    0.0  
-0.0     0.0    0.0  0.0       0.0    0    0        0.0     0.0     0   0    0.0    0.0    0   0    0.0  
+0.0     0.0    0.0  0.0       0.0    0    0  0     0.0   0.0   0   0  0    0.0  0.0  0   0  0    0.0  
+0.0     0.0    0.0  0.0       0.0    0    0  0     0.0   0.0   0   0  0    0.0  0.0  0   0  0    0.0  
 ****************************************************************************************************************
 Reaction Rate and PDF at NT selected temperatures only
 Note: default values are used for reaction rate range if Min=Max=0.0

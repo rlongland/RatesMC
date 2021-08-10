@@ -31,7 +31,9 @@ class Reaction{
 		    double, bool, bool);
   double calcNonResonant();
   void prepareSamples();
-  
+
+  // Getters
+  double getsmallestdE(){return smallestdE;}
 
   // Print a summary of the reaction
   void printReaction();
@@ -44,6 +46,8 @@ class Reaction{
   double M0,M1,M2,J0,J1,J2,R0,Q,dQ,Qexit,dQexit,S[2],Sp[2],Spp[2],dS[2],CutoffE[2];
   int Z0, Z1, Z2, NRes,ULNRes,Gamma_index;
   int *NChannels;
+  double smallestdE;
+  double smallestdwg;
   std::vector<Resonance> Resonances;
 
   // Reaction-wide Monte Carlo

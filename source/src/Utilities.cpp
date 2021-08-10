@@ -3,7 +3,10 @@
 #include <limits>
 #include <vector>
 #include <sstream>
+
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_sf_log.h>
 
 #include "Utilities.h"
 
@@ -11,6 +14,7 @@ double EPS=1.0e-5;
 gsl_rng * r;
 
 std::ofstream logfile;
+std::ofstream testfile;
 int NSamples;
 int NTemps;
 std::vector<double> Temp;
@@ -301,6 +305,34 @@ void defineTemperatures(){
   Temp = defaultT;
 
 }
+
+//----------------------------------------------------------------------
+void logNormalize(double mean, double sd, double& mu, double& sigma){
+
+  // Varience is standard deviation squared
+  double var = gsl_pow_2(sd);
+
+  if(mean == 0.0){
+    mu = 0.0;
+    sigma = 0.0;
+    return;
+  }
+
+  mu = gsl_sf_log(mean) - 0.5*gsl_sf_log(1+(var/gsl_pow_2(mean)));
+  sigma = sqrt(gsl_sf_log(1+(var/gsl_pow_2(mean))));
+
+  // If mean and var are very small, some computers will return nan for these ratios
+  // so check for it
+  if(gsl_isnan(mu) || gsl_isnan(sigma)){
+    mu = 0.0;
+    sigma = 0.0;
+  }
+
+  return;
+
+
+}
+
 
 //----------------------------------------------------------------------
 // Setup the random sampler

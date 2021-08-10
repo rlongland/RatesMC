@@ -10,6 +10,7 @@
 #include <fstream>
 #include <iomanip>
 #include "stdio.h"
+
 #include <gsl/gsl_randist.h>
 
 #include "Resonance.h"
@@ -28,6 +29,9 @@ void Reaction::setNonResonant(double s, double sp, double spp, double ds, double
   Spp[part] = spp;
   dS[part] = ds;
   CutoffE[part] = cutoffe;
+
+  smallestdE = 0.0;
+  smallestdwg = 0.0;
 }
 
 void Reaction::addResonance(int i, double E_cm, double dE_cm, double wg, double dwg, double Jr,
@@ -198,16 +202,17 @@ void Reaction::prepareSamples(){
 
   cout << "Preparing " << NSamples << " samples\n";
 
-  // The reference samples used for gamma widths and resonances. There
-  // are three sets for each partial width. The first ones are
-  // recycled for resonance strengths with the assumption that those
-  // are correlated with entrance channel partial widths
+  // The reference samples used for energies, gamma widths, and
+  // resonances. There are three sets for each partial width. The
+  // first ones are recycled for resonance strengths with the
+  // assumption that those are correlated with entrance channel
+  // partial widths
   //
   // These are stored by [row][column] where each row is a sample
   std::vector<double> row;
-  row.resize(3);
+  row.resize(4);
   for(int s=0;s<NSamples;s++){
-    for(int j=0; j<3; j++){
+    for(int j=0; j<4; j++){
       row[j] = gsl_ran_gaussian(r,1.0);
     }
     Ref_sample.push_back(row);
@@ -220,5 +225,10 @@ void Reaction::prepareSamples(){
     cout << "\n";
   }
   */
+  // For each resonance, go through and calculate all random samples
+  for(Resonance Res : Resonances){
+    Res.makeSamples(Ref_sample, smallestdE, smallestdwg);
+  }
+
   
 }

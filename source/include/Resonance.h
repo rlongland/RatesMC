@@ -2,6 +2,7 @@
 #define _Resonance_h_
 
 #include <iostream>
+#include <vector>
 
 class Resonance{
 
@@ -21,6 +22,8 @@ class Resonance{
   // Setters
   void setIndex(int i){index=i;}
 
+  void makeSamples(std::vector<std::vector<double> > Ref_sample, double smallestdE, double smallestdwg);
+  
   // print a summary of the resonance
   void print();
   void write();
@@ -35,8 +38,13 @@ class Resonance{
   int index;
   int L[3];
   double E_cm, dE_cm, wg, dwg, Jr, G[3], dG[3], Exf, PT[3], dPT[3];
-  bool bwg_known;
+  //  bool bwg_known;
   bool bUseInrate;
+
+  // Sampled parameters
+  std::vector<double> E_sample;
+  std::vector<double> wg_sample;
+  std::vector<std::vector<double> > G_sample;
   
   // Correlations
   int CorresRes;

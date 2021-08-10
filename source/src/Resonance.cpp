@@ -10,6 +10,12 @@
 #include <iomanip>
 #include <fstream>
 #include "stdio.h"
+
+#include <math.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_sf_exp.h>
+
 #include "Resonance.h"
 #include "Utilities.h"
 
@@ -41,6 +47,62 @@ Resonance::Resonance(int index, double E_cm, double dE_cm, double wg, double dwg
 }
 
 Resonance::~Resonance(){}
+
+void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double smallestdE, double smallestdwg){
+
+  double mu, sigma;
+  
+  // First get the energy samples
+  double corr = smallestdE/dE_cm;     // The correlation factor for this resonance energy
+  E_sample.resize(NSamples);
+  // Calculate correlated energies
+  for(int s=0; s<NSamples; s++){
+    double x2 = gsl_ran_gaussian(r, 1.0);
+    x2 = corr*Ref_sample[s][0] + x2*sqrt(1. - gsl_pow_2(corr));
+    E_sample[s] = E_cm + x2*dE_cm;
+  }
+
+  /*
+  std::cout << "index: " << index << "\n";
+  if(index==2 && bUpperLimit==false){
+    for(int s=0; s<NSamples; s++)
+      testfile << E_sample[s] << "\n";
+  }
+  */
+
+  // Now the resonance strength if it's known
+  if(wg > 0.0){
+    wg_sample.resize(NSamples);
+
+    // Convert input values (expectation value and standard deviation)
+    // to lognormal mu and sigma
+    logNormalize(wg, dwg, mu, sigma);
+    // Correlation parameter
+    corr = smallestdwg*wg/dwg;
+
+    for(int s=0; s<NSamples; s++){
+      double x2 = gsl_ran_gaussian(r, 1.0);
+      // Correlate everything with the first known resonance strength, wg_0
+      // using: wg_i = p*wg_0 + wg_i*sqrt(1-p^2)
+      x2 = corr*Ref_sample[s][1] + x2*sqrt(1.-gsl_pow_2(corr));
+      // Convert normally distributed sample into lognormal for this resonance
+      wg_sample[s] = gsl_sf_exp(mu + sigma*x2);
+
+    }
+
+    
+    std::cout << "index: " << index << "\n";
+    if(index==2 && bUpperLimit==false){
+      for(int s=0; s<NSamples; s++)
+	testfile << wg_sample[s] << "\n";
+    }
+    
+
+    
+  }
+
+}
+
 
 void Resonance::print(){
 

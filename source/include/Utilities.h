@@ -43,8 +43,14 @@ int countEntries(std::ifstream &in);
 void readNonResonant(std::ifstream &in, Reaction &R, int part);
 // Read all of the standard resonances
 void readResonanceBlock(std::ifstream &in, Reaction &R);
+
 // Define the temperature array
 void defineTemperatures();
+
+// Utility to take expectation value and variance and turn them into lognormal mu and sigma
+void logNormalize(double exp, double sd, double& mu, double& sigma);
+
+
 // Setup the random number generator
 void setupRandom();
 unsigned long int random_seed();

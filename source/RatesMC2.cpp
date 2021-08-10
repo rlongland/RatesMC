@@ -28,6 +28,9 @@ int main(int argc, char** argv){
 
   // Open log file
   logfile.open("RatesMC.log");
+
+  // Open the test file for writing samples, etc.
+  testfile.open("test.dat");
   
   // Input and output files
   std::string ofilename;
@@ -85,6 +88,7 @@ int main(int argc, char** argv){
   
   // Close the logfile
   logfile.close();
+  testfile.close();
   
   return 1;
 }
