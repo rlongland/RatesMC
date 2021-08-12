@@ -31,6 +31,9 @@ int main(int argc, char** argv){
 
   // Open the test file for writing samples, etc.
   testfile.open("test.dat");
+
+  // Open the file that stores Porter Thomas values
+  ptfile.open("PT.dat");
   
   // Input and output files
   std::string ofilename;
@@ -90,6 +93,7 @@ int main(int argc, char** argv){
   // Close the logfile
   logfile.close();
   testfile.close();
+  ptfile.close();
   
   return 1;
 }

@@ -21,10 +21,14 @@ extern bool bEnergyCorrelations;
 extern int PenZeroCount,IntegratedCount,SubSampledPosCount,SampledNegCount,
   NANCount,BelowIntLimit,IntfNANCount;
 
+// Flags
+extern bool ErrorFlag;
+
 // Histogram and output
 extern double HistT, HistMin, HistMax;
 extern std::ofstream logfile;
 extern std::ofstream testfile;
+extern std::ofstream ptfile;
 
 // Other program-wide variables
 extern std::vector<double> Temp;
@@ -49,6 +53,10 @@ void defineTemperatures();
 
 // Utility to take expectation value and variance and turn them into lognormal mu and sigma
 void logNormalize(double exp, double sd, double& mu, double& sigma);
+
+// Penetration Factor calculation
+double PenFactor(double E, double L, double Mass0, double Mass1,
+		 int Charge0, int Charge1, double R);
 
 
 // Check for zero

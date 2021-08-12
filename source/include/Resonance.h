@@ -45,6 +45,9 @@ class Resonance {
   int index;
   int L[3];
   double E_cm, dE_cm, wg, dwg, Jr, G[3], dG[3], Exf, PT[3], dPT[3];
+  double M0,M1,M2,J0,J1,J2;
+  int Z0,Z1,Z2;
+  
   //  bool bwg_known;
   bool bUseInrate;
 
