@@ -333,6 +333,12 @@ void logNormalize(double mean, double sd, double& mu, double& sigma){
 
 }
 
+//----------------------------------------------------------------------
+// Check for zero
+inline bool isZero(double x){
+  const double epsilon = 1e-5;
+  return std::abs(x-0.) <= epsilon*std::abs(x);
+}
 
 //----------------------------------------------------------------------
 // Setup the random sampler

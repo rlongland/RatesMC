@@ -74,14 +74,20 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
   // ------------------------------
   // Now the resonance strength if it's known
   if(wg > 0.0){
+
+    // check that the uncertainty is reasonable
+    if(dwg
+    
     wg_sample.resize(NSamples);
 
     // Convert input values (expectation value and standard deviation)
     // to lognormal mu and sigma
     logNormalize(wg, dwg, mu, sigma);
+
     // Correlation parameter
     corr = smallestdwg*wg/dwg;
 
+    // Generate the correlated samples
     for(int s=0; s<NSamples; s++){
       double x2 = gsl_ran_gaussian(r, 1.0);
       // Correlate everything with the first known resonance strength, wg_0

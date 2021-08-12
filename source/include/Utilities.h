@@ -51,6 +51,9 @@ void defineTemperatures();
 void logNormalize(double exp, double sd, double& mu, double& sigma);
 
 
+// Check for zero
+bool isZero(double x);
+
 // Setup the random number generator
 void setupRandom();
 unsigned long int random_seed();
