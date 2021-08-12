@@ -53,7 +53,7 @@ void Reaction::addResonance(int i, double E_cm, double dE_cm, double wg, double 
   double dPT[3] = {dPT1, dPT2, dPT3};
   
   // Make a resonance
-  Resonance Res(i, E_cm, dE_cm, wg, dwg, Jr,
+  Resonance Res(*this, i, E_cm, dE_cm, wg, dwg, Jr,
 		G, dG, L, PT, dPT, Exf, bInt, bUpperLimit);
   //Res.print();
   // Add that resonance to the list of resonances

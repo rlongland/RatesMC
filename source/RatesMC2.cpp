@@ -79,7 +79,8 @@ int main(int argc, char** argv){
     // print out the thread number and temperature
     // #pragma omp ordered
 #pragma omp critical
-    std::cout << "(" << ID << ") " << T << "\n";
+    //std::cout << "(" << ID << ") " << T << "\n";
+    std::cout << " " ;
   }
   
   std::cout << "\n";

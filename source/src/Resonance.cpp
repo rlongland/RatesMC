@@ -22,9 +22,10 @@
 using std::cout;
 using std::endl;
 
-Resonance::Resonance(int index, double E_cm, double dE_cm, double wg, double dwg, double Jr,
+Resonance::Resonance(Reaction & R,
+		     int index, double E_cm, double dE_cm, double wg, double dwg, double Jr,
 		     double G[3], double dG[3], int L[3], double PT[3], double dPT[3],
-		     double Exf, bool bInt, bool bUpperLimit){
+		     double Exf, bool bInt, bool bUpperLimit) : Reac(R){
   // 'this' is a special pointer to the "current instance"
   this->index = index;
   this->E_cm = E_cm;
@@ -42,6 +43,8 @@ Resonance::Resonance(int index, double E_cm, double dE_cm, double wg, double dwg
   this->Exf = Exf;
   this->bInt_flag = bInt;
   this->bUpperLimit = bUpperLimit;
+
+  //  std::cout << "The Gamma_index is " << Reac.getGamma_index() << "\n";
 
   //cout << "made a resonance" << endl;
 }
@@ -127,7 +130,7 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
       }
 
       // First if this channel is NOT an upper limit
-      if(!bUpperLimit){
+      if(!bUpperLimit || !isZero(dG[channel])){
 	
 	// check that the uncertainty is reasonable
 	if(!isZero(G[channel]) && isZero(dG[channel])){
@@ -150,10 +153,18 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
 	}
 	
       } else {       // Or if it is an upper limit
-
-	// Is this the Gamma channel?
-	//if(channel == Gamma_index){};
+	// First make sure G>0
+	if(!isZero(G[channel])){
+	  // Is this the Gamma channel?
+	  if(channel == Reac.getGamma_index()){
+	    std::cout << "Res " << index << " at E_cm = " << E_cm <<  " keV: Channel " << channel << "\n";
+	    
+	  } else {
+	    std::cout << "Res " << index << " at E_cm = " << E_cm <<  " keV: Channel " << channel << "\n";
+	    
+	  }
 	
+	}
       }
       
       G_sample.push_back(G_temp);
