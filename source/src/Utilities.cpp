@@ -100,7 +100,7 @@ void readNonResonant(std::ifstream &infile, Reaction &R, int part){
 
 void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 
-  double E_cm, dE_cm, wg, dwg, Jr,
+  double E_cm, dE_cm, wg=0.0, dwg=0.0, Jr,
     G1, dG1, PT1=0.0, DPT1=0.0, G2, dG2, PT2=0.0, DPT2=0.0,
     G3, dG3, PT3=0.0, DPT3=0.0, Exf;
   int i,L1, L2, L3, Int;
@@ -110,18 +110,18 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
   // gives us another check on whether it's an upper limit or normal
   // resonance
   int nEnt = countEntries(infile);
-  std::cout << "Reading resoances:\n";
-  std::cout << "There are " << countEntries(infile) << " entries in this section\n";
+  //  std::cout << "Reading resonances:\n";
+  //std::cout << "There are " << countEntries(infile) << " entries in this section\n";
   if(!isUpperLimit){
     isUpperLimit = false;
-    std::cout << "Normal resonances\n";
+    //std::cout << "Normal resonances\n";
     if(nEnt != 16){
       std::cout << "ERROR! The number of columns in the resonance section is wrong\n";
       std::cout << "       Expect N=16; Got N=" << nEnt << "\n";
     }
   } else {
     isUpperLimit = true;
-    std::cout << "Upper limit resonances\n";
+    //std::cout << "Upper limit resonances\n";
     if(nEnt == 17){
       std::cout << "WARNING: It looks like you're using an old version of RatesMC input without DPT\n";
     } else if (nEnt == 20) {
@@ -335,7 +335,7 @@ void logNormalize(double mean, double sd, double& mu, double& sigma){
 
 //----------------------------------------------------------------------
 // Check for zero
-inline bool isZero(double x){
+bool isZero(double x){
   const double epsilon = 1e-5;
   return std::abs(x-0.) <= epsilon*std::abs(x);
 }

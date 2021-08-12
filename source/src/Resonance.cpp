@@ -64,11 +64,11 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
   }
 
   /*
-  std::cout << "index: " << index << "\n";
-  if(index==2 && bUpperLimit==false){
+    std::cout << "index: " << index << "\n";
+    if(index==2 && bUpperLimit==false){
     for(int s=0; s<NSamples; s++)
-      testfile << E_sample[s] << "\n";
-  }
+    testfile << E_sample[s] << "\n";
+    }
   */
 
   // ------------------------------
@@ -76,7 +76,12 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
   if(wg > 0.0){
 
     // check that the uncertainty is reasonable
-    if(dwg
+    if(isZero(dwg)){
+      std::cout << "ERROR: You MUST specify a resonance strength uncertainty for resonance: " <<
+	index << " at " << E_cm << " keV\n";
+      std::cout << "       wg = " << wg << " +/- " << dwg << "\n";
+      std::exit(EXIT_FAILURE);
+    }
     
     wg_sample.resize(NSamples);
 
@@ -98,93 +103,117 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
     }
 
     /*    
-    std::cout << "index: " << index << "\n";
-    if(index==2 && bUpperLimit==false){
-      for(int s=0; s<NSamples; s++)
-	testfile << wg_sample[s] << "\n";
-    }
+	  std::cout << "index: " << index << "\n";
+	  if(index==2 && bUpperLimit==false){
+	  for(int s=0; s<NSamples; s++)
+	  testfile << wg_sample[s] << "\n";
+	  }
     */
     
-  }
+  } else {
 
-  //------------------------------
-  // Now the partial widths
-  for(int channel=0; channel<3; channel++){
-    std::vector<double> G_temp;
-    G_temp.resize(NSamples);
-    // G_sample.resize(NSamples);
-    // First if this channel is NOT an upper limit
-    if(dG[channel] > 0.0){
-      logNormalize(G[channel], dG[channel], mu, sigma);
-      corr = smallestdG[channel] * G[channel]/dG[channel];
-      for(int s=0; s<NSamples; s++){
-	double x2 = gsl_ran_gaussian(r,1.0);
-	x2 = corr*Ref_sample[s][channel+1] + x2*sqrt(1.-gsl_pow_2(corr));
-	G_temp[s] = gsl_sf_exp(mu + x2*sigma);
+    //------------------------------
+    // Now the partial widths
+    for(int channel=0; channel<3; channel++){
+      // G_sample.resize(NSamples);
+      std::vector<double> G_temp;
+
+      // Make sure the partial width is defined for G1 and G2
+      if(isZero(G[channel]) && channel != 2){
+	std::cout << "ERROR: You MUST specify a partial width for resonance: " <<
+	  index << " at " << E_cm << " keV\n";
+	std::cout << "       G" << channel+1 << " = " << G[channel] << " +/- " << dG[channel] << "\n";
+	std::exit(EXIT_FAILURE);
       }
 
-    } else {       // Or if it is an upper limit
+      // First if this channel is NOT an upper limit
+      if(!bUpperLimit){
+	
+	// check that the uncertainty is reasonable
+	if(!isZero(G[channel]) && isZero(dG[channel])){
+	  std::cout << "ERROR: You MUST specify partial width uncertainties for resonance: " <<
+	    index << " at " << E_cm << " keV\n";
+	  std::cout << "       G" << channel+1 << " = " << G[channel] << " +/- " << dG[channel] << "\n";
+	  std::exit(EXIT_FAILURE);
+	}
+	
+	G_temp.resize(NSamples);
+	
+	logNormalize(G[channel], dG[channel], mu, sigma);
+	
+	// Calculate the correlated partial widths for this channel
+	corr = smallestdG[channel] * G[channel]/dG[channel];
+	for(int s=0; s<NSamples; s++){
+	  double x2 = gsl_ran_gaussian(r,1.0);
+	  x2 = corr*Ref_sample[s][channel+1] + x2*sqrt(1.-gsl_pow_2(corr));
+	  G_temp[s] = gsl_sf_exp(mu + x2*sigma);
+	}
+	
+      } else {       // Or if it is an upper limit
 
-
-    }
+	// Is this the Gamma channel?
+	//if(channel == Gamma_index){};
+	
+      }
+      
+      G_sample.push_back(G_temp);
+    } // end for(int channel=0; channel<3; channel++)
+  } // end if(wg > 0) else
     
-    G_sample.push_back(G_temp);
-  } // end for(int channel=0; channel<3; channel++)
-
-  /*
-  if(index==0 && bUpperLimit==false){
-    for(int s=0; s<NSamples; s++)
+    /*
+      if(index==0 && bUpperLimit==false){
+      for(int s=0; s<NSamples; s++)
       testfile << G_sample[0][s] << "  " << G_sample[1][s] << "  " << G_sample[2][s] << "\n";
-  }
-  */
-
+      }
+    */
+  
   
 }
 
 
-void Resonance::print(){
+  void Resonance::print(){
 
-  //  cout << "--------------------------------------------------" << "\n";
-  //cout << "     This is resonance: " << index << "\n";
-  cout << " Resonace " << std::setw(3) << index <<"    E_cm = " << E_cm  << " +/- " << dE_cm << "\n";
-  cout << "                 wg   = " << wg << " +/- " << dwg << "\n";
-  cout << "                 Jr   = " << Jr << "\n";
-  cout << "                 G1   = " << G[0] << " +/- " << dG[0] << " (L = " << L[0] << ")\n";
-  if(bUpperLimit)
-    cout << "                 PT   = " << PT[0] << " +/- " << dPT[0] << "\n";
-  cout << "                 G2   = " << G[1] << " +/- " << dG[1] << " (L = " << L[1] << ")\n";
-  if(bUpperLimit)
-    cout << "                 PT   = " << PT[1] << " +/- " << dPT[1] << "\n";
-  cout << "                 G3   = " << G[2] << " +/- " << dG[2] << " (L = " << L[2] << ")\n";
-  if(bUpperLimit)
-    cout << "                 PT   = " << PT[2] << " +/- " << dPT[2] << "\n";
-  cout << "                 Exf  = " << Exf << "\n";
-  cout << "           Integrated = " << bInt_flag << "\n";
-  cout << "          Upper Limit = " << bUpperLimit << "\n";
-  //  cout << "--------------------------------------------------" << "\n";
-  cout << "\n";
+    //  cout << "--------------------------------------------------" << "\n";
+    //cout << "     This is resonance: " << index << "\n";
+    cout << " Resonace " << std::setw(3) << index <<"    E_cm = " << E_cm  << " +/- " << dE_cm << "\n";
+    cout << "                 wg   = " << wg << " +/- " << dwg << "\n";
+    cout << "                 Jr   = " << Jr << "\n";
+    cout << "                 G1   = " << G[0] << " +/- " << dG[0] << " (L = " << L[0] << ")\n";
+    if(bUpperLimit)
+      cout << "                 PT   = " << PT[0] << " +/- " << dPT[0] << "\n";
+    cout << "                 G2   = " << G[1] << " +/- " << dG[1] << " (L = " << L[1] << ")\n";
+    if(bUpperLimit)
+      cout << "                 PT   = " << PT[1] << " +/- " << dPT[1] << "\n";
+    cout << "                 G3   = " << G[2] << " +/- " << dG[2] << " (L = " << L[2] << ")\n";
+    if(bUpperLimit)
+      cout << "                 PT   = " << PT[2] << " +/- " << dPT[2] << "\n";
+    cout << "                 Exf  = " << Exf << "\n";
+    cout << "           Integrated = " << bInt_flag << "\n";
+    cout << "          Upper Limit = " << bUpperLimit << "\n";
+    //  cout << "--------------------------------------------------" << "\n";
+    cout << "\n";
 
-}
-void Resonance::write(){
+  }
+  void Resonance::write(){
 
-  //  logfile << "--------------------------------------------------" << "\n";
-  //logfile << "     This is resonance: " << index << "\n";
-  logfile << " Resonace " << std::setw(3) << index <<"    E_cm = " << E_cm  << " +/- " << dE_cm << "\n";
-  logfile << "                 wg   = " << wg << " +/- " << dwg << "\n";
-  logfile << "                 Jr   = " << Jr << "\n";
-  logfile << "                 G1   = " << G[0] << " +/- " << dG[0] << " (L = " << L[0] << ")\n";
-  if(bUpperLimit)
-    logfile << "                 PT   = " << PT[0] << " +/- " << dPT[0] << "\n";
-  logfile << "                 G2   = " << G[1] << " +/- " << dG[1] << " (L = " << L[1] << ")\n";
-  if(bUpperLimit)
-    logfile << "                 PT   = " << PT[1] << " +/- " << dPT[1] << "\n";
-  logfile << "                 G3   = " << G[2] << " +/- " << dG[2] << " (L = " << L[2] << ")\n";
-  if(bUpperLimit)
-    logfile << "                 PT   = " << PT[2] << " +/- " << dPT[2] << "\n";
-  logfile << "                 Exf  = " << Exf << "\n";
-  logfile << "           Integrated = " << bInt_flag << "\n";
-  logfile << "          Upper Limit = " << bUpperLimit << "\n";
-  //  logfile << "--------------------------------------------------" << "\n";
-  logfile << "\n";
+    //  logfile << "--------------------------------------------------" << "\n";
+    //logfile << "     This is resonance: " << index << "\n";
+    logfile << " Resonace " << std::setw(3) << index <<"    E_cm = " << E_cm  << " +/- " << dE_cm << "\n";
+    logfile << "                 wg   = " << wg << " +/- " << dwg << "\n";
+    logfile << "                 Jr   = " << Jr << "\n";
+    logfile << "                 G1   = " << G[0] << " +/- " << dG[0] << " (L = " << L[0] << ")\n";
+    if(bUpperLimit)
+      logfile << "                 PT   = " << PT[0] << " +/- " << dPT[0] << "\n";
+    logfile << "                 G2   = " << G[1] << " +/- " << dG[1] << " (L = " << L[1] << ")\n";
+    if(bUpperLimit)
+      logfile << "                 PT   = " << PT[1] << " +/- " << dPT[1] << "\n";
+    logfile << "                 G3   = " << G[2] << " +/- " << dG[2] << " (L = " << L[2] << ")\n";
+    if(bUpperLimit)
+      logfile << "                 PT   = " << PT[2] << " +/- " << dPT[2] << "\n";
+    logfile << "                 Exf  = " << Exf << "\n";
+    logfile << "           Integrated = " << bInt_flag << "\n";
+    logfile << "          Upper Limit = " << bUpperLimit << "\n";
+    //  logfile << "--------------------------------------------------" << "\n";
+    logfile << "\n";
 
-}
+  }

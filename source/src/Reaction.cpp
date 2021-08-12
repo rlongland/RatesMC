@@ -206,7 +206,7 @@ double Reaction::calcNonResonant(){
 // Prepare the Monte Carlo samples. 
 void Reaction::prepareSamples(){
 
-  cout << "Preparing " << NSamples << " samples\n";
+  cout << "Preparing " << NSamples << " samples\n\n";
 
   // The reference samples used for energies, gamma widths, and
   // resonances. There are three sets for each partial width. The
