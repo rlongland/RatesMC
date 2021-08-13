@@ -131,7 +131,7 @@ void Reaction::writeReaction(){
 // NOT WORKING!
 double Reaction::calcNonResonant(double Temp, int j){
 
-  
+  //  std::cout << Temp << " " << j << "\n";
   double mue = M0*M1/(M0+M1);
   //  double mu, sigma;
   double cutoff_T = 19.92*pow(CutoffE[j],1.5)/sqrt(pow(Z0*Z1,2.)*mue);
@@ -194,6 +194,7 @@ double Reaction::calcNonResonant(double Temp, int j){
     } else {
       for(int i=0;i<NSamples;i++){
 	DRate[j][i] = gsl_ran_lognormal(r,mu,sigma)/(1.5399e11/pow(mue*Temp,1.5));
+	//	std::cout << DRate[j][i] << "\n";
       }
     }
   }
