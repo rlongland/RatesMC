@@ -104,8 +104,8 @@ int main(int argc, char** argv){
   std::cout << " ********************************************\n";
   
   
-    // Close the logfile
-    logfile.close();
+  // Close the logfile
+  logfile.close();
   testfile.close();
   ptfile.close();
   

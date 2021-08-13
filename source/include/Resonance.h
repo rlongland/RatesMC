@@ -27,6 +27,7 @@ class Resonance {
 
   void makeSamples(std::vector<std::vector<double> > Ref_sample, double smallestdE,
 		   double smallestdwg, double smallestdG[3]);
+  void writeSamples(std::ofstream& samplefile, int s);
   
   // print a summary of the resonance
   void print();

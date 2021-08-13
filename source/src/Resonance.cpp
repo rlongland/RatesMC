@@ -270,6 +270,25 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
   
   
 }
+//----------------------------------------------------------------------
+// Write the samples to a file
+void Resonance::writeSamples(std::ofstream& samplefile, int s){
+
+  std::cout << s << "\n";
+  std::cout << G[0] << " " << G[1] << "\n";
+  
+  if(wg_sample.size()>0){
+    samplefile << std::setw(9) << wg_sample[s] << "   ";
+    samplefile << std::setw(9) << 0 << " "
+	       << std::setw(9) << 0 << " "
+	       << std::setw(9) << 0 << "  ";
+  }else{
+    samplefile << std::setw(9) << 0 << "   ";
+    samplefile << std::setw(9) << G_sample[s][0] << " ";
+    //	       << std::setw(9) << G_sample[1][s] << " "
+    //	       << std::setw(9) << G_sample[2][s] << "  ";
+  }
+}
 
 
 void Resonance::print(){

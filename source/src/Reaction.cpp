@@ -267,9 +267,16 @@ void Reaction::writeSamples(){
   // Now the samples
   for(int s=0; s<NSamples; s++){
     //    samplefile << "  ";
+    // Reference randoms for correlations
     for(int channel=0; channel<4; channel++){
       samplefile << "  " << std::setw(12) << Ref_sample[s][channel];
     }
+
+    // Now the resonances
+    for(Resonance Res: Resonances){
+      Res.writeSamples(samplefile, s);
+    }
+    
     samplefile << "\n";
   }
 
