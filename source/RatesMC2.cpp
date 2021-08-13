@@ -78,11 +78,15 @@ int main(int argc, char** argv){
 #pragma omp parallel for ordered
   for(double T : Temp){
     int ID = omp_get_thread_num();
+    double ADRate[2];
 
     // print out the thread number and temperature
     // #pragma omp ordered
 #pragma omp critical
     //std::cout << "(" << ID << ") " << T << "\n";
+    for(int j=0; j<2; j++){
+      ADRate[j] = Reac -> calcNonResonant(T, j);
+    }
     std::cout << " " ;
   }
   

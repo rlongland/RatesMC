@@ -29,7 +29,7 @@ class Reaction{
 		    double, double, int, double, double,
 		    double, double, int, double, double,
 		    double, bool, bool);
-  double calcNonResonant();
+  double calcNonResonant(double Temp, int j);
   void prepareSamples();
 
   // Getters
@@ -56,7 +56,9 @@ class Reaction{
 
   // Reaction-wide Monte Carlo
   std::vector<std::vector<double> > Ref_sample;
-
+  std::vector<std::vector<double> > DRate;
+  
+  
 };
 
 

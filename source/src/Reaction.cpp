@@ -9,9 +9,11 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include "stdio.h"
+#include <stdio.h>
+#include <math.h>
 
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_sf_exp.h>
 
 #include "Resonance.h"
 #include "Reaction.h"
@@ -38,6 +40,8 @@ void Reaction::setNonResonant(double s, double sp, double spp, double ds, double
   dS[part] = ds;
   CutoffE[part] = cutoffe;
 
+  std::vector<double> D(NSamples);
+  DRate.push_back(D);
 }
 
 void Reaction::addResonance(int i, double E_cm, double dE_cm, double wg, double dwg, double Jr,
@@ -125,10 +129,11 @@ void Reaction::writeReaction(){
 //----------------------------------------------------------------------
 // Calculate the direct capture, non-resonant part of the reaction rate
 // NOT WORKING!
-double Reaction::calcNonResonant(){
+double Reaction::calcNonResonant(double Temp, int j){
 
-  /*
+  
   double mue = M0*M1/(M0+M1);
+  //  double mu, sigma;
   double cutoff_T = 19.92*pow(CutoffE[j],1.5)/sqrt(pow(Z0*Z1,2.)*mue);
 
   double ADRate,mu,sigma;
@@ -142,16 +147,14 @@ double Reaction::calcNonResonant(){
   C5e = 8.377e-2*(Sp[j]/S[j]);
   C6e = 7.442e-3*(Spp[j]/S[j])*pow((pow(Z0*Z1,2.)*mue),2./3.);
   C7e = 1.299e-2*(Spp[j]/S[j])*pow((pow(Z0*Z1,2.)*mue),1./3.);
-  */
+  
 
   /*cout << C1e << "\t" << C2e << "\t" << C3e << "\t" << C4e << "\t" <<
     C5e << "\t" << C6e << "\t" << C7e << endl;
     cout << "Cutoff T = " << cutoff_T << endl;*/
 
-  // New way of doing things: calculate the rate and then sample from
-  // the end.
-
-  /*
+  // Calculate the rate first and then sample at the end.
+  
   // Turn off the error handler in case exp returns zero
   gsl_set_error_handler_off();
   ADRate = (C1e/pow(Temp,2./3.))*gsl_sf_exp(-C2e/pow(Temp,1./3.)-
@@ -160,7 +163,7 @@ double Reaction::calcNonResonant(){
      C6e*pow(Temp,4./3.) + C7e*pow(Temp,5./3.));
 
   gsl_set_error_handler(NULL); // Turn error handler back on again
-  */
+  
   
   /*cout << (C1e/pow(Temp,2./3.))*exp(-C2e/pow(Temp,1./3.)-
     pow(Temp/cutoff_T,2.)) << endl;
@@ -171,35 +174,34 @@ double Reaction::calcNonResonant(){
     cout << "ADRate = " << ADRate << endl;
     cout << "About to Lognormalise" << endl;*/
 
-  /*
   // If ADRate is negative, set to zero, this is unphysical
   if(ADRate < 0.){
     ErrorFlag = true;
     logfile << "\tWARNING: The non-resonant part caused a negative rate, \n\t\tsetting to zero." << endl;
     ADRate = 0.0;
     for(int i=0;i<NSamples;i++){
-      DRate[i]=0.0;
+      DRate[j][i]=0.0;
     }
   } else {
-    LogNormalise(ADRate,dS[j]*ADRate,mu,sigma);
+    logNormalize(ADRate,dS[j]*ADRate,mu,sigma);
+    
     // if mu and sigma return as zero, the rate is zero (very small)
     if((mu==0. && sigma==0.)){
       ADRate=0.0;
       for(int i=0;i<NSamples;i++){
-	DRate[i]=0.0;
+	DRate[j][i]=0.0;
       }
     } else {
       for(int i=0;i<NSamples;i++){
-	DRate[i] = gsl_ran_lognormal(r,mu,sigma)/(1.5399e11/pow(mue*Temp,1.5));
-	//cout << DRate[i] << endl;
+	DRate[j][i] = gsl_ran_lognormal(r,mu,sigma)/(1.5399e11/pow(mue*Temp,1.5));
       }
     }
   }
 
 
   ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
-  */
-  return 0.0;
+  
+  return ADRate;
 }
 
 //----------------------------------------------------------------------
