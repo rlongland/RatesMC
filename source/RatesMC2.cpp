@@ -89,20 +89,23 @@ int main(int argc, char** argv){
       }
 
       /*
-      std::cout << "Proc(" << ID << ") T = " << T; // << "\n";
-      //      for(int j=0; j<2; j++)
-      std::cout << " D[" << 0 << "] = " << ADRate[0];
-      std::cout << "\n" ;
+	std::cout << "Proc(" << ID << ") T = " << T; // << "\n";
+	//      for(int j=0; j<2; j++)
+	std::cout << " D[" << 0 << "] = " << ADRate[0];
+	std::cout << "\n" ;
       */
     }
   }
-  
-  std::cout << "\n";
 
   
   
-  // Close the logfile
-  logfile.close();
+  std::cout << " ********************************************\n";
+  std::cout << " *             Farewell!                    *\n";
+  std::cout << " ********************************************\n";
+  
+  
+    // Close the logfile
+    logfile.close();
   testfile.close();
   ptfile.close();
   
@@ -116,7 +119,7 @@ void WelcomeScreen(){
   std::cout << " ********************************************" << std::endl;
   std::cout << " *           Welcome to RatesMC             *" << std::endl;
   std::cout << " *         V. " << VersionNumber << "  " << VersionDate 
-       << "        *" << std::endl;
+	    << "        *" << std::endl;
   std::cout << " *     Written by:   Richard Longland       *" << std::endl;
   std::cout << " *                                          *" << std::endl;
   std::cout << " ********************************************" << std::endl;
