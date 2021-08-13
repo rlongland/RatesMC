@@ -61,7 +61,7 @@ int main(int argc, char** argv){
   //  - Store every input parameter in a matrix (column = parameter, row = sample)
   //  - 
   Reac -> prepareSamples();
-
+  Reac -> writeSamples();         // Write all samples to a file
 
   // Loop through temperatures (this is parallelization happens)
   // At each temperature

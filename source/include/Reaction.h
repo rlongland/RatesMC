@@ -31,7 +31,8 @@ class Reaction{
 		    double, bool, bool);
   double calcNonResonant(double Temp, int j);
   void prepareSamples();
-
+  void writeSamples();
+  
   // Getters
   double getsmallestdE(){return smallestdE;}
   int getGamma_index(){return Gamma_index;}

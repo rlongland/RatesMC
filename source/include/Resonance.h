@@ -19,7 +19,7 @@ class Resonance {
   ~Resonance();
 
   // Getters
-  void getIndex();
+  int getIndex(){return index;}
   void getE_cm();
 
   // Setters

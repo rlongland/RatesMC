@@ -241,3 +241,39 @@ void Reaction::prepareSamples(){
 
   
 }
+
+
+//----------------------------------------------------------------------
+// Write all input parameter samples to a file
+void Reaction::writeSamples(){
+
+  std::ofstream samplefile;
+  samplefile.open("ParameterSamples.dat");
+  
+  // Each column corresponds to a parameter, rows are samples
+  // Write the header
+  samplefile <<    "                                                          ";
+  for(Resonance Res : Resonances){
+    samplefile << " |               Resonance " << std::setw(3) << Res.getIndex()
+	       << "             ";
+  }
+  samplefile << "\n";
+  samplefile <<    "     Standard1     Standard2     Standard3     Standard4  ";
+  for(Resonance Res : Resonances){
+    samplefile << " |   wg          G1        G2        G3    ";
+  }
+  samplefile << "\n";
+  
+  // Now the samples
+  for(int s=0; s<NSamples; s++){
+    //    samplefile << "  ";
+    for(int channel=0; channel<4; channel++){
+      samplefile << "  " << std::setw(12) << Ref_sample[s][channel];
+    }
+    samplefile << "\n";
+  }
+
+  samplefile.close();
+  
+
+}
