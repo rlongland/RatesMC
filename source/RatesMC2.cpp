@@ -83,11 +83,16 @@ int main(int argc, char** argv){
     // print out the thread number and temperature
     // #pragma omp ordered
 #pragma omp critical
-    //std::cout << "(" << ID << ") " << T << "\n";
-    for(int j=0; j<2; j++){
-      ADRate[j] = Reac -> calcNonResonant(T, j);
+    {
+      for(int j=0; j<2; j++){
+	ADRate[j] = Reac -> calcNonResonant(T, j);
+      }
+
+      std::cout << "Proc(" << ID << ") T = " << T; // << "\n";
+      //      for(int j=0; j<2; j++)
+      std::cout << " D[" << 0 << "] = " << ADRate[0];
+      std::cout << "\n" ;
     }
-    std::cout << " " ;
   }
   
   std::cout << "\n";

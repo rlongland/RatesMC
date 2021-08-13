@@ -177,8 +177,8 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
 
 	// Is this the Gamma channel?
 	if(channel == Reac.getGamma_index()){
-	  std::cout << "Res " << index << " at E_cm = " << E_cm <<  " keV:\n" 
-		    << "      Channel " << channel << " is Gamma_gamma\n";
+	  //std::cout << "Res " << index << " at E_cm = " << E_cm <<  " keV:\n" 
+	  //	    << "      Channel " << channel << " is Gamma_gamma\n";
 	  A = (8.0*M_PI*(L[channel]+1)/(L[channel] *
 					gsl_pow_2(gsl_sf_doublefact(2*L[channel]+1)))) *
 	    gsl_pow_int((E_cm/197.326968),(2*L[channel]+1));
@@ -209,14 +209,13 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
 	  // if it's not the Gamma channel
 	} else { 
 	  
-	  std::cout << "Res " << index << " at E_cm = " << E_cm <<  " keV:\n"
-		    << "      Channel " << channel << " is Gamma_particle\n";
+	  //	  std::cout << "Res " << index << " at E_cm = " << E_cm <<  " keV:\n"
+	  //	    << "      Channel " << channel << " is Gamma_particle\n";
 
 	  // If it's an exit particle, we need to account for the Q-value
 	  if(E_cm > 0.0 || channel != 0){
 	    if(channel == 0){
 	      P = PenFactor(E_cm,L[channel],M0,M1,Z0,Z1,R);
-	      cout << E_cm << " " << L[channel] << " " << M0 << " " << M1 << " " << M2 << "\n";
 	    } else if(channel == 1){
 	      P = PenFactor(E_cm+Reac.Q-Reac.Qexit-Exf,L[channel],M0+M1-M2,M2,
 			    Z0+Z1-Z2,Z2,R);
