@@ -129,8 +129,16 @@ void Reaction::writeReaction(){
 }
 
 //----------------------------------------------------------------------
+// Calculate the resonant reaction rate
+double Reaction::calcResonant(double Temp){
+
+  
+
+}
+
+//----------------------------------------------------------------------
 // Calculate the direct capture, non-resonant part of the reaction rate
-// NOT WORKING!
+// WORKING!
 double Reaction::calcNonResonant(double Temp, int j){
 
   //  std::cout << Temp << " " << j << "\n";

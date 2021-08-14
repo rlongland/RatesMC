@@ -108,7 +108,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
   double E_cm, dE_cm, wg=0.0, dwg=0.0, Jr,
     G1, dG1, PT1=0.0, DPT1=0.0, G2, dG2, PT2=0.0, DPT2=0.0,
     G3, dG3, PT3=0.0, DPT3=0.0, Exf;
-  int i,L1, L2, L3, Int;
+  int i,L1, L2, L3, isBroad;
 
   i=0;
   // Read the number of entries on the first resonance line. This
@@ -151,7 +151,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     if(!isUpperLimit){
       infile >> dE_cm >> wg >> dwg >> Jr 
 	     >> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
-	     >> Exf >> Int;
+	     >> Exf >> isBroad;
     } else {
       // Upper limit resonances.
       // Old style with no DPT
@@ -159,7 +159,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 	infile >> dE_cm >> Jr 
 	       >> G1 >> dG1 >> L1 >> PT1 >> G2 >> dG2 >> L2 >> PT2
 	       >> G3 >> dG3 >> L3 >> PT3
-	       >> Exf >> Int;
+	       >> Exf >> isBroad;
 	
       }
       // New style with DPT
@@ -167,7 +167,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 	infile >> dE_cm >> Jr 
 	       >> G1 >> dG1 >> L1 >> PT1 >> DPT1 >> G2 >> dG2 >> L2 >> PT2 >> DPT2
 	       >> G3 >> dG3 >> L3 >> PT3 >> DPT3
-	       >> Exf >> Int;
+	       >> Exf >> isBroad;
       }
     }
 
@@ -191,7 +191,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 		   G1, dG1, L1, PT1, DPT1,
 		   G2, dG2, L2, PT2, DPT2,
 		   G3, dG3, L3, PT3, DPT3,
-		   Exf, Int, isUpperLimit);
+		   Exf, isBroad, isUpperLimit);
     
   }
 

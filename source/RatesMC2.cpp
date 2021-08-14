@@ -61,8 +61,8 @@ int main(int argc, char** argv){
   //  - 
   Reac -> prepareSamples();
   // Write the reaction information to log file for diagnostics
-  //Reac -> printReaction();
   Reac -> writeReaction();
+  //Reac -> printReaction();
   
   Reac -> writeSamples();         // Write all samples to a file
 
@@ -81,6 +81,9 @@ int main(int argc, char** argv){
     int ID = omp_get_thread_num();
     double ADRate[2];
 
+    // Calculate the resonant rate
+    double ResRate = Reac -> calcResonant(T);
+    
 #pragma omp critical
     {
       // print out the thread number and temperature

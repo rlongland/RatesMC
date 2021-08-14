@@ -29,6 +29,7 @@ class Reaction{
 		    double, double, int, double, double,
 		    double, double, int, double, double,
 		    double, bool, bool);
+  double calcResonant(double Temp);
   double calcNonResonant(double Temp, int j);
   void prepareSamples();
   void writeSamples();

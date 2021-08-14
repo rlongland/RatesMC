@@ -27,7 +27,7 @@ using std::endl;
 Resonance::Resonance(Reaction & R,
 		     int index, double E_cm, double dE_cm, double wg, double dwg, double Jr,
 		     double G[3], double dG[3], int L[3], double PT[3], double dPT[3],
-		     double Exf, bool bInt, bool bUpperLimit) : Reac(R){
+		     double Exf, bool isBroad, bool isUpperLimit) : Reac(R){
   // 'this' is a special pointer to the "current instance"
   this->index = index;
   this->E_cm = E_cm;
@@ -43,8 +43,8 @@ Resonance::Resonance(Reaction & R,
     this->dPT[i] = dPT[i];
   }
   this->Exf = Exf;
-  this->bInt_flag = bInt;
-  this->bUpperLimit = bUpperLimit;
+  this->isBroad = isBroad;
+  this->isUpperLimit = isUpperLimit;
 
   this->M0 = R.M0;
   this->M1 = R.M1;
@@ -81,7 +81,7 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
 
   /*
     std::cout << "index: " << index << "\n";
-    if(index==2 && bUpperLimit==false){
+    if(index==2 && isUpperLimit==false){
     for(int s=0; s<NSamples; s++)
     testfile << E_sample[s] << "\n";
     }
@@ -120,7 +120,7 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
 
     /*    
 	  std::cout << "index: " << index << "\n";
-	  if(index==2 && bUpperLimit==false){
+	  if(index==2 && isUpperLimit==false){
 	  for(int s=0; s<NSamples; s++)
 	  testfile << wg_sample[s] << "\n";
 	  }
@@ -149,7 +149,7 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
       }  
 
       // First if this width is a normal, known width
-      if(!(bUpperLimit && isZero(dG[channel]))){
+      if(!(isUpperLimit && isZero(dG[channel]))){
 	
 	// check that the uncertainty is reasonable
 	if(isZero(dG[channel])){
@@ -262,7 +262,7 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
   } // end if(wg > 0) else
   
     /*
-      if(index==0 && bUpperLimit==false){
+      if(index==0 && isUpperLimit==false){
       for(int s=0; s<NSamples; s++)
       testfile << G_sample[0][s] << "  " << G_sample[1][s] << "  " << G_sample[2][s] << "\n";
       }
@@ -314,17 +314,17 @@ void Resonance::print(){
   cout << "                 wg   = " << wg << " +/- " << dwg << "\n";
   cout << "                 Jr   = " << Jr << "\n";
   cout << "                 G1   = " << G[0] << " +/- " << dG[0] << " (L = " << L[0] << ")\n";
-  if(bUpperLimit)
+  if(isUpperLimit)
     cout << "                 PT   = " << PT[0] << " +/- " << dPT[0] << "\n";
   cout << "                 G2   = " << G[1] << " +/- " << dG[1] << " (L = " << L[1] << ")\n";
-  if(bUpperLimit)
+  if(isUpperLimit)
     cout << "                 PT   = " << PT[1] << " +/- " << dPT[1] << "\n";
   cout << "                 G3   = " << G[2] << " +/- " << dG[2] << " (L = " << L[2] << ")\n";
-  if(bUpperLimit)
+  if(isUpperLimit)
     cout << "                 PT   = " << PT[2] << " +/- " << dPT[2] << "\n";
   cout << "                 Exf  = " << Exf << "\n";
-  cout << "           Integrated = " << bInt_flag << "\n";
-  cout << "          Upper Limit = " << bUpperLimit << "\n";
+  cout << "           Integrated = " << isBroad << "\n";
+  cout << "          Upper Limit = " << isUpperLimit << "\n";
   //  cout << "--------------------------------------------------" << "\n";
   int NPrintSamples = 5;
   cout << "First " << NPrintSamples << " samples    -------\n";
@@ -366,17 +366,17 @@ void Resonance::write(){
   logfile << "                 wg   = " << wg << " +/- " << dwg << "\n";
   logfile << "                 Jr   = " << Jr << "\n";
   logfile << "                 G1   = " << G[0] << " +/- " << dG[0] << " (L = " << L[0] << ")\n";
-  if(bUpperLimit)
+  if(isUpperLimit)
     logfile << "                 PT   = " << PT[0] << " +/- " << dPT[0] << "\n";
   logfile << "                 G2   = " << G[1] << " +/- " << dG[1] << " (L = " << L[1] << ")\n";
-  if(bUpperLimit)
+  if(isUpperLimit)
     logfile << "                 PT   = " << PT[1] << " +/- " << dPT[1] << "\n";
   logfile << "                 G3   = " << G[2] << " +/- " << dG[2] << " (L = " << L[2] << ")\n";
-  if(bUpperLimit)
+  if(isUpperLimit)
     logfile << "                 PT   = " << PT[2] << " +/- " << dPT[2] << "\n";
   logfile << "                 Exf  = " << Exf << "\n";
-  logfile << "           Integrated = " << bInt_flag << "\n";
-  logfile << "          Upper Limit = " << bUpperLimit << "\n";
+  logfile << "           Integrated = " << isBroad << "\n";
+  logfile << "          Upper Limit = " << isUpperLimit << "\n";
 
 
   int NPrintSamples = 5;

@@ -39,7 +39,7 @@ class Resonance {
   Reaction & Reac;
   
   // Resonance control and bookkeeping
-  bool bInt_flag, bisECorr, bUpperLimit;
+  bool isBroad, isECorr, isUpperLimit;
   bool ErrorFlag;
   
   // Resonance parameters
