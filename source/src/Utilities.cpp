@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <limits>
 #include <vector>
@@ -319,6 +320,15 @@ void defineTemperatures(){
 			 3.5,4,5,6,7,8,9,10};
   
   Temp = defaultT;
+
+  logfile << "--------------------------------------------------\n";
+  logfile << "There are " << Temp.size() << " temperatures:\n";
+  for(int iT=0; iT<Temp.size(); iT++){
+    logfile << std::setw(5) << Temp[iT] << "  ";
+    if((iT+1)%7 == 0 && iT>0)logfile << "\n";
+  }
+  logfile << "\n";
+  logfile << "--------------------------------------------------\n";
 
 }
 

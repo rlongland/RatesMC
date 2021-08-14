@@ -9,6 +9,7 @@
 */
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <limits>
 
@@ -50,8 +51,6 @@ int main(int argc, char** argv){
   
   // Open the input file
   int ret = ReadInputFile(ifilename, Reac);
-  // Write the reaction information to log file for diagnostics
-  Reac -> writeReaction();
 
   // Set up the random sampler
   setupRandom();
@@ -61,6 +60,10 @@ int main(int argc, char** argv){
   //  - Store every input parameter in a matrix (column = parameter, row = sample)
   //  - 
   Reac -> prepareSamples();
+  // Write the reaction information to log file for diagnostics
+  //Reac -> printReaction();
+  Reac -> writeReaction();
+  
   Reac -> writeSamples();         // Write all samples to a file
 
   // Loop through temperatures (this is parallelization happens)
@@ -70,8 +73,6 @@ int main(int argc, char** argv){
   //  - 
   // First define the temperatures
   defineTemperatures();
-  logfile << "--------------------------------------------------\n";
-  logfile << "There are " << Temp.size() << " temperatures:\n";
 
   // Now do the big loop in parallel!!
   //omp_set_num_threads(4);

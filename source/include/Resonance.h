@@ -20,7 +20,7 @@ class Resonance {
 
   // Getters
   int getIndex(){return index;}
-  void getE_cm();
+  double getE_cm(){return E_cm;}
 
   // Setters
   void setIndex(int i){index=i;}

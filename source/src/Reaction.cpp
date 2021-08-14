@@ -94,6 +94,8 @@ void Reaction::printReaction(){
   for(res = Resonances.begin(); res < Resonances.end(); res++){
     res->print();
   }
+  cout << "--------------------------------------------------" << "\n";
+  
 
 }
 
@@ -235,7 +237,7 @@ void Reaction::prepareSamples(){
   }
   */
   // For each resonance, go through and calculate all random samples
-  for(Resonance Res : Resonances){
+  for(Resonance &Res : Resonances){
     Res.makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
   }
 
@@ -252,15 +254,16 @@ void Reaction::writeSamples(){
   
   // Each column corresponds to a parameter, rows are samples
   // Write the header
-  samplefile <<    "                                                          ";
+  samplefile <<    "                                           ";
   for(Resonance Res : Resonances){
-    samplefile << " |               Resonance " << std::setw(3) << Res.getIndex()
-	       << "             ";
+    samplefile << " |         Resonance " << std::setw(3) << Res.getIndex()
+	       << " at E_cm = " << std::setw(7) << Res.getE_cm() << " MeV          ";
   }
   samplefile << "\n";
-  samplefile <<    "     Standard1     Standard2     Standard3     Standard4  ";
+  //               "1234567890x1234567890x1234567890x123456789012"
+  samplefile <<    " Standard1  Standard2  Standard3  Standard4";
   for(Resonance Res : Resonances){
-    samplefile << " |   wg          G1        G2        G3    ";
+    samplefile << " |         E         wg         G1         G2         G3";
   }
   samplefile << "\n";
   
@@ -269,9 +272,9 @@ void Reaction::writeSamples(){
     //    samplefile << "  ";
     // Reference randoms for correlations
     for(int channel=0; channel<4; channel++){
-      samplefile << "  " << std::setw(12) << Ref_sample[s][channel];
+      samplefile << std::setw(10) << Ref_sample[s][channel] << " ";
     }
-
+    samplefile << " ";
     // Now the resonances
     for(Resonance Res: Resonances){
       Res.writeSamples(samplefile, s);
