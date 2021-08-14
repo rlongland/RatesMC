@@ -249,6 +249,8 @@ void Reaction::prepareSamples(){
 // Write all input parameter samples to a file
 void Reaction::writeSamples(){
 
+  std::cout << "Writing sample file. This may take a while...\n";
+  
   std::ofstream samplefile;
   samplefile.open("ParameterSamples.dat");
   
@@ -285,5 +287,5 @@ void Reaction::writeSamples(){
 
   samplefile.close();
   
-
+  std::cout << "Done!\n";
 }
