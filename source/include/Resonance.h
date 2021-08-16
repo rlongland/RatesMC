@@ -21,13 +21,21 @@ class Resonance {
   // Getters
   int getIndex(){return index;}
   double getE_cm(){return E_cm;}
-
+  double getisBroad(){return isBroad;}
+  
   // Setters
   void setIndex(int i){index=i;}
 
+  // Functions that do stuff
   void makeSamples(std::vector<std::vector<double> > Ref_sample, double smallestdE,
 		   double smallestdwg, double smallestdG[3]);
   void writeSamples(std::ofstream& samplefile, int s);
+  // Functions to calculate the rate from this resonance. They return
+  // the traditional rate and fill 'Rate', which is a vector of rate
+  // samples for this resonance at temperature T
+  double calcBroad(double T, std::vector<double> &Rate);
+  double calcNarrow(double T, std::vector<double> &Rate);
+  
   
   // print a summary of the resonance
   void print();

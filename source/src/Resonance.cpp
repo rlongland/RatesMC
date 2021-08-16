@@ -305,6 +305,21 @@ void Resonance::writeSamples(std::ofstream& samplefile, int s){
   samplefile << buffer.str();
 }
 
+//----------------------------------------------------------------------
+// Function to numerically integrate broad resonances
+double Resonance::calcBroad(double T, std::vector<double> &Rate){
+
+
+  return 0.0;
+}
+// Function to numerically integrate broad resonances
+double Resonance::calcNarrow(double T, std::vector<double> &Rate){
+
+
+  return 0.0;
+}
+
+
 
 void Resonance::print(){
 

@@ -132,7 +132,26 @@ void Reaction::writeReaction(){
 // Calculate the resonant reaction rate
 double Reaction::calcResonant(double Temp){
 
+  // Vector of rate storage
+  std::vector<double> Rate;
+  Rate.resize(NSamples);
   
+  for(Resonance R : Resonances){
+    // if the resonance is narrow
+    if(!R.getisBroad()){
+      std::cout << "Resonance " << R.getIndex() << " at "
+		<< R.getE_cm() << " keV is narrow\n";
+
+      double tradRate = R.calcBroad(Temp, Rate);
+      
+      // If it's broad
+    } else {
+      std::cout << "Resonance " << R.getIndex() << " at "
+		<< R.getE_cm() << " keV is being numerically integrated\n";
+
+      double tradRate = R.calcNarrow(Temp, Rate);
+    }
+  }
 
 }
 

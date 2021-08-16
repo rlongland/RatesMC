@@ -92,12 +92,12 @@ int main(int argc, char** argv){
 	ADRate[j] = Reac -> calcNonResonant(T, j);
       }
 
-      /*
+      
 	std::cout << "Proc(" << ID << ") T = " << T; // << "\n";
 	//      for(int j=0; j<2; j++)
-	std::cout << " D[" << 0 << "] = " << ADRate[0];
+	//std::cout << " D[" << 0 << "] = " << ADRate[0];
 	std::cout << "\n" ;
-      */
+      
     }
   }
 
