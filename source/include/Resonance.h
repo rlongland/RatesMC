@@ -35,7 +35,8 @@ class Resonance {
   // samples for this resonance at temperature T
   double calcBroad(double T, std::vector<double> &Rate);
   double calcNarrow(double T, std::vector<double> &Rate);
-  
+
+  double singleNarrow(double wg, double E, double T);
   
   // print a summary of the resonance
   void print();
@@ -61,9 +62,10 @@ class Resonance {
   bool bUseInrate;
 
   // Sampled parameters
-  std::vector<double> E_sample;
-  std::vector<double> wg_sample;
-  std::vector<std::vector<double> > G_sample;
+  std::vector<double> E_sample;               // Energies
+  std::vector<double> wg_sample;              // Strengths
+  std::vector<std::vector<double> > G_sample; // Partial widths
+  std::vector<std::vector<double> > erFrac;   // Energy shift effect on widths
   
   // Correlations
   int CorresRes;

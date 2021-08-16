@@ -69,6 +69,8 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
   double mue = M0*M1/(M0+M1);
   double R = Reac.R0*(pow(M0,(1./3.))+pow(M1,(1./3.)));
 
+  double meanPen,meanPex;
+
   // First get the energy samples
   double corr = smallestdE/dE_cm;     // The correlation factor for this resonance energy
   E_sample.resize(NSamples);
@@ -129,13 +131,16 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
   } else {
 
     //------------------------------
-    // Now the partial widths
+    // Now the partial widths and
+    // multiplicitive scale applied due to energy shifts
     for(int channel=0; channel<3; channel++){
       // Skip everything if G[channel]=0
        
       // G_sample.resize(NSamples);
       std::vector<double> G_temp;
+      std::vector<double> erFrac_temp;
       G_temp.resize(NSamples);
+      erFrac_temp.resize(NSamples);
 
       // Skip channel 2 (third channel) if it's zero, otherwise make
       // sure the partial width is defined for G1 and G2
@@ -144,7 +149,8 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
       } else if(channel < 2 && isZero(G[channel]) ){
 	std::cout << "ERROR: You MUST specify a partial width for resonance: " <<
 	  index << " at " << E_cm << " keV\n";
-	std::cout << "       G" << channel+1 << " = " << G[channel] << " +/- " << dG[channel] << "\n";
+	std::cout << "       G" << channel+1 << " = " << G[channel]
+		  << " +/- " << dG[channel] << "\n";
 	std::exit(EXIT_FAILURE);
       }  
 
@@ -155,7 +161,8 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
 	if(isZero(dG[channel])){
 	  std::cout << "ERROR: You MUST specify partial width uncertainties for resonance: " <<
 	    index << " at " << E_cm << " keV\n";
-	  std::cout << "       G" << channel+1 << " = " << G[channel] << " +/- " << dG[channel] << "\n";
+	  std::cout << "       G" << channel+1 << " = " << G[channel]
+		    << " +/- " << dG[channel] << "\n";
 	  std::exit(EXIT_FAILURE);
 	}
 
@@ -249,7 +256,8 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
 	    do{
 	      G_temp[s] = A*PTi*gsl_ran_chisq(r,1.0);
 	      
-	      ptfile << s << "  " << index << "  " << P << "  " << PTi << "  " << G_temp[s] << endl;
+	      ptfile << s << "  " << index << "  " << P << "  "
+		     << PTi << "  " << G_temp[s] << endl;
 	    } while(G_temp[s] > G[channel]);
 	  } // for(int s=0; s<NSamples; s++)
 	} // if(Gamma_gamma) else { 
@@ -258,6 +266,62 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
       // By this point, we should have a bunch of samples for this
       // channel. Put them in the G_sample vector for saving
       G_sample.push_back(G_temp);
+
+      //--------------------------------------------------
+      // Now do energy shift effect vector (keep separate for debugging)
+
+      // Is this the Gamma channel?
+      if(channel == Reac.getGamma_index()){
+	if(channel==1){
+	  for(int s=0; s<NSamples; s++){
+	    erFrac_temp[s] = pow(((E_sample[s] + Reac.Q - Exf)/
+				 (E_cm + Reac.Q - Exf)),
+				(2.*L[channel]+1.));
+	  }
+	} else if(channel==2){
+	  for(int s=0; s<NSamples; s++){
+	    erFrac_temp[s] = pow(((E_sample[s] + Reac.Q)/
+				 (E_cm + Reac.Q)),
+				(2.*L[channel]+1.));
+	  }
+	}
+	// if it's not the gamma channel
+      } else {
+
+	if(channel==0){
+	  meanPen = PenFactor(E_cm,L[channel],M0,M1,Z0,Z1,R);
+	  for(int s=0; s<NSamples; s++){
+	    if(E_sample[s] > 0.0 && E_cm > 0.0){
+	      erFrac_temp[s] = PenFactor(E_sample[s],L[channel],
+					 M0,M1,Z0,Z1,R)/meanPen;
+	    
+	    } else {
+	      erFrac_temp[s] = 1.0;
+	    }
+	  }
+	} else if(channel==1){
+	  meanPex = PenFactor(E_cm+Reac.Q-Reac.Qexit-Exf,L[channel],
+			      M0+M1-M2,M2,Z0+Z1-Z2,Z2,R);
+	  for(int s=0; s<NSamples; s++){
+	    erFrac_temp[s] = PenFactor(E_sample[s]+Reac.Q-Reac.Qexit-
+				       Exf,L[channel],M0+M1-M2,
+				       M2,Z0+Z1-Z2,Z2,R)/meanPex;
+	  }
+	} else if(channel==2){
+	  meanPex = PenFactor(E_cm+Reac.Q-Reac.Qexit,L[channel],
+			      M0+M1-M2,M2,Z0+Z1-Z2,Z2,R);
+	  for(int s=0; s<NSamples; s++){
+	    erFrac_temp[s] = PenFactor(E_sample[s]+Reac.Q-Reac.Qexit,
+				       L[channel],M0+M1-M2,
+				       M2,Z0+Z1-Z2,Z2,R)/meanPex;
+	  }
+	}
+
+	
+	
+      }
+      erFrac.push_back(erFrac_temp);
+      
     } // end for(int channel=0; channel<3; channel++)
   } // end if(wg > 0) else
   
@@ -315,11 +379,58 @@ double Resonance::calcBroad(double T, std::vector<double> &Rate){
 // Function to numerically integrate broad resonances
 double Resonance::calcNarrow(double T, std::vector<double> &Rate){
 
+  double classicalRate=0.0;
+  
+  // If wg is already defined, it's easy
+  if(wg > 0){
+    classicalRate = singleNarrow(wg, E_cm, T);
+    for(int s=0; s<NSamples; s++){
+      // If the sampled energy of a resonance is 0, just set rate to zero
+      if(E_sample[s]>0){
+	Rate[s] = singleNarrow(wg_sample[s], E_sample[s], T);
+      } else {
+	Rate[s] = 0.0;
+      }
+    }
+    // If wg isn't defined, do the same thing with the partial widths
+    // (remembering to propagate any energy uncertainty)
+  } else {
+    // Calculate the sum samples from Gammas
+    double omega = (2.*Jr+1.)/((2.*J1+1.0)*(2.*J0+1.0));
+    double g = G[0]*G[1]/(G[0]+G[1]+G[2]);
+    classicalRate = singleNarrow(omega*g, E_cm, T);
+    for(int s=0;s<NSamples;s++){
+      // Here, I need to make a fudge to integrate a sample if
+      // its energy is negative.
+      if(E_sample[s] < 0.0){
+	/*
+	Rate[s] = SingleIntegral(E_sample[j][k],G_sample[0][j][k],
+				 G_sample[1][j][k],
+				 G_sample[2][j][k],
+				 erFrac[0][j][k],erFrac[1][j][k],
+				 erFrac[2][j][k],j,i);
+	*/
+      }else{
+	Rate[s] = omega*
+	  ((G_sample[0][s]*G_sample[1][s]*
+	    erFrac[0][s]*erFrac[1][s])/
+	   (G_sample[0][s]*erFrac[0][s]+
+	    G_sample[1][s]*erFrac[1][s]+
+	    G_sample[2][s]*erFrac[2][s]))*
+	  exp(-11.605*E_sample[s]/T);
+      }
+    } // Loop over samples
+  } // If wg is/not known
 
-  return 0.0;
+  return classicalRate;
 }
 
-
+//----------------------------------------------------------------------
+// Simple function to calculate the rate for a single, narrow,
+// isolated resonance
+double Resonance::singleNarrow(double wg, double E, double T){
+  return wg*exp(-11.605*E/T);
+}
 
 void Resonance::print(){
 
