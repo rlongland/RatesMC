@@ -120,11 +120,14 @@ void Reaction::writeReaction(){
 
   logfile << "--------------------------------------------------" << "\n";
   logfile << " Resonances:\n";
+
   // Loop through all regular resonances
   std::vector<Resonance>::iterator res;
   for(res = Resonances.begin(); res < Resonances.end(); res++){
+    //    std::cout << "Res: " << res->getIndex() << "\n";
     res->write();
   }
+  //std::cout << "Done!\n";
 
 }
 
@@ -148,14 +151,14 @@ double Reaction::calcResonant(double Temp){
       
       // If it's broad
     } else {
-      //      std::cout << "Resonance " << R.getIndex() << " at "
+      //std::cout << "Resonance " << R.getIndex() << " at "
       //		<< R.getE_cm() << " keV is being numerically integrated\n";
       individialRate.push_back(R.calcBroad(Temp, Rate));
       classicalRate += individialRate.back();
     }
   }
 
-  std::cout << "Classical Rate = " << classicalRate << "\n";
+  //  std::cout << "Classical Rate = " << classicalRate << "\n";
 
   return classicalRate;
 }
@@ -270,7 +273,9 @@ void Reaction::prepareSamples(){
   */
   // For each resonance, go through and calculate all random samples
   for(Resonance &Res : Resonances){
+    //std::cout << Res.getIndex() << "\n";
     Res.makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
+    //std::cout << "done\n";
   }
 
   

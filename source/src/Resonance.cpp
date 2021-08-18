@@ -17,6 +17,7 @@
 #include <gsl/gsl_sf_exp.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_log.h>
+#include <gsl/gsl_odeiv.h>
 
 #include "Resonance.h"
 #include "Utilities.h"
@@ -66,8 +67,8 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
   double mu, sigma;
   double P;
 
-  double mue = M0*M1/(M0+M1);
-  double R = Reac.R0*(pow(M0,(1./3.))+pow(M1,(1./3.)));
+  mue = M0*M1/(M0+M1);
+  R = Reac.R0*(pow(M0,(1./3.))+pow(M1,(1./3.)));
 
   double meanPen,meanPex;
 
@@ -92,7 +93,8 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
   // ------------------------------
   // Now the resonance strength if it's known
   if(wg > 0.0){
-
+    NChannels=0;
+    
     // check that the uncertainty is reasonable
     if(isZero(dwg)){
       std::cout << "ERROR: You MUST specify a resonance strength uncertainty for resonance: " <<
@@ -133,6 +135,7 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
     //------------------------------
     // Now the partial widths and
     // multiplicitive scale applied due to energy shifts
+    NChannels=3;
     for(int channel=0; channel<3; channel++){
       // Skip everything if G[channel]=0
        
@@ -147,6 +150,7 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
       if(channel == 2 && isZero(G[channel])){
 	G_sample.push_back(G_temp);
 	erFrac.push_back(erFrac_temp);
+	NChannels = 2;
 	continue;
       } else if(channel < 2 && isZero(G[channel]) ){
 	std::cout << "ERROR: You MUST specify a partial width for resonance: " <<
@@ -154,7 +158,8 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
 	std::cout << "       G" << channel+1 << " = " << G[channel]
 		  << " +/- " << dG[channel] << "\n";
 	std::exit(EXIT_FAILURE);
-      }  
+      }
+      //std::cout << "NChannels = " << NChannels << "\n";
 
       // First if this width is a normal, known width
       if(!(isUpperLimit && isZero(dG[channel]))){
@@ -264,7 +269,7 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
 	  } // for(int s=0; s<NSamples; s++)
 	} // if(Gamma_gamma) else { 
       } // End else if it's an upper limit
-    
+        
       // By this point, we should have a bunch of samples for this
       // channel. Put them in the G_sample vector for saving
       G_sample.push_back(G_temp);
@@ -326,8 +331,8 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
       
     } // end for(int channel=0; channel<3; channel++)
   } // end if(wg > 0) else
-  
-    /*
+
+  /*
       if(index==0 && isUpperLimit==false){
       for(int s=0; s<NSamples; s++)
       testfile << G_sample[0][s] << "  " << G_sample[1][s] << "  " << G_sample[2][s] << "\n";
@@ -355,11 +360,11 @@ void Resonance::writeSamples(std::ofstream& samplefile, int s){
       //	       <<  0 << " ";
   }else{
     buffer << std::setw(10) << std::setprecision(5) << 0 << " ";
-    for(int channel=0; channel<G_sample.size(); channel++){
+    for(int channel=0; channel<NChannels; channel++){
       buffer << std::setw(10) << std::setprecision(5) << G_sample[channel][s] << " ";
       //buffer << G_sample[channel][s] << " ";
     }
-    for(int channel=G_sample.size(); channel<3; channel++){
+    for(int channel=NChannels; channel<3; channel++){
       buffer << std::setw(10) << std::setprecision(5) << 0 << " ";
       //buffer <<  0 << " ";
     }
@@ -375,8 +380,27 @@ void Resonance::writeSamples(std::ofstream& samplefile, int s){
 // Function to numerically integrate broad resonances
 double Resonance::calcBroad(double T, std::vector<double> &Rate){
 
+  double classicalRate=0.0;
 
-  return 0.0;
+  // Calculate the rate samples
+  for(int s=0; s<NSamples; s++){
+    
+    if(s % 10 == 0){
+      // \r goes back to the beginning of the line.
+      std::cout  << "\r" << 100*s/NSamples << "% Complete for Resonance " <<
+	index+1 << std::flush;
+    }
+
+    Rate[s] = NumericalRate(T,
+			    E_sample[s], G_sample[0][s], G_sample[1][s], G_sample[2][s],
+			    erFrac[0][s], erFrac[1][s], erFrac[2][s]);
+  }
+  // And the central value, which is the classical rate
+  classicalRate = NumericalRate(T,
+				E_cm, G[0], G[1], G[2],
+				1.0,1.0,1.0);
+  
+  return classicalRate;
 }
 // Function to numerically integrate broad resonances
 double Resonance::calcNarrow(double T, std::vector<double> &Rate){
@@ -442,6 +466,82 @@ double Resonance::singleNarrow(double wg, double E, double T){
   return wg*exp(-11.605*E/T);
 }
 
+//----------------------------------------------------------------------
+double Resonance::NumericalRate(double T,
+				double E, double G0, double G1, double G2,
+				double erFrac0, double erFrac1, double erFrac2){
+
+  double ARate=0.0;
+  
+  double Pr(0.0), Pr_exit(0.0);
+  // The gsl ODE step algorithm (rkck same as old code method)
+  const gsl_odeiv_step_type * stepType = gsl_odeiv_step_rkck;
+
+  // Allocate the stepper (Type, Dims)
+  gsl_odeiv_step * s = gsl_odeiv_step_alloc (stepType, 1);
+  // Adaptive step size control (abs.error, rel.error, scale y, scale dydx)
+  gsl_odeiv_control * c = gsl_odeiv_control_standard_new(1e-200, 1e-6,1.0,1.0);
+  // The evolver to step according to the step size reliably
+  gsl_odeiv_evolve * e = gsl_odeiv_evolve_alloc (1);
+
+  double alpha[8];
+  // if reaction is endothermic, need to make minimum energy
+  // enough to ensure no integration over negative energies
+  double E_min = EMin;
+
+  // if particle is in spectator channel, integration should
+  //  not be truncated
+  if(Reac.Qexit > Reac.Q && Reac.getGamma_index() == 2)
+    E_min += Reac.Qexit + Exf - Reac.Q;
+
+  double E_max = 10.0;
+  double hmin = 1.0e-12;   // The minimum step size
+
+  //  ofstream evsr;
+  //  ofstream testhist;
+  //  testhist.open("integrands.dat");
+
+  // IF we input E>0, but the sample is <0, we need to treat it as a
+  // subthreshold resonance. To do this, we need to convert
+  // G into C2S*Theta_sp
+  if(E_cm > 0.0 && E < 0.0){
+    ErrorFlag = true;
+    SampledNegCount++;
+    G0 = mue*gsl_pow_2(R)*G0/
+      (2.0*41.80161396*PenFactor(E_cm, L[0],M0,M1,Z0,Z1,R));
+  } else if(E_cm < 0.0 && E > 0.0){
+    // or convert to real resonance if E>0.0
+    ErrorFlag = true;
+    SubSampledPosCount++;
+    G0 = G0*2.0*41.80161396*PenFactor(E, L[0],M0,M1,Z0,Z1,R)/
+      (mue*gsl_pow_2(R));
+  }
+
+  //  The penetration factor at the resonance energy (the "true" PF)
+  if(E > 0.0){
+    Pr = PenFactor(E, L[0],M0,M1,Z0,Z1,R);
+  } else {
+    Pr = 0.0;
+  }
+
+  // Calculate the exit particle energy, depends on if it is spectator
+  //if(NChannels[j]==3){
+  if(Reac.getGamma_index() == 2){
+    // if exit particle is observed decay, take final excitation into account
+    Pr_exit = PenFactor(E+Reac.Q-Reac.Qexit-Exf,L[1],M0+M1-M2,M2,
+			Z0+Z1-Z2,Z2,R);
+    //cout << "Exit energy = " << E+Q-Qexit-Exf[j] << endl;
+  }else if(Reac.getGamma_index() == 1 && NChannels==3){
+      // ignore spectator final excitation if it is spectator
+    Pr_exit = PenFactor(E+Reac.Q-Reac.Qexit,L[2],M0+M1-M2,M2,
+			Z0+Z1-Z2,Z2,R);
+    //cout << "Exit energy = " << E+Q-Qexit << endl;
+  }
+
+
+  return 0.0;
+}
+
 void Resonance::print(){
 
   //  cout << "--------------------------------------------------" << "\n";
@@ -482,7 +582,7 @@ void Resonance::print(){
   }
 
   // Print Gamma samples
-  for(int i=0; i<G_sample.size(); i++){
+  for(int i=0; i<NChannels; i++){
     if(G_sample[i].size()>0){
       cout << "G" << i << ": ";
       for(int s=0; s<NPrintSamples; s++){
@@ -535,7 +635,7 @@ void Resonance::write(){
   }
 
   // Print Gamma samples
-  for(int i=0; i<G_sample.size(); i++){
+  for(int i=0; i<NChannels; i++){
     if(G_sample[i].size()>0){
       logfile << "G" << i << ": ";
       for(int s=0; s<NPrintSamples; s++){

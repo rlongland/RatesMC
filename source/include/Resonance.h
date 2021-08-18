@@ -37,7 +37,10 @@ class Resonance {
   double calcNarrow(double T, std::vector<double> &Rate);
 
   double singleNarrow(double wg, double E, double T);
-  
+  double NumericalRate(double T,
+		       double E, double G0, double G1, double G2,
+		       double erFrac0, double erFrac1, double erFrac2);
+
   // print a summary of the resonance
   void print();
   void write();
@@ -57,6 +60,9 @@ class Resonance {
   double E_cm, dE_cm, wg, dwg, Jr, G[3], dG[3], Exf, PT[3], dPT[3];
   double M0,M1,M2,J0,J1,J2;
   int Z0,Z1,Z2;
+  int NChannels;
+  
+  double R, mue;
   
   //  bool bwg_known;
   bool bUseInrate;

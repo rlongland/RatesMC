@@ -13,6 +13,7 @@
 #include "Utilities.h"
 
 double EPS=1.0e-5;
+double EMin;
 gsl_rng * r;
 
 std::ofstream logfile;
@@ -20,9 +21,12 @@ std::ofstream testfile;
 std::ofstream ptfile;
 int NSamples;
 int NTemps;
-int PenZeroCount;
 bool ErrorFlag;
 std::vector<double> Temp;
+
+// counters
+int PenZeroCount=0, IntegratedCount=0, SubSampledPosCount=0, SampledNegCount=0,
+  NANCount=0, BelowIntLimit=0, IntfNANCount=0;
 
 // Read an integer from a single line
 int readInt(std::ifstream &infile){
@@ -274,7 +278,8 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   skipLines(infile, 1);
 
   // Computation control block
-  int EMin = readDouble(infile);
+  EMin = readDouble(infile);
+  
   NSamples = readInt(infile);
   NTemps = readInt(infile);
   int itmp;

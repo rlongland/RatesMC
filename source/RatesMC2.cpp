@@ -60,6 +60,7 @@ int main(int argc, char** argv){
   //  - Store every input parameter in a matrix (column = parameter, row = sample)
   //  - 
   Reac -> prepareSamples();
+
   // Write the reaction information to log file for diagnostics
   Reac -> writeReaction();
   //Reac -> printReaction();
@@ -97,7 +98,8 @@ int main(int argc, char** argv){
 	//      for(int j=0; j<2; j++)
 	//std::cout << " D[" << 0 << "] = " << ADRate[0];
 	std::cout << "\n" ;
-      
+
+	std::cout << "Classical Resonant Rate = " << ResRate << "\n";
     }
   }
 
