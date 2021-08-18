@@ -139,12 +139,14 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
       // G_sample.resize(NSamples);
       std::vector<double> G_temp;
       std::vector<double> erFrac_temp;
-      G_temp.resize(NSamples);
-      erFrac_temp.resize(NSamples);
+      G_temp.resize(NSamples, 0.0);
+      erFrac_temp.resize(NSamples, 1.0);
 
       // Skip channel 2 (third channel) if it's zero, otherwise make
       // sure the partial width is defined for G1 and G2
       if(channel == 2 && isZero(G[channel])){
+	G_sample.push_back(G_temp);
+	erFrac.push_back(erFrac_temp);
 	continue;
       } else if(channel < 2 && isZero(G[channel]) ){
 	std::cout << "ERROR: You MUST specify a partial width for resonance: " <<
@@ -262,7 +264,7 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
 	  } // for(int s=0; s<NSamples; s++)
 	} // if(Gamma_gamma) else { 
       } // End else if it's an upper limit
-
+    
       // By this point, we should have a bunch of samples for this
       // channel. Put them in the G_sample vector for saving
       G_sample.push_back(G_temp);
@@ -398,7 +400,12 @@ double Resonance::calcNarrow(double T, std::vector<double> &Rate){
     // Calculate the sum samples from Gammas
     double omega = (2.*Jr+1.)/((2.*J1+1.0)*(2.*J0+1.0));
     double g = G[0]*G[1]/(G[0]+G[1]+G[2]);
+
+    //    std::cout << G[0] << " " << G[1] << " " << G[2] << "\n";
+    
     classicalRate = singleNarrow(omega*g, E_cm, T);
+    //  std::cout << classicalRate << "\n";
+
     for(int s=0;s<NSamples;s++){
       // Here, I need to make a fudge to integrate a sample if
       // its energy is negative.
@@ -411,6 +418,9 @@ double Resonance::calcNarrow(double T, std::vector<double> &Rate){
 				 erFrac[2][j][k],j,i);
 	*/
       }else{
+//	std::cout << s << "\n";
+//	std::cout << G_sample.size() << "\n";
+//	std::cout << G_sample[0][s] << " " << G_sample[1][s] << " " << G_sample[2][s] << "\n";
 	Rate[s] = omega*
 	  ((G_sample[0][s]*G_sample[1][s]*
 	    erFrac[0][s]*erFrac[1][s])/

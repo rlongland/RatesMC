@@ -75,7 +75,7 @@ int main(int argc, char** argv){
   defineTemperatures();
 
   // Now do the big loop in parallel!!
-  //omp_set_num_threads(4);
+  omp_set_num_threads(1);
 #pragma omp parallel for ordered
   for(double T : Temp){
     int ID = omp_get_thread_num();

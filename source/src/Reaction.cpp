@@ -133,6 +133,7 @@ void Reaction::writeReaction(){
 double Reaction::calcResonant(double Temp){
 
   // Vector of rate storage
+  std::vector<double> individialRate;
   double classicalRate=0.0;
   std::vector<double> Rate;
   Rate.resize(NSamples);
@@ -140,20 +141,21 @@ double Reaction::calcResonant(double Temp){
   for(Resonance R : Resonances){
     // if the resonance is narrow
     if(!R.getisBroad()){
-      std::cout << "Resonance " << R.getIndex() << " at "
-		<< R.getE_cm() << " keV is narrow\n";
-
-      classicalRate = R.calcBroad(Temp, Rate);
+      //      std::cout << "Resonance " << R.getIndex() << " at "
+      //		<< R.getE_cm() << " keV is narrow\n";
+      individialRate.push_back(R.calcNarrow(Temp, Rate));
+      classicalRate += individialRate.back();
       
       // If it's broad
     } else {
-      std::cout << "Resonance " << R.getIndex() << " at "
-		<< R.getE_cm() << " keV is being numerically integrated\n";
-
-      classicalRate = R.calcNarrow(Temp, Rate);
+      //      std::cout << "Resonance " << R.getIndex() << " at "
+      //		<< R.getE_cm() << " keV is being numerically integrated\n";
+      individialRate.push_back(R.calcBroad(Temp, Rate));
+      classicalRate += individialRate.back();
     }
-    std::cout << "Classical Rate = " << classicalRate << "\n";
   }
+
+  std::cout << "Classical Rate = " << classicalRate << "\n";
 
   return classicalRate;
 }
