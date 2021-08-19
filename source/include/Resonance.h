@@ -36,10 +36,15 @@ class Resonance {
   double calcBroad(double T, std::vector<double> &Rate);
   double calcNarrow(double T, std::vector<double> &Rate);
 
+  // Rate for a single narrow resonance
   double singleNarrow(double wg, double E, double T);
+  // Function to integrate a broad resonance
   double NumericalRate(double T,
 		       double E, double G0, double G1, double G2,
 		       double erFrac0, double erFrac1, double erFrac2);
+  // The resonance integrand to be integrated in the function above
+  int Integrand(double x, const double y[], double dydx[],
+		void * params);
 
   // print a summary of the resonance
   void print();
@@ -80,6 +85,20 @@ class Resonance {
 };
 
 
+// Junk to get GSL to play with classes
+template< typename F >
+  class gsl_function_pp : public gsl_function {
+  public:
+  gsl_function_pp(const F& func) : _func(func) {
+    function = &gsl_function_pp::invoke;
+    params=this;
+  }
+  private:
+  const F& _func;
+  static double invoke(double x, void *params) {
+    return static_cast<gsl_function_pp*>(params)->_func(x);
+  }
+};
 
 
 #endif

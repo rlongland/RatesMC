@@ -484,7 +484,6 @@ double Resonance::NumericalRate(double T,
   // The evolver to step according to the step size reliably
   gsl_odeiv_evolve * e = gsl_odeiv_evolve_alloc (1);
 
-  double alpha[8];
   // if reaction is endothermic, need to make minimum energy
   // enough to ensure no integration over negative energies
   double E_min = EMin;
@@ -532,15 +531,178 @@ double Resonance::NumericalRate(double T,
 			Z0+Z1-Z2,Z2,R);
     //cout << "Exit energy = " << E+Q-Qexit-Exf[j] << endl;
   }else if(Reac.getGamma_index() == 1 && NChannels==3){
-      // ignore spectator final excitation if it is spectator
+    // ignore spectator final excitation if it is spectator
     Pr_exit = PenFactor(E+Reac.Q-Reac.Qexit,L[2],M0+M1-M2,M2,
 			Z0+Z1-Z2,Z2,R);
     //cout << "Exit energy = " << E+Q-Qexit << endl;
   }
 
+  // The array that needs to be passed to the integration function
+  double alpha[8];
+  alpha[0] = 0;
+  alpha[1] = Pr;
+  alpha[2] = Pr_exit;
+  alpha[3] = E;
+  alpha[4] = T;
+  alpha[5] = G0;
+  alpha[6] = G1;
+  alpha[7] = G2;
 
-  return 0.0;
+  //    cout << j << "\t" << Pr << "\t" << Pr_exit << "\t" << E << "\t" << Temp << "\t"
+  //	 << G0 << "\t" << G1 << "\t" << G2 << endl;
+
+  Resonance* ptr2 = this;
+  auto ptr = [=](double x)->double{return ptr2->Integrand(x);};
+  gsl_function_pp<decltype(ptr)> Fp(ptr);     
+  gsl_function *F = static_cast<gsl_function*>(&Fp);
+ 
+  // Define the system for integration
+  // Function, Jacobian, Number of Dimensions, Parameters
+  gsl_odeiv_system sys = {Integrand, NULL, 1, &alpha};
+
+  // Define integration limits
+  double x = E_min, x1 = E_max;
+  // stepsize
+  double h = 1e-10;
+  // Value of the integrand. Starts at zero
+  double y[2] = {0.0,0.0};
+  // flag to take small steps
+  bool smallstep=false;
+
+  // now do the integration
+  /* initialise dydt_in from system parameters */
+  while(x < x1){
+
+    // If the step will bring it close to the Er, take small steps
+    if(x < E && (x + h) > (E-(3.0*(G0+G1+G2))))smallstep=true;
+
+    // Now make step small if it isn't already, can be fairly large because
+    // it starts on the resonance wing
+    if(smallstep && h>(G0+G1+G2)){
+      h = (G0+G1+G2);
+    }
+
+    // Make the step...
+    // Note, the step size is determined by the error in the
+    //  cross section, so spectroscopic factors may look jumpy
+    int status = gsl_odeiv_evolve_apply(e, c, s,
+					&sys,
+					&x, x1,
+					&h, y);
+
+    // quit if there was an error
+    if(status != GSL_SUCCESS)break;
+
+    // don't let h get too small
+    if(h<hmin)h=hmin;
+
+    // reset small step flag
+    smallstep=false;
+    //     if(E < 0.05)testhist << x << "\t" << y[0] << endl;
+    //cout << h << "\t" << y[0] << endl;
+    //testhist << x << "\t" << y[0] << endl;
+
+  }
+
+  ARate = y[0];
+  ARate = ARate/(1.5399e11/pow(mue*T,1.5));  // eqn 3.411
+  
+  // If G0 or G1 were zero, sum is NAN, catch this!
+  if(isnan(ARate)){
+    ARate = 0.0;
+    ErrorFlag = 1;
+    NANCount++;
+  }
+
+  // Print evsr file if NHists = -1
+  /*
+    if(NTemps == 1){
+    evsr << E << "\t" << ARate << endl;
+    }
+  */
+    
+  return ARate;
 }
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Function to be integrated
+int Resonance::Integrand(double x, const double y[], double dydx[],
+	      void * params) {
+
+  double* par = (double*)params;
+  int j = (int)par[0];
+  double Pr = (double)par[1];
+  double Pr_exit = (double)par[2];
+  double Er = (double)par[3];
+  double Temp = (double)par[4];
+  double G0 = (double)par[5];
+  double G1 = (double)par[6];
+  double G2 = (double)par[7];
+
+  double Scale[3];
+
+  //double mue = M0*M1/(M0+M1);
+  //double R = R0*(pow(M0,1./3.) + pow(M1,1./3.));
+  double PEK = 6.56618216E-1/mue;   // a correction factor
+  double P = PenFactor(x,L[0],M0,M1,Z0,Z1,R);
+  double P_exit,E_exit=0.;
+  double omega = (2.*Jr+1.)/((2.*J0+1.)*(2.*J1+1.));
+
+  if(Er > 0.0){
+    Scale[0] = P/Pr;
+  } else {
+    Scale[0] = 1.0;
+    G0 = 2.0*P*G0*41.80161396/(mue*gsl_pow_2(R));
+  }
+  for(int i=1;i<3;i++){
+    if(G[i] > 0.0){
+      if(i == Reac.getGamma_index()){
+	if(i==1)Scale[i] = pow((Reac.Q+x-Exf)/(Reac.Q+Er-Exf),(2.*L[i]+1.0));
+	if(i==2)Scale[i] = pow((Reac.Q+x)/(Reac.Q+Er),(2.*L[i]+1.0));
+      } else {
+	if(i==1)E_exit = Reac.Q+x-Reac.Qexit-Exf;
+	if(i==2)E_exit = Reac.Q+x-Reac.Qexit;
+	if(E_exit > 0.0){
+	  P_exit = PenFactor(E_exit,L[i],M0+M1-M2,M2,Z0+Z1-Z2,Z2);
+	  Scale[i] = P_exit/Pr_exit;
+	} else {
+	  Scale[i] = 0.0;
+	}
+      }
+    } else {
+      Scale[i] = 1;
+    }
+  }
+
+  double S1 = PEK*omega*Scale[0]*G0*Scale[1]*G1;
+  double S2 = gsl_pow_2(Er-x) + 0.25*gsl_pow_2(G0*Scale[0] +
+					       G1*Scale[1] +
+					       G2*Scale[2]);
+  double S3 = exp(-11.605*x/Temp);
+
+  dydx[0] = S1*S3/S2*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
+
+  //cout << x << "\t" << dydx[0] << endl;
+
+  // astrohpysical s-factor
+  // cout << x << "\t" << x*(S1/S2)/exp(-0.989534*Z0*Z1*sqrt(mue/x)) << endl;
+  // Numerator of x section
+  //cout << x << "\t" << Scale[0]*G0*Scale[1]*G1 << endl;
+  // Denominator of x-section
+  //cout << x << "\t" << S2 << "\t" << gsl_pow_2(Er-x) << endl;
+  // G0+G1 and G2 and G0+G1+G2
+  //cout << x << "\t" << G0*Scale[0]+G1*Scale[1] << "\t" << G2*Scale[2] << "\t" <<
+  //  G0*Scale[0]+G1*Scale[1]+G2*Scale[2] << endl;
+  // all
+  //cout << x << "\t" << x*(S1/S2)/exp(-0.989534*Z0*Z1*sqrt(mue/x)) << "\t" << S2 <<
+  //  "\t" << G0*Scale[0]+G1*Scale[1] << "\t" << G2*Scale[2] << "\t" <<
+  //  G0*Scale[0]+G1*Scale[1]+G2*Scale[2] << endl;
+  // penetration factor for exit paritlce
+  //  cout << x << "\t" << P_exit << endl;
+
+  return GSL_SUCCESS;
+}
+  
 
 void Resonance::print(){
 
