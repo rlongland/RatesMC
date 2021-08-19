@@ -43,9 +43,10 @@ class Resonance {
 		       double E, double G0, double G1, double G2,
 		       double erFrac0, double erFrac1, double erFrac2);
   // The resonance integrand to be integrated in the function above
-  int Integrand(double x, const double y[], double dydx[],
-		void * params);
-
+  //extern "C" {
+  double Integrand(double x, void * params);
+  //}
+  
   // print a summary of the resonance
   void print();
   void write();
@@ -86,19 +87,20 @@ class Resonance {
 
 
 // Junk to get GSL to play with classes
-template< typename F >
+/*
+  template< typename F >
   class gsl_function_pp : public gsl_function {
   public:
   gsl_function_pp(const F& func) : _func(func) {
-    function = &gsl_function_pp::invoke;
-    params=this;
+  function = &gsl_function_pp::invoke;
+  params=this;
   }
   private:
   const F& _func;
   static double invoke(double x, void *params) {
-    return static_cast<gsl_function_pp*>(params)->_func(x);
+  return static_cast<gsl_function_pp*>(params)->_func(x);
   }
 };
-
+*/
 
 #endif

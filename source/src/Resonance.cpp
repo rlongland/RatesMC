@@ -17,13 +17,21 @@
 #include <gsl/gsl_sf_exp.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_log.h>
-#include <gsl/gsl_odeiv.h>
+#include <gsl/gsl_integration.h>
 
 #include "Resonance.h"
 #include "Utilities.h"
 
 using std::cout;
 using std::endl;
+
+// Ugly-ass hack
+Resonance * ResonancePtr;
+double ResonanceIntegrandWrapper(double x, void *params)
+{
+  return ResonancePtr->Integrand(x, params);
+}
+// end ugly-ass hack
 
 Resonance::Resonance(Reaction & R,
 		     int index, double E_cm, double dE_cm, double wg, double dwg, double Jr,
@@ -474,15 +482,6 @@ double Resonance::NumericalRate(double T,
   double ARate=0.0;
   
   double Pr(0.0), Pr_exit(0.0);
-  // The gsl ODE step algorithm (rkck same as old code method)
-  const gsl_odeiv_step_type * stepType = gsl_odeiv_step_rkck;
-
-  // Allocate the stepper (Type, Dims)
-  gsl_odeiv_step * s = gsl_odeiv_step_alloc (stepType, 1);
-  // Adaptive step size control (abs.error, rel.error, scale y, scale dydx)
-  gsl_odeiv_control * c = gsl_odeiv_control_standard_new(1e-200, 1e-6,1.0,1.0);
-  // The evolver to step according to the step size reliably
-  gsl_odeiv_evolve * e = gsl_odeiv_evolve_alloc (1);
 
   // if reaction is endothermic, need to make minimum energy
   // enough to ensure no integration over negative energies
@@ -494,7 +493,6 @@ double Resonance::NumericalRate(double T,
     E_min += Reac.Qexit + Exf - Reac.Q;
 
   double E_max = 10.0;
-  double hmin = 1.0e-12;   // The minimum step size
 
   //  ofstream evsr;
   //  ofstream testhist;
@@ -537,9 +535,21 @@ double Resonance::NumericalRate(double T,
     //cout << "Exit energy = " << E+Q-Qexit << endl;
   }
 
+
+  //    cout << j << "\t" << Pr << "\t" << Pr_exit << "\t" << E << "\t" << Temp << "\t"
+  //	 << G0 << "\t" << G1 << "\t" << G2 << endl;
+
+  //--------------------------------------------------
+  // GSL Integration functions
+  double result, error;
+  
+  // Define integration limits
+  double x = E_min, x1 = E_max;
+  double pole = E;
+
   // The array that needs to be passed to the integration function
   double alpha[8];
-  alpha[0] = 0;
+  alpha[0] = 0.0;
   alpha[1] = Pr;
   alpha[2] = Pr_exit;
   alpha[3] = E;
@@ -547,64 +557,14 @@ double Resonance::NumericalRate(double T,
   alpha[5] = G0;
   alpha[6] = G1;
   alpha[7] = G2;
-
-  //    cout << j << "\t" << Pr << "\t" << Pr_exit << "\t" << E << "\t" << Temp << "\t"
-  //	 << G0 << "\t" << G1 << "\t" << G2 << endl;
-
-  Resonance* ptr2 = this;
-  auto ptr = [=](double x)->double{return ptr2->Integrand(x);};
-  gsl_function_pp<decltype(ptr)> Fp(ptr);     
-  gsl_function *F = static_cast<gsl_function*>(&Fp);
- 
-  // Define the system for integration
-  // Function, Jacobian, Number of Dimensions, Parameters
-  gsl_odeiv_system sys = {Integrand, NULL, 1, &alpha};
-
-  // Define integration limits
-  double x = E_min, x1 = E_max;
-  // stepsize
-  double h = 1e-10;
-  // Value of the integrand. Starts at zero
-  double y[2] = {0.0,0.0};
-  // flag to take small steps
-  bool smallstep=false;
-
-  // now do the integration
-  /* initialise dydt_in from system parameters */
-  while(x < x1){
-
-    // If the step will bring it close to the Er, take small steps
-    if(x < E && (x + h) > (E-(3.0*(G0+G1+G2))))smallstep=true;
-
-    // Now make step small if it isn't already, can be fairly large because
-    // it starts on the resonance wing
-    if(smallstep && h>(G0+G1+G2)){
-      h = (G0+G1+G2);
-    }
-
-    // Make the step...
-    // Note, the step size is determined by the error in the
-    //  cross section, so spectroscopic factors may look jumpy
-    int status = gsl_odeiv_evolve_apply(e, c, s,
-					&sys,
-					&x, x1,
-					&h, y);
-
-    // quit if there was an error
-    if(status != GSL_SUCCESS)break;
-
-    // don't let h get too small
-    if(h<hmin)h=hmin;
-
-    // reset small step flag
-    smallstep=false;
-    //     if(E < 0.05)testhist << x << "\t" << y[0] << endl;
-    //cout << h << "\t" << y[0] << endl;
-    //testhist << x << "\t" << y[0] << endl;
-
-  }
-
-  ARate = y[0];
+  
+  gsl_integration_workspace * w = gsl_integration_workspace_alloc(1000);
+  gsl_function F;
+  // Can't use Integrand directly because GSL is shit
+  F.function = &ResonanceIntegrandWrapper;
+  F.params = &alpha;
+  
+  //  ARate = y[0];
   ARate = ARate/(1.5399e11/pow(mue*T,1.5));  // eqn 3.411
   
   // If G0 or G1 were zero, sum is NAN, catch this!
@@ -626,11 +586,12 @@ double Resonance::NumericalRate(double T,
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Function to be integrated
-int Resonance::Integrand(double x, const double y[], double dydx[],
-	      void * params) {
+//extern "C" {
+double Resonance::Integrand(double x,
+			    void * params) {
 
   double* par = (double*)params;
-  int j = (int)par[0];
+  double dummy = (double)par[0];
   double Pr = (double)par[1];
   double Pr_exit = (double)par[2];
   double Er = (double)par[3];
@@ -663,7 +624,7 @@ int Resonance::Integrand(double x, const double y[], double dydx[],
 	if(i==1)E_exit = Reac.Q+x-Reac.Qexit-Exf;
 	if(i==2)E_exit = Reac.Q+x-Reac.Qexit;
 	if(E_exit > 0.0){
-	  P_exit = PenFactor(E_exit,L[i],M0+M1-M2,M2,Z0+Z1-Z2,Z2);
+	  P_exit = PenFactor(E_exit,L[i],M0+M1-M2,M2,Z0+Z1-Z2,Z2,R);
 	  Scale[i] = P_exit/Pr_exit;
 	} else {
 	  Scale[i] = 0.0;
@@ -680,7 +641,8 @@ int Resonance::Integrand(double x, const double y[], double dydx[],
 					       G2*Scale[2]);
   double S3 = exp(-11.605*x/Temp);
 
-  dydx[0] = S1*S3/S2*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
+
+  double integrand = S1*S3/S2*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
 
   //cout << x << "\t" << dydx[0] << endl;
 
@@ -700,9 +662,9 @@ int Resonance::Integrand(double x, const double y[], double dydx[],
   // penetration factor for exit paritlce
   //  cout << x << "\t" << P_exit << endl;
 
-  return GSL_SUCCESS;
+  return integrand;
 }
-  
+  //}
 
 void Resonance::print(){
 
