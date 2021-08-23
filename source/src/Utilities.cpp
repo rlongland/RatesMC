@@ -161,21 +161,24 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
       logfile << "Found end of ";
       if(isUpperLimit)
 	logfile << "upper limit ";
-      logfile << "resonances!\n" << data << std::endl;
+      logfile << "resonances\n" << data << std::endl;
       break;
     }
 
     // Now look for an exclamation point, which indicates a commented-out resonance
+    //logfile << data << "\n";
     found = data.find("!");
     if (found!=std::string::npos){
       if(isUpperLimit)
 	logfile << "Upper limit ";
-      logfile << "Resonance is commented-out! " << data << std::endl;;
+      logfile << "Resonance is commented-out (" << data << ")" << std::endl;;
+      infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
       continue;
     }
     
     // If this looks like a resonance, read a single line
     E_cm = std::stod(data);
+    //    logfile << E_cm << std::endl;;
     if(!isUpperLimit){
       infile >> dE_cm >> wg >> dwg >> Jr 
 	     >> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
@@ -192,6 +195,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
       }
       // New style with DPT
       else if(nEnt == 20){
+	logfile << "Reading resonance\n";
 	infile >> dE_cm >> Jr 
 	       >> G1 >> dG1 >> L1 >> PT1 >> DPT1 >> G2 >> dG2 >> L2 >> PT2 >> DPT2
 	       >> G3 >> dG3 >> L3 >> PT3 >> DPT3
@@ -222,8 +226,6 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 		   Exf, isBroad, isUpperLimit);
     
   }
-
-  
   
 }
 
@@ -296,7 +298,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 
   // Index of the gamma-ray channel
   gindex = readInt(infile);
-  R -> setGammaIndex(gindex);
+  R -> setGammaIndex(gindex-1);
 
   // Ignore a line
   skipLines(infile, 1);
@@ -332,7 +334,9 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   skipLines(infile, 4);
   // Read the upper limit resonances
   readResonanceBlock(infile, *R, true);
-  
+
+  logfile << std::endl;
+
   return 0;
 }
 
@@ -395,6 +399,9 @@ void logNormalize(double mean, double sd, double& mu, double& sigma){
 double PenFactor(double E, double L, double Mass0, double Mass1,
 		 int Charge0, int Charge1, double R){
 
+  //  std::cout << E << " " << L << " " << Mass0 << " " << Mass1 << " " << Charge0
+  //	    << " " << Charge1 << " " << R << "\n";
+  
   // Turn off the GSL error handler, which aborts the program
   // if G or F go out of range.
   gsl_set_error_handler_off();
