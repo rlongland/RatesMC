@@ -1,0 +1,59 @@
+35Ar(p,g)36K
+****************************************************************************************************************
+1               ! Zproj
+18              ! Ztarget
+0               ! Zexitparticle (=0 when only 2 channels open)
+1.0078          ! Aproj         
+34.975          ! Atarget
+0               ! Aexitparticle (=0 when only 2 channels open)
+0.5             ! Jproj
+1.5             ! Jtarget
+0.0             ! Jexitparticle (=0 when only 2 channels open)
+1668.0          ! projectile separation energy (keV)
+0.0             ! exit particle separation energy (=0 when only 2 channels open)
+1.25            ! Radius parameter R0 (fm)
+2               ! Gamma-ray channel number (=2 if ejectile is a g-ray; =3 otherwise)
+****************************************************************************************************************
+1.0             ! Minimum energy for numerical integration (keV)
+5000            ! Number of random samples (>5000 for better statistics)
+0               ! =0 for rate output at all temperatures; =NT for rate output at selected temperatures
+****************************************************************************************************************
+Non-resonant contribution
+S(keVb) S'(b)           S''(b/keV)      fracErr Cutoff Energy (keV)
+1.24e2  -8.66e-2        9.96e-5         0.4     1000.0
+0.0     0.0             0.0             0.0     0.0
+****************************************************************************************************************
+Resonant Contribution
+Note: G1 = entrance channel, G2 = exit channel, G3 = spectator channel !! Ecm, Exf in (keV); wg, Gx in (eV) !!
+Note: if Er<0, theta^2=C2S*theta_sp^2 must be entered instead of entrance channel partial width
+Ecm     DEcm    wg      Dwg     J     G1        DG1        L1    G2      DG2      L2   G3  DG3  L3  Exf   Int
+-0.1    21      0       0       2     0.0372    0.0149     1     2.7e-4  1.35e-4  1    0   0    0   0.0   1
+ 224    21      0       0       2     5.7e-7    2.28e-7    0     1.0e-2  0.5e-2   1    0   0    0   0.0   1
+ 604    31      0       0       3     4.2e-1    1.68e-1    1     4.7e-4  2.35e-4  1    0   0    0   0.0   1
+ 744    31      0       0       2     2.5e0     1.0e0      0     1.1e-2  0.55e-2  1    0   0    0   0.0   1
+****************************************************************************************************************
+Upper Limits of Resonances
+Note: enter partial width upper limit by chosing non-zero value for PT, where PT=<theta^2> for particles and...
+Note: ...PT=<B> for g-rays [enter: "upper_limit 0.0"]; for each resonance: # upper limits < # open channels!  
+Ecm	DEcm	Jr    G1       DG1    L1   PT    DPT   G2     DG2     L2   PT    DPT   G3    DG3   L3  PT   DPT  Exf  Int
+!0.0    0.0     0.0   0.0      0.0    0    0     0.0   0.0    0.0     0    0.0   0.0   0     0.0   0   0.0  0.0  0.0  0  
+****************************************************************************************************************
+Interference between Resonances [numerical integration only]
+Note: + for positive, - for negative interference; +- if interference sign is unknown
+Ecm     DEcm    Jr    G1    DG1   L1   PT    G2    DG2    L2  PT   G3    DG3    L3  PT   Exf  
+!+- 
+0.0     0.0     0.0   0.0   0.0   0    0     0.0   0.0    0   0    0.0   0.0    0   0    0.0  
+0.0     0.0     0.0   0.0   0.0   0    0     0.0   0.0    0   0    0.0   0.0    0   0    0.0  
+****************************************************************************************************************
+Reaction Rate and PDF at NT selected temperatures only
+Note: default values are used for reaction rate range if Min=Max=0.0
+T9      Min     Max
+0.01    0.0     0.0
+0.1     0.0     0.0
+****************************************************************************************************************
+Comments:
+1. Ficticious "Er=-0.1 keV" resonance is actually located at Er=2+-21 keV [using the latest Q-value]. Since this 
+   low energy causes problems in the calculation of the Coulomb wave functions, the state is shifted just below 
+   threshold.
+
+
