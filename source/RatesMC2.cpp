@@ -80,6 +80,11 @@ int main(int argc, char** argv){
 #pragma omp parallel for ordered
   for(double T : Temp){
     int ID = omp_get_thread_num();
+    std::cout << "Proc(" << ID << ") T = " << T; // << "\n";
+    //      for(int j=0; j<2; j++)
+    //std::cout << " D[" << 0 << "] = " << ADRate[0];
+    std::cout << "\n" ;
+    
     double ADRate[2];
 
     // Calculate the resonant rate
@@ -94,10 +99,6 @@ int main(int argc, char** argv){
       }
 
       
-	std::cout << "Proc(" << ID << ") T = " << T; // << "\n";
-	//      for(int j=0; j<2; j++)
-	//std::cout << " D[" << 0 << "] = " << ADRate[0];
-	std::cout << "\n" ;
 
 	std::cout << "Classical Resonant Rate = " << ResRate << "\n";
     }

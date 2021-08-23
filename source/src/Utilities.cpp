@@ -304,7 +304,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   skipLines(infile, 1);
 
   // Computation control block
-  EMin = readDouble(infile);
+  EMin = readDouble(infile)/1000.;
   
   NSamples = readInt(infile);
   NTemps = readInt(infile);

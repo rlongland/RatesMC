@@ -18,6 +18,7 @@
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_log.h>
 #include <gsl/gsl_integration.h>
+#include <gsl/gsl_errno.h>
 
 #include "Resonance.h"
 #include "Utilities.h"
@@ -62,8 +63,10 @@ Resonance::Resonance(Reaction & R,
   this->Z1 = R.Z1;
   this->Z2 = R.Z2;
 
-  this->R = 5;
+  //  this->R = 5;
   //  std::cout << "The Gamma_index is " << Reac.getGamma_index() << "\n";
+
+  //  ResonancePtr=this;
 
   //cout << "made a resonance" << endl;
 }
@@ -77,9 +80,9 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
   double P;
 
   mue = M0*M1/(M0+M1);
-  std::cout << "mue = " << mue << "\n";
+  //std::cout << "mue = " << mue << "\n";
   R = Reac.R0*(pow(M0,(1./3.))+pow(M1,(1./3.)));
-  std::cout << "R = " << R << "\n";
+  //std::cout << "R = " << R << "\n";
 
   double meanPen,meanPex;
 
@@ -404,10 +407,16 @@ double Resonance::calcBroad(double T, std::vector<double> &Rate){
       std::cout  << "\r" << 100*s/NSamples << "% Complete for Resonance " <<
 	index+1 << std::flush;
     }
-    
+
+    /*
+    std::cout << "MC calculated with " << 
+      T << " " << E_sample[s] << " " << G_sample[0][s] << " " << G_sample[1][s] << " "
+	      << G_sample[2][s] << " " << erFrac[0][s] << " " <<  erFrac[1][s] << " " << erFrac[2][s] << "\n";
     Rate[s] = NumericalRate(T,
 			    E_sample[s], G_sample[0][s], G_sample[1][s], G_sample[2][s],
-			    erFrac[0][s], erFrac[1][s], erFrac[2][s]);
+			    erFrac[0][s], erFrac[1][s], erFrac[2][s],
+			    false);
+    */
   }
   std::cout << "\n";
   
@@ -417,8 +426,9 @@ double Resonance::calcBroad(double T, std::vector<double> &Rate){
   
   classicalRate = NumericalRate(T,
 				E_cm, G[0], G[1], G[2],
-				1.0,1.0,1.0);
-  std::cout << classicalRate << "\n";
+				1.0,1.0,1.0,
+				true);
+  //std::cout << classicalRate << "\n";
   return classicalRate;
 }
 // Function to numerically integrate broad resonances
@@ -488,15 +498,18 @@ double Resonance::singleNarrow(double wg, double E, double T){
 //----------------------------------------------------------------------
 double Resonance::NumericalRate(double T,
 				double E, double G0, double G1, double G2,
-				double erFrac0, double erFrac1, double erFrac2){
+				double erFrac0, double erFrac1, double erFrac2,
+				bool writeIntegrand){
 
-  std::cout << T << " " << E << " " << G0 << " " << G1 << " " << G2 << " " << erFrac0
-	    << " " << erFrac1 << " " << erFrac2 << "\n";
+  //std::cout << T << " " << E << " " << G0 << " " << G1 << " " << G2 << " " << erFrac0
+  //	    << " " << erFrac1 << " " << erFrac2 << "\n";
   
   double ARate=0.0;
   
   double Pr(0.0), Pr_exit(0.0);
 
+  ResonancePtr=this;
+    
   // if reaction is endothermic, need to make minimum energy
   // enough to ensure no integration over negative energies
   double E_min = EMin;
@@ -551,8 +564,8 @@ double Resonance::NumericalRate(double T,
   }
 
 
-  cout << index << "\t" << Pr << "\t" << Pr_exit << "\t" << E << "\t" << T << "\t"
-       << G0 << "\t" << G1 << "\t" << G2 << endl;
+  //cout << index << "\t" << Pr << "\t" << Pr_exit << "\t" << E << "\t" << T << "\t"
+  //     << G0 << "\t" << G1 << "\t" << G2 << endl;
 
   //--------------------------------------------------
   // GSL Integration functions
@@ -564,7 +577,7 @@ double Resonance::NumericalRate(double T,
 
   // The array that needs to be passed to the integration function
   double alpha[8];
-  alpha[0] = 0.0;
+  alpha[0] = (int)writeIntegrand;
   alpha[1] = Pr;
   alpha[2] = Pr_exit;
   alpha[3] = E;
@@ -573,8 +586,8 @@ double Resonance::NumericalRate(double T,
   alpha[6] = G1;
   alpha[7] = G2;
 
-  std::cout << "making integration workspace\n";
-
+  //  std::cout << "making integration workspace\n";
+  
   gsl_integration_workspace * w = gsl_integration_workspace_alloc(1000);
   gsl_function F;
   // Can't use Integrand directly because GSL is shit
@@ -582,20 +595,77 @@ double Resonance::NumericalRate(double T,
   //  F.function = &Integrand;
   F.params = &alpha;
 
-  std::cout << "Integrating!\n";
-  gsl_integration_qags (&F,      // Function to be integrated
-			x,       // start
-			x1,      // end
+  //std::cout << "Integrating!\n";
+ 
+  // Turn off the error handler
+  gsl_set_error_handler_off();
+  /*  
+  int status = gsl_integration_qags (&F,      // Function to be integrated
+			E_min,       // start
+			E,      // end
 			0,       // absolute error
-			1e-7,    // relative error
+			1e-3,    // relative error
 			1000,    // max number of steps (cannot exceed size of workspace
 			w,       // workspace
 			&result, // The result
 			&error);
-  ARate = result;
+  ARate = result; 
+  status = gsl_integration_qags (&F,      // Function to be integrated
+			E,       // start
+			E_max,      // end
+			0,       // absolute error
+			1e-3,    // relative error
+			1000,    // max number of steps (cannot exceed size of workspace
+			w,       // workspace
+			&result, // The result
+			&error);
+  ARate += result;
+  */
+  double pts[3];
+  pts[0] = E_min;
+  pts[1] = E;
+  pts[2] = E_max;
+  //  std::cout << x << " " << E << " " << x1 << "\n";  
+  int status = gsl_integration_qagp (&F,      // Function to be integrated
+				     pts,    // Where known singularity is
+				     3,        // number of singularities
+				     0,       // absolute error
+				     1e-10,    // relative error
+				     1000,    // max number of steps (cannot exceed size of workspace
+				     w,       // workspace
+				     &result, // The result
+				     &error);
+  
+  //gsl_set_error_handler(NULL);
+
+  /*
+  gsl_integration_cquad_workspace * w = gsl_integration_cquad_workspace_alloc(1000);
+  size_t nevals;
+  int status = gsl_integration_cquad(&F,
+				     x,
+				     x1,
+				     0,
+				     1e-7,
+				     w,
+				     &result,
+				     &error,
+				     &nevals);
+  */
+  std::cout << "Status = " << status << "\n";
+  std::cout << "Error = " << error << "\n";
+  //std::cout << "Evals = " << nevals << "\n";
+  std::cout << "Result = " << ARate << "\n";
+  
+  // Turn the error handler back on
+  //gsl_set_error_handler(NULL);
+
+    ARate = result;
   
   //  ARate = y[0];
   ARate = ARate/(1.5399e11/pow(mue*T,1.5));  // eqn 3.411
+
+  gsl_integration_workspace_free(w);
+  //  gsl_integration_cquad_workspace_free(w);
   
   // If G0 or G1 were zero, sum is NAN, catch this!
   if(isnan(ARate)){
@@ -620,12 +690,12 @@ double Resonance::NumericalRate(double T,
 double Resonance::Integrand(double x,
 			    void * params) {
 
-  std::cout << "Integrand\n";
+  //  std::cout << "Integrand\n";
 
   
   
   double* par = (double*)params;
-  double dummy = (double)par[0];
+  int writeIntegrand = (int)par[0];
   double Pr = (double)par[1];
   double Pr_exit = (double)par[2];
   double Er = (double)par[3];
@@ -636,10 +706,10 @@ double Resonance::Integrand(double x,
 
   //  this->print();
   
-  std::cout << dummy << " " << Pr << " " << Pr_exit << " " << Er << " "
-	    << Temp << " " << G0 << " " << G1 << " " << G2 << " " << "\n";
+  //  std::cout << dummy << " " << Pr << " " << Pr_exit << " " << Er << " "
+  //	    << Temp << " " << G0 << " " << G1 << " " << G2 << " " << "\n";
   
-  std::cout << "R = " << R << "\n";
+  //std::cout << "R = " << R << "\n";
   
   double Scale[3];
 
@@ -650,7 +720,7 @@ double Resonance::Integrand(double x,
   double P_exit,E_exit=0.;
   double omega = (2.*Jr+1.)/((2.*J0+1.)*(2.*J1+1.));
 
-  std::cout << P << " " << omega << "\n";
+  //std::cout << P << " " << omega << "\n";
   
   if(Er > 0.0){
     Scale[0] = P/Pr;
@@ -658,7 +728,7 @@ double Resonance::Integrand(double x,
     Scale[0] = 1.0;
     G0 = 2.0*P*G0*41.80161396/(mue*gsl_pow_2(R));
   }
-  std::cout << "Scale = " << Scale << "\n";
+  //std::cout << "Scale = " << Scale << "\n";
   
   for(int i=1;i<3;i++){
     if(G[i] > 0.0){
@@ -691,6 +761,9 @@ double Resonance::Integrand(double x,
 
   //cout << x << "\t" << dydx[0] << endl;
 
+  if(writeIntegrand)
+    testfile << x << " " << integrand << "\n";
+  
   // astrohpysical s-factor
   // cout << x << "\t" << x*(S1/S2)/exp(-0.989534*Z0*Z1*sqrt(mue/x)) << endl;
   // Numerator of x section

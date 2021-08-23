@@ -41,7 +41,8 @@ class Resonance {
   // Function to integrate a broad resonance
   double NumericalRate(double T,
 		       double E, double G0, double G1, double G2,
-		       double erFrac0, double erFrac1, double erFrac2);
+		       double erFrac0, double erFrac1, double erFrac2,
+		       bool writeIntegrand);
   // The resonance integrand to be integrated in the function above
   //extern "C" {
   double Integrand(double x, void * params);
