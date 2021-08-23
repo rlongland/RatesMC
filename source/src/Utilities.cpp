@@ -73,9 +73,9 @@ int countEntries(std::ifstream &infile){
   std::string entry;
   while( ss >> entry ){
     entries.push_back(entry);
-    //std::cout << entry << " ";
+    std::cout << entry << " ";
   }
-  //std::cout << "\n";
+  std::cout << "\n";
 
   // Return to saved position in file
   infile.seekg(place);
@@ -145,8 +145,9 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     // First try to read resonance energy to see if it's a real resonance input
     std::string data;
     infile >> data;
-    if(!std::isdigit( data[0]) ) {
-      //std::cout << "Found end of resonances!\n" << data << "\n";
+    std::cout << "Digit = " << data[1] << "\n";
+    if(!std::isdigit( data[1]) ) {
+      std::cout << "Found end of resonances!\n" << data << "\n";
       break;
     }
     

@@ -17,6 +17,7 @@
 1.0             ! Minimum energy for numerical integration (keV)
 5000            ! Number of random samples (>5000 for better statistics)
 0               ! =0 for rate output at all temperatures; =NT for rate output at selected temperatures
+0 0             ! (Res, E) =0 for no correlation. =1 for correlation
 ****************************************************************************************************************
 Non-resonant contribution
 S(keVb) S'(b)           S''(b/keV)      fracErr Cutoff Energy (keV)
