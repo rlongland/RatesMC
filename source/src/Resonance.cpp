@@ -61,7 +61,8 @@ Resonance::Resonance(Reaction & R,
   this->Z0 = R.Z0;
   this->Z1 = R.Z1;
   this->Z2 = R.Z2;
-  
+
+  this->R = 5;
   //  std::cout << "The Gamma_index is " << Reac.getGamma_index() << "\n";
 
   //cout << "made a resonance" << endl;
@@ -76,7 +77,9 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
   double P;
 
   mue = M0*M1/(M0+M1);
+  std::cout << "mue = " << mue << "\n";
   R = Reac.R0*(pow(M0,(1./3.))+pow(M1,(1./3.)));
+  std::cout << "R = " << R << "\n";
 
   double meanPen,meanPex;
 
@@ -528,7 +531,7 @@ double Resonance::NumericalRate(double T,
   //  The penetration factor at the resonance energy (the "true" PF)
   if(E > 0.0){
     Pr = PenFactor(E, L[0],M0,M1,Z0,Z1,R);
-    std::cout << "Pr = " << Pr << "\n";  
+    //    std::cout << "Pr = " << Pr << "\n";  
   } else {
     Pr = 0.0;
   }
@@ -539,12 +542,12 @@ double Resonance::NumericalRate(double T,
     // if exit particle is observed decay, take final excitation into account
     Pr_exit = PenFactor(E+Reac.Q-Reac.Qexit-Exf,L[1],M0+M1-M2,M2,
 			Z0+Z1-Z2,Z2,R);
-    cout << "Exit energy = " << E+Reac.Q-Reac.Qexit-Exf << endl;
+    //cout << "Exit energy = " << E+Reac.Q-Reac.Qexit-Exf << endl;
   }else if(Reac.getGamma_index() == 1 && NChannels==3){
     // ignore spectator final excitation if it is spectator
     Pr_exit = PenFactor(E+Reac.Q-Reac.Qexit,L[2],M0+M1-M2,M2,
 			Z0+Z1-Z2,Z2,R);
-    cout << "Exit energy = " << E+Reac.Q-Reac.Qexit << endl;
+    //cout << "Exit energy = " << E+Reac.Q-Reac.Qexit << endl;
   }
 
 
@@ -569,12 +572,27 @@ double Resonance::NumericalRate(double T,
   alpha[5] = G0;
   alpha[6] = G1;
   alpha[7] = G2;
-  
+
+  std::cout << "making integration workspace\n";
+
   gsl_integration_workspace * w = gsl_integration_workspace_alloc(1000);
   gsl_function F;
   // Can't use Integrand directly because GSL is shit
   F.function = &ResonanceIntegrandWrapper;
+  //  F.function = &Integrand;
   F.params = &alpha;
+
+  std::cout << "Integrating!\n";
+  gsl_integration_qags (&F,      // Function to be integrated
+			x,       // start
+			x1,      // end
+			0,       // absolute error
+			1e-7,    // relative error
+			1000,    // max number of steps (cannot exceed size of workspace
+			w,       // workspace
+			&result, // The result
+			&error);
+  ARate = result;
   
   //  ARate = y[0];
   ARate = ARate/(1.5399e11/pow(mue*T,1.5));  // eqn 3.411
@@ -602,6 +620,10 @@ double Resonance::NumericalRate(double T,
 double Resonance::Integrand(double x,
 			    void * params) {
 
+  std::cout << "Integrand\n";
+
+  
+  
   double* par = (double*)params;
   double dummy = (double)par[0];
   double Pr = (double)par[1];
@@ -612,6 +634,13 @@ double Resonance::Integrand(double x,
   double G1 = (double)par[6];
   double G2 = (double)par[7];
 
+  //  this->print();
+  
+  std::cout << dummy << " " << Pr << " " << Pr_exit << " " << Er << " "
+	    << Temp << " " << G0 << " " << G1 << " " << G2 << " " << "\n";
+  
+  std::cout << "R = " << R << "\n";
+  
   double Scale[3];
 
   //double mue = M0*M1/(M0+M1);
@@ -621,12 +650,16 @@ double Resonance::Integrand(double x,
   double P_exit,E_exit=0.;
   double omega = (2.*Jr+1.)/((2.*J0+1.)*(2.*J1+1.));
 
+  std::cout << P << " " << omega << "\n";
+  
   if(Er > 0.0){
     Scale[0] = P/Pr;
   } else {
     Scale[0] = 1.0;
     G0 = 2.0*P*G0*41.80161396/(mue*gsl_pow_2(R));
   }
+  std::cout << "Scale = " << Scale << "\n";
+  
   for(int i=1;i<3;i++){
     if(G[i] > 0.0){
       if(i == Reac.getGamma_index()){
