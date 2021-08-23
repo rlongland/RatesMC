@@ -401,16 +401,21 @@ double Resonance::calcBroad(double T, std::vector<double> &Rate){
       std::cout  << "\r" << 100*s/NSamples << "% Complete for Resonance " <<
 	index+1 << std::flush;
     }
-
+    
     Rate[s] = NumericalRate(T,
 			    E_sample[s], G_sample[0][s], G_sample[1][s], G_sample[2][s],
 			    erFrac[0][s], erFrac[1][s], erFrac[2][s]);
   }
+  std::cout << "\n";
+  
   // And the central value, which is the classical rate
+  std::cout << "Classical calculated with " << 
+    T << " " << E_cm << " " << G[0] << " " << G[1] << " " << G[2] << "\n";
+  
   classicalRate = NumericalRate(T,
 				E_cm, G[0], G[1], G[2],
 				1.0,1.0,1.0);
-  
+  std::cout << classicalRate << "\n";
   return classicalRate;
 }
 // Function to numerically integrate broad resonances
@@ -482,6 +487,9 @@ double Resonance::NumericalRate(double T,
 				double E, double G0, double G1, double G2,
 				double erFrac0, double erFrac1, double erFrac2){
 
+  std::cout << T << " " << E << " " << G0 << " " << G1 << " " << G2 << " " << erFrac0
+	    << " " << erFrac1 << " " << erFrac2 << "\n";
+  
   double ARate=0.0;
   
   double Pr(0.0), Pr_exit(0.0);
@@ -520,6 +528,7 @@ double Resonance::NumericalRate(double T,
   //  The penetration factor at the resonance energy (the "true" PF)
   if(E > 0.0){
     Pr = PenFactor(E, L[0],M0,M1,Z0,Z1,R);
+    std::cout << "Pr = " << Pr << "\n";  
   } else {
     Pr = 0.0;
   }
@@ -530,17 +539,17 @@ double Resonance::NumericalRate(double T,
     // if exit particle is observed decay, take final excitation into account
     Pr_exit = PenFactor(E+Reac.Q-Reac.Qexit-Exf,L[1],M0+M1-M2,M2,
 			Z0+Z1-Z2,Z2,R);
-    //cout << "Exit energy = " << E+Q-Qexit-Exf[j] << endl;
+    cout << "Exit energy = " << E+Reac.Q-Reac.Qexit-Exf << endl;
   }else if(Reac.getGamma_index() == 1 && NChannels==3){
     // ignore spectator final excitation if it is spectator
     Pr_exit = PenFactor(E+Reac.Q-Reac.Qexit,L[2],M0+M1-M2,M2,
 			Z0+Z1-Z2,Z2,R);
-    //cout << "Exit energy = " << E+Q-Qexit << endl;
+    cout << "Exit energy = " << E+Reac.Q-Reac.Qexit << endl;
   }
 
 
-  //    cout << j << "\t" << Pr << "\t" << Pr_exit << "\t" << E << "\t" << Temp << "\t"
-  //	 << G0 << "\t" << G1 << "\t" << G2 << endl;
+  cout << index << "\t" << Pr << "\t" << Pr_exit << "\t" << E << "\t" << T << "\t"
+       << G0 << "\t" << G1 << "\t" << G2 << endl;
 
   //--------------------------------------------------
   // GSL Integration functions

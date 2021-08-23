@@ -324,5 +324,5 @@ void Reaction::writeSamples(){
 
   samplefile.close();
   
-  std::cout << "Done!\n";
+  std::cout << "Done!\n\n";
 }
