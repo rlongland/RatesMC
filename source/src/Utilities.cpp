@@ -73,9 +73,9 @@ int countEntries(std::ifstream &infile){
   std::string entry;
   while( ss >> entry ){
     entries.push_back(entry);
-    std::cout << entry << " ";
+    //std::cout << entry << " ";
   }
-  std::cout << "\n";
+  //  std::cout << "\n";
 
   // Return to saved position in file
   infile.seekg(place);
@@ -145,10 +145,33 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     // First try to read resonance energy to see if it's a real resonance input
     std::string data;
     infile >> data;
-    std::cout << "Digit = " << data[1] << "\n";
-    if(!std::isdigit( data[1]) ) {
-      std::cout << "Found end of resonances!\n" << data << "\n";
+    /*
+    std::stringstream ss(data);
+    std::string entry;
+    ss >> entry; 
+    if(!std::isdigit( entry[0] ) && !(entry[0] == '-') ) {
+      //      std::cout << "Found end of resonances!\n" << data << "\n";
       break;
+    }
+    */
+    // Look for '***', which signifies the end of resonance input
+    std::size_t found;
+    found = data.find("***");
+    if (found!=std::string::npos){
+      logfile << "Found end of ";
+      if(isUpperLimit)
+	logfile << "upper limit ";
+      logfile << "resonances!\n" << data << std::endl;
+      break;
+    }
+
+    // Now look for an exclamation point, which indicates a commented-out resonance
+    found = data.find("!");
+    if (found!=std::string::npos){
+      if(isUpperLimit)
+	logfile << "Upper limit ";
+      logfile << "Resonance is commented-out! " << data << std::endl;;
+      continue;
     }
     
     // If this looks like a resonance, read a single line
@@ -334,7 +357,8 @@ void defineTemperatures(){
     if((iT+1)%7 == 0 && iT>0)logfile << "\n";
   }
   logfile << "\n";
-  logfile << "--------------------------------------------------\n";
+  logfile << "--------------------------------------------------";
+  logfile << std::endl;
 
 }
 
