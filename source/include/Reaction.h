@@ -19,7 +19,7 @@ class Reaction{
   void setName(std::string a){Name=a;}
   void setMasses(double m0, double m1, double m2){M0=m0; M1=m1; M2=m2;}
   void setCharges(int z0, int z1, int z2){Z0=z0; Z1=z1; Z2=z2;}
-  void setSpins(int j0, int j1, int j2){J0=j0; J1=j1; J2=j2;}
+  void setSpins(double j0, double j1, double j2){J0=j0; J1=j1; J2=j2;}
   void setSeparationEnergies(double qin, double qout){Q=qin; Qexit=qout;}
   void setR0(double r0){R0=r0;}
   void setGammaIndex(int gindex){Gamma_index = gindex;}

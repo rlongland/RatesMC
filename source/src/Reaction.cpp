@@ -107,6 +107,8 @@ void Reaction::writeReaction(){
   logfile << std::setw(5) << Z0 << "     " << std::setw(5) << Z1 << "    " << std::setw(5) << Z2 << "\n";
   logfile << "   M0        M1       M2" << "\n";
   logfile << M0 << "   " << M1 << "   " << M2 << "\n";
+  logfile << "   J0        J1       J2" << "\n";
+  logfile << J0 << "   " << J1 << "   " << J2 << "\n";
   logfile << "   S_entrance = " << Q << "\n";
   logfile << "   S_exit     = " << Qexit << "\n";
   logfile << "   The gamma ray channel is channel " << Gamma_index << "\n";

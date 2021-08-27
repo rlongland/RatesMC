@@ -286,11 +286,12 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   infile >> j2;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
   R -> setSpins(j0,j1,j2);
+  logfile << j0 << " " << j1 << " " << j2 << "\n";
 
   // Entrance and exit particle separation energies
   Qin = readDouble(infile);
   Qout = readDouble(infile);
-  R -> setSeparationEnergies(Qin, Qout);
+  R -> setSeparationEnergies(Qin/1000.0, Qout/1000.0);
 
   // The R0 radius
   R0 = readDouble(infile);
