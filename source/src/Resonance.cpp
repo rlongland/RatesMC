@@ -66,6 +66,8 @@ Resonance::Resonance(Reaction & R,
   this->J1 = R.J1;
   this->J2 = R.J2;
 
+  classicalRate = 0.0;
+  
   //  this->R = 5;
   //  std::cout << "The Gamma_index is " << Reac.getGamma_index() << "\n";
 
@@ -78,6 +80,9 @@ Resonance::~Resonance(){}
 
 void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double smallestdE,
 			    double smallestdwg, double smallestdG[3]){
+
+  // Make sure the Rate vector is the right size
+  Rate.resize(NSamples);
 
   double mu, sigma;
   double P;
@@ -398,7 +403,7 @@ void Resonance::writeSamples(std::ofstream& samplefile, int s){
 
 //----------------------------------------------------------------------
 // Function to numerically integrate broad resonances
-double Resonance::calcBroad(double T, std::vector<double> &Rate){
+double Resonance::calcBroad(double T){
 
   double classicalRate=0.0;
 
@@ -432,15 +437,15 @@ double Resonance::calcBroad(double T, std::vector<double> &Rate){
 				E_cm, G[0], G[1], G[2],
 				1.0,1.0,1.0,
 				true);
-
+  std::cout << "classicalRate = " << classicalRate << "\n";
   //classicalRate /= (1.5399e11/pow(mue*T,1.5));
 
   return classicalRate;
 }
 // Function to numerically integrate broad resonances
-double Resonance::calcNarrow(double T, std::vector<double> &Rate){
+double Resonance::calcNarrow(double T){
 
-  double classicalRate=0.0;
+  //  double classicalRate=0.0;
   
   // If wg is already defined, it's easy
   if(wg > 0){
@@ -631,26 +636,27 @@ double Resonance::NumericalRate(double T,
   ARate += result;
   */
 
+  double Delta = 200.0;
   double pts[5];
   pts[0] = E_min;
-  pts[1] = E-200.0*gammaT;
+  pts[1] = std::max(E_min,E-Delta*gammaT);
   pts[2] = E;
-  pts[3] = E+200.0*gammaT;
+  pts[3] = E+Delta*gammaT;
   pts[4] = E_max;
 
   //if(writeIntegrand)
   //  std::cout << E_min << " " << gammaT << " " << E << " " << pts[2]-pts[1] << " " << E_max << "\n";
   
   int status = gsl_integration_qagp (&F,      // Function to be integrated
-				     pts,    // Where known singularity is
-				     5,        // number of singularities
+				     pts,     // Where known singularity is
+				     5,       // number of singularities
 				     0,       // absolute error
 				     1e-1,    // relative error
 				     1000,    // max number of steps (cannot exceed size of workspace
 				     w,       // workspace
 				     &result, // The result
 				     &error);
-  
+
   gsl_set_error_handler(NULL);
   
   /*
@@ -778,8 +784,9 @@ double Resonance::Integrand(double x,
 
   //cout << x << "\t" << dydx[0] << endl;
 
+  // Write the integrand to a file if requested
   if(writeIntegrand)
-    testfile << std::scientific << x-Er << " " << integrand << "\n";
+    testfile << std::scientific << std::setprecision(9) << x-Er << " " << integrand << "\n";
   
   // astrohpysical s-factor
   // cout << x << "\t" << x*(S1/S2)/exp(-0.989534*Z0*Z1*sqrt(mue/x)) << endl;

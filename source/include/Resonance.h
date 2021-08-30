@@ -33,8 +33,8 @@ class Resonance {
   // Functions to calculate the rate from this resonance. They return
   // the traditional rate and fill 'Rate', which is a vector of rate
   // samples for this resonance at temperature T
-  double calcBroad(double T, std::vector<double> &Rate);
-  double calcNarrow(double T, std::vector<double> &Rate);
+  double calcBroad(double T);
+  double calcNarrow(double T);
 
   // Rate for a single narrow resonance
   double singleNarrow(double wg, double E, double T);
@@ -84,6 +84,11 @@ class Resonance {
   int CorresRes;
   double Ref_sample[3], ERef_sample, Frac;
   double correlation, Gcorrelations, Ecorrelation;
+
+  // The rate from this resonance
+  double classicalRate;
+  std::vector<double> Rate;
+
 };
 
 

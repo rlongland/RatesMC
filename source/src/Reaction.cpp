@@ -146,21 +146,21 @@ double Reaction::calcResonant(double Temp){
   for(Resonance R : Resonances){
     // if the resonance is narrow
     if(!R.getisBroad()){
-      //      std::cout << "Resonance " << R.getIndex() << " at "
-      //		<< R.getE_cm() << " keV is narrow\n";
-      individialRate.push_back(R.calcNarrow(Temp, Rate));
+      std::cout << "Resonance " << R.getIndex() << " at "
+      		<< R.getE_cm() << " keV is narrow\n";
+      individialRate.push_back(R.calcNarrow(Temp));
       classicalRate += individialRate.back();
       
       // If it's broad
     } else {
-      //std::cout << "Resonance " << R.getIndex() << " at "
-      //		<< R.getE_cm() << " keV is being numerically integrated\n";
-      individialRate.push_back(R.calcBroad(Temp, Rate));
+      std::cout << "Resonance " << R.getIndex() << " at "
+      		<< R.getE_cm() << " keV is being numerically integrated\n";
+      individialRate.push_back(R.calcBroad(Temp));
       classicalRate += individialRate.back();
     }
   }
 
-  //  std::cout << "Classical Rate = " << classicalRate << "\n";
+  std::cout << "Total classical rate from resonances = " << classicalRate << "\n";
 
   return classicalRate;
 }

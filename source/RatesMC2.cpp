@@ -100,7 +100,7 @@ int main(int argc, char** argv){
 
       
 
-	std::cout << "Classical Resonant Rate = " << ResRate << "\n";
+	std::cout << "Classical Resonant Rate (again) = " << ResRate << "\n";
     }
   }
 
