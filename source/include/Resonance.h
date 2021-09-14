@@ -36,6 +36,8 @@ class Resonance {
   double calcBroad(double T);
   double calcNarrow(double T);
 
+  void printRate();
+  
   // Rate for a single narrow resonance
   double singleNarrow(double wg, double E, double T);
   // Function to integrate a broad resonance
@@ -88,6 +90,7 @@ class Resonance {
   // The rate from this resonance
   double classicalRate;
   std::vector<double> Rate;
+  double MeanRate, MedianRate, RateMu, RateSigma;
 
 };
 

@@ -158,6 +158,9 @@ double Reaction::calcResonant(double Temp){
       individialRate.push_back(R.calcBroad(Temp));
       classicalRate += individialRate.back();
     }
+
+    // Once calculated, print the rate and some diagnostics for each resonance
+    R.printRate();
   }
 
   std::cout << "Total classical rate from resonances = " << classicalRate << "\n";

@@ -19,6 +19,7 @@
 #include <gsl/gsl_sf_log.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_errno.h>
+#include <gsl/gsl_statistics.h>
 
 #include "Resonance.h"
 #include "Utilities.h"
@@ -499,6 +500,44 @@ double Resonance::calcNarrow(double T){
   return classicalRate;
 }
 
+
+//----------------------------------------------------------------------
+// Print out the rate
+void Resonance::printRate(){
+
+  // Convert all vector to an array
+  double* Rate_Array = &Rate[0];
+  
+  // If there are enough samples, calculate the mean, variance,
+  // log-mean and log-variance and bin the rates
+  // Turn off the gsl error handler in case we have a negative number here
+  gsl_set_error_handler_off();
+  double lograte[NSamples];
+  gsl_sf_result LogResult;
+  if(NSamples > 2){
+    for(int s=0;s<NSamples;s++){
+      
+      int status = gsl_sf_log_e(Rate_Array[s],&LogResult);
+      // Check to make sure log didn't error
+      if(status){
+	//ErrorFlag = true;
+	//LogZeroCount++;
+	lograte[s] = 0.0;
+      } else {
+	lograte[s] = LogResult.val;
+      }
+    }
+    MeanRate = gsl_stats_mean(Rate_Array,1,NSamples);
+    MedianRate = gsl_stats_median(Rate_Array, 1, NSamples);
+    RateMu = gsl_stats_mean(lograte,1,NSamples);
+    RateSigma = sqrt(gsl_stats_variance(lograte,1,NSamples));
+
+  }
+
+  std::cout << "Mean = " << MeanRate << " Median = " << MedianRate
+	    << " Mu = " << RateMu << " Sigma = " << std::scientific << RateSigma << "\n";
+
+}
 //----------------------------------------------------------------------
 // Simple function to calculate the rate for a single, narrow,
 // isolated resonance
