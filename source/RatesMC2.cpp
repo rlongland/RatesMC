@@ -75,7 +75,11 @@ int main(int argc, char** argv){
   // First define the temperatures
   defineTemperatures();
 
+  // Define the classical rates
+  std::vector<double> classicalRate;
+  
   // Now do the big loop over temperatures in parallel!!
+  // Do all of the calculations first, then collect everything together
   omp_set_num_threads(1);
 #pragma omp parallel for ordered
   for(double T : Temp){
@@ -85,15 +89,34 @@ int main(int argc, char** argv){
     std::cout << "Proc(" << ID << ") T = " << T; // << "\n";
     std::cout << "\n" ;
 
+    // --------------
+    // CALCULATE RATE
+    // --------------
     // Calculate the non-resonant rate
     double ADRate[2];
     for(int j=0; j<2; j++){
       ADRate[j] = Reac -> calcNonResonant(T, j);
+      std::cout << "ADRate = " << ADRate[j] << "\n";
     }
     
     // Calculate the resonant rate
     double ResRate = Reac -> calcResonant(T);
+
+    // --------------
+    // COLLECT RATE
+    // --------------
+    for(int s=0; s<NSamples; s++){
+
+      // The non-resonant rate
+      double ADRate0 = Reac -> getDRate(s, 0);
+      double ADRate1 = Reac -> getDRate(s, 1);
+
+      // Next get a vector that contains sample s from every resonance
+      Reac -> getResonant(s);
+      
+    }
     
+    /*
 #pragma omp critical
     {
 
@@ -101,6 +124,10 @@ int main(int argc, char** argv){
       // #pragma omp ordered
       std::cout << "Classical Resonant Rate (again) = " << ResRate << "\n";
     }
+    */
+    // The classical rates can be easily summed
+    classicalRate.push_back(ADRate[0]+ADRate[1]+ResRate);
+    std::cout << "Classical Total Rate = " << classicalRate.back() << "\n";
   }
 
   

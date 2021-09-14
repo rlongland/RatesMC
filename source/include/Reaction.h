@@ -37,6 +37,8 @@ class Reaction{
   // Getters
   double getsmallestdE(){return smallestdE;}
   int getGamma_index(){return Gamma_index;}
+  double getDRate(int s, int index){return DRate[index][s];}
+
   
   // Print a summary of the reaction
   void printReaction();
