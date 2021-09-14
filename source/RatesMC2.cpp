@@ -75,32 +75,31 @@ int main(int argc, char** argv){
   // First define the temperatures
   defineTemperatures();
 
-  // Now do the big loop in parallel!!
+  // Now do the big loop over temperatures in parallel!!
   omp_set_num_threads(1);
 #pragma omp parallel for ordered
   for(double T : Temp){
     int ID = omp_get_thread_num();
+    std::cout << std::endl;
+    std::cout << "--------------------------------------------------\n";
     std::cout << "Proc(" << ID << ") T = " << T; // << "\n";
-    //      for(int j=0; j<2; j++)
-    //std::cout << " D[" << 0 << "] = " << ADRate[0];
     std::cout << "\n" ;
-    
-    double ADRate[2];
 
+    // Calculate the non-resonant rate
+    double ADRate[2];
+    for(int j=0; j<2; j++){
+      ADRate[j] = Reac -> calcNonResonant(T, j);
+    }
+    
     // Calculate the resonant rate
     double ResRate = Reac -> calcResonant(T);
     
 #pragma omp critical
     {
+
       // print out the thread number and temperature
       // #pragma omp ordered
-      for(int j=0; j<2; j++){
-	ADRate[j] = Reac -> calcNonResonant(T, j);
-      }
-
-      
-
-	std::cout << "Classical Resonant Rate (again) = " << ResRate << "\n";
+      std::cout << "Classical Resonant Rate (again) = " << ResRate << "\n";
     }
   }
 

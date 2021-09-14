@@ -438,6 +438,8 @@ double Resonance::calcBroad(double T){
 				E_cm, G[0], G[1], G[2],
 				1.0,1.0,1.0,
 				true);
+  testfile << "!" << std::endl;
+  
   std::cout << "classicalRate = " << classicalRate << "\n";
   //classicalRate /= (1.5399e11/pow(mue*T,1.5));
 
