@@ -473,14 +473,14 @@ void transpose(std::vector<std::vector<double> > &b){
 }
 
 //----------------------------------------------------------------------
-void writeContributions(std::vector<std::vector<double> > Contributions){
+void writeContributions(std::vector<std::vector<double> > Contributions, double Temperature){
 
-    std::cout << "At the end we have\n";
+  //std::cout << "At the end we have\n";
     //std::cout << "RateSample of length: " << RateSample.size() << "\n";
     transpose(Contributions);
-    std::cout << "Contributions of length: " << Contributions.size() << " X "
-	      << Contributions[0].size() << "\n";
-    std::cout << std::endl;
+    //std::cout << "Contributions of length: " << Contributions.size() << " X "
+    //	      << Contributions[0].size() << "\n";
+    //std::cout << std::endl;
     
     // From the contributions, calculate Low, median, and high
     // contribution for each resonance
@@ -502,10 +502,28 @@ void writeContributions(std::vector<std::vector<double> > Contributions){
       MedianCont.push_back(gsl_stats_median_from_sorted_data(gsl_v.vector.data,1,Contributions[j].size()));
     }
 
+    /*
     for(int i=0; i<LowCont.size(); i++){
       std::cout << "i = " << i << "  LowCont = " << LowCont[i] <<  "  MedianCont = " << MedianCont[i]
 		<< "  HighCont = " << HighCont[i] << "\n";
     }
+    */
+    
+    // Write to file
+    contribfile.precision(3);
+    contribfile.width(5);
+    contribfile << Temperature << std::scientific << "   " ;
+    for(int i=0; i<MedianCont.size(); i++){
+      if(LowCont[i] < 1.0e-99)LowCont[i]=0.0;
+      if(MedianCont[i] < 1.0e-99)MedianCont[i]=0.0;
+      if(HighCont[i] < 1.0e-99)HighCont[i]=0.0;
+      //if(j<2 || UseInRate[j-2] || j>=NRes+2){
+      contribfile << LowCont[i] << "  " << MedianCont[i] << "  " <<
+	  HighCont[i] << "  ";
+    }
+    
+    contribfile << std::endl;
+    contribfile.unsetf(std::ios_base::scientific);
     
 
   

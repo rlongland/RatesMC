@@ -63,7 +63,7 @@ double PenFactor(double E, double L, double Mass0, double Mass1,
 // Transpose a 2D double vector
 void transpose(std::vector<std::vector<double> > &b);
 // Write the contributions of each resonance to file
-void writeContributions(std::vector<std::vector<double> > Contributions);
+void writeContributions(std::vector<std::vector<double> > Contributions, double Temperature);
 
 // Check for zero
 bool isZero(double x);

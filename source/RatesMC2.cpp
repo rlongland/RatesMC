@@ -153,7 +153,7 @@ int main(int argc, char** argv){
     }
 
     // Write the contributions
-    writeContributions(Contributions);
+    writeContributions(Contributions, T);
     /*
 #pragma omp critical
     {
