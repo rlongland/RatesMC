@@ -29,6 +29,8 @@ extern double HistT, HistMin, HistMax;
 extern std::ofstream logfile;
 extern std::ofstream testfile;
 extern std::ofstream ptfile;
+extern std::ofstream sampfile;
+extern std::ofstream contribfile;
 
 // Other program-wide variables
 extern std::vector<double> Temp;
@@ -58,6 +60,8 @@ void logNormalize(double exp, double sd, double& mu, double& sigma);
 double PenFactor(double E, double L, double Mass0, double Mass1,
 		 int Charge0, int Charge1, double R);
 
+// Transpose a 2D double vector
+void transpose(std::vector<std::vector<double> > &b);
 
 // Check for zero
 bool isZero(double x);

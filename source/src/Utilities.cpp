@@ -19,6 +19,8 @@ gsl_rng * r;
 std::ofstream logfile;
 std::ofstream testfile;
 std::ofstream ptfile;
+std::ofstream sampfile;
+std::ofstream contribfile;
 int NSamples;
 int NTemps;
 bool ErrorFlag;
@@ -447,6 +449,27 @@ double PenFactor(double E, double L, double Mass0, double Mass1,
 
   return P;
 }
+
+//----------------------------------------------------------------------
+// Transpose a 2D vector of doubles
+void transpose(std::vector<std::vector<double> > &b){
+
+  if(b.size() == 0)
+    return;
+
+  std::vector<std::vector<double> > trans_vec(b[0].size(), std::vector<double>());
+
+  for (int i = 0; i < b.size(); i++){
+    for (int j = 0; j < b[i].size(); j++) {
+      trans_vec[j].push_back(b[i][j]);
+    }
+  }
+
+  b = trans_vec;    // <--- reassign here
+  
+}
+
+
 
 //----------------------------------------------------------------------
 // Check for zero

@@ -426,9 +426,10 @@ double Resonance::calcBroad(double T){
 			    E_sample[s], G_sample[0][s], G_sample[1][s], G_sample[2][s],
 			    erFrac[0][s], erFrac[1][s], erFrac[2][s],
 			    false);
+    //    std::cout << "In Resonance, Rate[s] = " << Rate[s] << "\n";
     
   }
-  std::cout << "\n";
+  //  std::cout << "\n";
   
   // And the central value, which is the classical rate
   //std::cout << "Classical calculated with " << 

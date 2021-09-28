@@ -40,8 +40,8 @@ void Reaction::setNonResonant(double s, double sp, double spp, double ds, double
   dS[part] = ds;
   CutoffE[part] = cutoffe;
 
-  std::vector<double> D(NSamples);
-  DRate.push_back(D);
+  std::vector<double> A(NSamples);
+  ARate.push_back(A);
 }
 
 void Reaction::addResonance(int i, double E_cm, double dE_cm, double wg, double dwg, double Jr,
@@ -134,6 +134,24 @@ void Reaction::writeReaction(){
 }
 
 //----------------------------------------------------------------------
+// Set up the contribution file header
+void Reaction::setupContribHeader(){
+
+  contribfile << "#Temp" << "   ";
+  for(int i=0;i<3;i++)
+    contribfile << "A-Rate-1   ";
+  for(int i=0;i<3;i++)
+    contribfile << "A-Rate-2   ";
+  for(Resonance Res : Resonances){
+    for(int i=0; i<3; i++){
+      contribfile << "Res" << Res.getIndex()+1 << "       ";
+    }
+  }
+  contribfile << endl;
+
+}
+
+//----------------------------------------------------------------------
 // Calculate the resonant reaction rate
 double Reaction::calcResonant(double Temp){
 
@@ -166,6 +184,21 @@ double Reaction::calcResonant(double Temp){
   std::cout << "Total classical rate from resonances = " << classicalRate << "\n";
 
   return classicalRate;
+}
+
+//----------------------------------------------------------------------
+// Collect the resonant rates for sample s
+std::vector<double> Reaction::getResonantRateSample(int s){
+
+  std::vector<double> Rate_s;
+  
+  for(Resonance R : Resonances){
+    R.printRate();
+
+    Rate_s.push_back(R.getRateSample(s));
+  }
+  std::cout << Rate_s[0] << "   ";
+  return Rate_s;
 }
 
 //----------------------------------------------------------------------
@@ -222,7 +255,7 @@ double Reaction::calcNonResonant(double Temp, int j){
     logfile << "\tWARNING: The non-resonant part caused a negative rate, \n\t\tsetting to zero." << endl;
     ADRate = 0.0;
     for(int i=0;i<NSamples;i++){
-      DRate[j][i]=0.0;
+      ARate[j][i]=0.0;
     }
   } else {
     logNormalize(ADRate,dS[j]*ADRate,mu,sigma);
@@ -231,12 +264,12 @@ double Reaction::calcNonResonant(double Temp, int j){
     if((mu==0. && sigma==0.)){
       ADRate=0.0;
       for(int i=0;i<NSamples;i++){
-	DRate[j][i]=0.0;
+	ARate[j][i]=0.0;
       }
     } else {
       for(int i=0;i<NSamples;i++){
-	DRate[j][i] = gsl_ran_lognormal(r,mu,sigma)/(1.5399e11/pow(mue*Temp,1.5));
-	//	std::cout << DRate[j][i] << "\n";
+	ARate[j][i] = gsl_ran_lognormal(r,mu,sigma)/(1.5399e11/pow(mue*Temp,1.5));
+	//	std::cout << ARate[j][i] << "\n";
       }
     }
   }

@@ -37,8 +37,15 @@ class Reaction{
   // Getters
   double getsmallestdE(){return smallestdE;}
   int getGamma_index(){return Gamma_index;}
-  double getDRate(int s, int index){return DRate[index][s];}
 
+  // Get rates
+  // Analytical Rate
+  double getARate(int s, int index){return ARate[index][s];}
+  // Resonant rate (vector's length is No. of resonances)
+  std::vector<double> getResonantRateSample(int s);
+
+  // Set up the contribution file header
+  void setupContribHeader();
   
   // Print a summary of the reaction
   void printReaction();
@@ -60,7 +67,7 @@ class Reaction{
 
   // Reaction-wide Monte Carlo
   std::vector<std::vector<double> > Ref_sample;
-  std::vector<std::vector<double> > DRate;
+  std::vector<std::vector<double> > ARate;
   
   
 };
