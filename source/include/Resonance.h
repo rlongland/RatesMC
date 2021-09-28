@@ -38,7 +38,7 @@ class Resonance {
 
   void printRate();
 
-  double getRateSample(int s){return Rate[s];}
+  double getRateSample(int s){return Rate_sample[s];}
   
   // Rate for a single narrow resonance
   double singleNarrow(double wg, double E, double T);
@@ -91,7 +91,7 @@ class Resonance {
 
   // The rate from this resonance
   double classicalRate;
-  std::vector<double> Rate;   // length is number of samples
+  std::vector<double> Rate_sample;   // length is number of samples
   double MeanRate, MedianRate, RateMu, RateSigma;
 
 };

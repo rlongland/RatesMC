@@ -161,7 +161,7 @@ double Reaction::calcResonant(double Temp){
   std::vector<double> Rate;
   Rate.resize(NSamples);
   
-  for(Resonance R : Resonances){
+  for(Resonance &R : Resonances){
     // if the resonance is narrow
     if(!R.getisBroad()){
       std::cout << "Resonance " << R.getIndex() << " at "
@@ -193,11 +193,11 @@ std::vector<double> Reaction::getResonantRateSample(int s){
   std::vector<double> Rate_s;
   
   for(Resonance R : Resonances){
-    R.printRate();
+    //R.printRate();
 
     Rate_s.push_back(R.getRateSample(s));
   }
-  std::cout << Rate_s[0] << "   ";
+  //std::cout << Rate_s[0] << "   ";
   return Rate_s;
 }
 

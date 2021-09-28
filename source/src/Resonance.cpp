@@ -83,8 +83,10 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
 			    double smallestdwg, double smallestdG[3]){
 
   // Make sure the Rate vector is the right size
-  Rate.resize(NSamples);
+  Rate_sample.resize(NSamples);
 
+  //Rate_sample[0] = 1.;
+  
   double mu, sigma;
   double P;
 
@@ -422,11 +424,11 @@ double Resonance::calcBroad(double T){
       T << " " << E_sample[s] << " " << G_sample[0][s] << " " << G_sample[1][s] << " "
 	      << G_sample[2][s] << " " << erFrac[0][s] << " " <<  erFrac[1][s] << " " << erFrac[2][s] << "\n";
     */
-    Rate[s] = NumericalRate(T,
+    Rate_sample[s] = NumericalRate(T,
 			    E_sample[s], G_sample[0][s], G_sample[1][s], G_sample[2][s],
 			    erFrac[0][s], erFrac[1][s], erFrac[2][s],
 			    false);
-    //    std::cout << "In Resonance, Rate[s] = " << Rate[s] << "\n";
+    //    std::cout << "In Resonance, Rate_sample[s] = " << Rate_sample[s] << "\n";
     
   }
   //  std::cout << "\n";
@@ -457,9 +459,9 @@ double Resonance::calcNarrow(double T){
     for(int s=0; s<NSamples; s++){
       // If the sampled energy of a resonance is 0, just set rate to zero
       if(E_sample[s]>0){
-	Rate[s] = singleNarrow(wg_sample[s], E_sample[s], T);
+	Rate_sample[s] = singleNarrow(wg_sample[s], E_sample[s], T);
       } else {
-	Rate[s] = 0.0;
+	Rate_sample[s] = 0.0;
       }
     }
     // If wg isn't defined, do the same thing with the partial widths
@@ -479,7 +481,7 @@ double Resonance::calcNarrow(double T){
       // its energy is negative.
       if(E_sample[s] < 0.0){
 	/*
-	Rate[s] = SingleIntegral(E_sample[j][k],G_sample[0][j][k],
+	Rate_sample[s] = SingleIntegral(E_sample[j][k],G_sample[0][j][k],
 				 G_sample[1][j][k],
 				 G_sample[2][j][k],
 				 erFrac[0][j][k],erFrac[1][j][k],
@@ -489,7 +491,7 @@ double Resonance::calcNarrow(double T){
 //	std::cout << s << "\n";
 //	std::cout << G_sample.size() << "\n";
 //	std::cout << G_sample[0][s] << " " << G_sample[1][s] << " " << G_sample[2][s] << "\n";
-	Rate[s] = omega*
+	Rate_sample[s] = omega*
 	  ((G_sample[0][s]*G_sample[1][s]*
 	    erFrac[0][s]*erFrac[1][s])/
 	   (G_sample[0][s]*erFrac[0][s]+
@@ -509,7 +511,7 @@ double Resonance::calcNarrow(double T){
 void Resonance::printRate(){
 
   // Convert all vector to an array
-  double* Rate_Array = &Rate[0];
+  double* Rate_Array = &Rate_sample[0];
   
   // If there are enough samples, calculate the mean, variance,
   // log-mean and log-variance and bin the rates

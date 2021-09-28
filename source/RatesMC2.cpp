@@ -12,10 +12,7 @@
 #include <iomanip>
 #include <fstream>
 #include <limits>
-#include <algorithm>    // std::sort
 
-#include <gsl/gsl_statistics.h>
-#include <gsl/gsl_vector.h>
 
 #include "omp.h"
 
@@ -132,12 +129,12 @@ int main(int argc, char** argv){
       // Sum the total rate
       double totalRate = ADRate0 + ADRate1;
       for(double res : resonancesSample){
-	std::cout << res << " ";
+	//std::cout << res << " ";
 	totalRate += res;
       }
-      std::cout << "\n";
+      //std::cout << "\n";
 
-      std::cout << "Total rate = " << totalRate << "\n";
+      //std::cout << "Total rate = " << totalRate << "\n";
 
       // Calculate contribution for each resonance. 
       std::vector<double> Cont;
@@ -145,52 +142,18 @@ int main(int argc, char** argv){
       Cont.push_back(ADRate1/totalRate);
       for(double res : resonancesSample)
 	Cont.push_back(res/totalRate);
-      for(int i=0; i<Cont.size(); i++)
-	std::cout << Cont[i] << " ";
-      std::cout << "\n";
+      //for(int i=0; i<Cont.size(); i++)
+      //	std::cout << Cont[i] << " ";
+	//std::cout << "\n";
       Contributions.push_back(Cont);
       
       // Fill the total reaction rate vector
       RateSample.push_back(totalRate);
       
     }
-    
-    std::cout << "At the end we have\n";
-    std::cout << "RateSample of length: " << RateSample.size() << "\n";
-    //transpose(Contributions);
-    std::cout << "Contributions of length: " << Contributions.size() << " X "
-	      << Contributions[0].size() << "\n";
-    std::cout << std::endl;
-    
-    // From the contributions, calculate Low, median, and high
-    // contribution for each resonance
-    // Sort, and find quantiles for each rate contribution
-    std::vector<double> LowCont;
-    std::vector<double> HighCont;
-    std::vector<double> MedianCont;
-    for(int j=0;j<Contributions.size();j++){
 
-      // Sort the Contributions for each resonance
-      //std::sort (Contributions[j].begin(), Contributions[j].end());
-      for(int s = 0; s<Contributions[j].size(); s++){
-	std::cout << Contributions[j][s] << " ";
-      }
-      std::cout << std::endl;
-      
-      // Now convert this into a gsl vector
-      gsl_vector_const_view gsl_v =
-	gsl_vector_const_view_array( &Contributions[j][0], Contributions[j].size() );
-      
-      LowCont.push_back(gsl_stats_quantile_from_sorted_data(gsl_v.vector.data,1, Contributions[j].size(),0.16));
-      HighCont.push_back(gsl_stats_quantile_from_sorted_data(gsl_v.vector.data,1, Contributions[j].size(),0.84));
-      MedianCont.push_back(gsl_stats_median_from_sorted_data(gsl_v.vector.data,1,Contributions[j].size()));
-    }
-
-    for(int i=0; i<LowCont.size(); i++){
-      std::cout << "i = " << i << "  LowCont = " << LowCont[i] <<  "  MedianCont = " << MedianCont[i]
-		<< "  HighCont = " << HighCont[i] << "\n";
-    }
-    
+    // Write the contributions
+    writeContributions(Contributions);
     /*
 #pragma omp critical
     {

@@ -4,11 +4,14 @@
 #include <limits>
 #include <vector>
 #include <sstream>
+#include <algorithm>    // std::sort
 
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf_log.h>
 #include <gsl/gsl_sf_coulomb.h>
+#include <gsl/gsl_statistics.h>
+#include <gsl/gsl_vector.h>
 
 #include "Utilities.h"
 
@@ -469,7 +472,44 @@ void transpose(std::vector<std::vector<double> > &b){
   
 }
 
+//----------------------------------------------------------------------
+void writeContributions(std::vector<std::vector<double> > Contributions){
 
+    std::cout << "At the end we have\n";
+    //std::cout << "RateSample of length: " << RateSample.size() << "\n";
+    transpose(Contributions);
+    std::cout << "Contributions of length: " << Contributions.size() << " X "
+	      << Contributions[0].size() << "\n";
+    std::cout << std::endl;
+    
+    // From the contributions, calculate Low, median, and high
+    // contribution for each resonance
+    // Sort, and find quantiles for each rate contribution
+    std::vector<double> LowCont;
+    std::vector<double> HighCont;
+    std::vector<double> MedianCont;
+    for(int j=0;j<Contributions.size();j++){
+
+      // Sort the Contributions for each resonance
+      std::sort (Contributions[j].begin(), Contributions[j].end());
+      
+      // Now convert this into a gsl vector
+      gsl_vector_const_view gsl_v =
+	gsl_vector_const_view_array( &Contributions[j][0], Contributions[j].size() );
+      
+      LowCont.push_back(gsl_stats_quantile_from_sorted_data(gsl_v.vector.data,1, Contributions[j].size(),0.16));
+      HighCont.push_back(gsl_stats_quantile_from_sorted_data(gsl_v.vector.data,1, Contributions[j].size(),0.84));
+      MedianCont.push_back(gsl_stats_median_from_sorted_data(gsl_v.vector.data,1,Contributions[j].size()));
+    }
+
+    for(int i=0; i<LowCont.size(); i++){
+      std::cout << "i = " << i << "  LowCont = " << LowCont[i] <<  "  MedianCont = " << MedianCont[i]
+		<< "  HighCont = " << HighCont[i] << "\n";
+    }
+    
+
+  
+}
 
 //----------------------------------------------------------------------
 // Check for zero
