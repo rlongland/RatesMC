@@ -5,6 +5,25 @@
 
    Description: Monte Carlo reaction rate code. This version 2 is for
    public release!
+
+   TO DO:
+    - Check accounting for negative energy resonances
+    - Check +ve energy resonances that go negative
+    - Output RatesMC.out
+    - Output RatesMC.latex
+    - Allow factor uncertainty on non-resonant rate
+    - More default temperatures (0.001 - 0.009 GK)
+    - Output S-factor for any broad resonances + non-resonant terms
+    - Output broad resonance integrand? All resonances at all temperatures?
+    - Output Porter-Thomas samples
+    - R codes for analysis
+      - PlotUncertainty.R (like PlotCompare/PlotContour)
+      - PlotPanel6.R
+      - PlotPanelall.R
+      - PlotSFactor.R (plots the S-factor for broad and non-resonant parts)
+      - PlotIntegrand.R (plots the rate integrand at a given temperature)
+      - PlotPT.R (plots the Porter-Thomas samples for a given resonance)
+      - PlotCorrelations.R (plots some set of Rate vs. input parameter at a given T)
    ======================================================================
 */
 
