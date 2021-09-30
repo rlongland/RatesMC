@@ -65,12 +65,16 @@ int main(int argc, char** argv){
   } else {
     ifilename = argv[1];
   }
+  outfile.open(ofilename);
   
   // Make a reaction. This is where everything is held
   Reaction *Reac = new Reaction();
   
   // Open the input file
   int ret = ReadInputFile(ifilename, Reac);
+
+  // Make output file headers
+  writeOutputFileHeaders(Reac);
   
   // Set up the random sampler
   setupRandom();
@@ -170,9 +174,17 @@ int main(int argc, char** argv){
       RateSample.push_back(totalRate);
       
     }
+    // The classical rates can be easily summed
+    classicalRate.push_back(ADRate[0]+ADRate[1]+ResRate);
+    std::cout << "Classical Total Rate = " << classicalRate.back() << "\n";
 
+
+    
     // Write the contributions
     writeContributions(Contributions, T);
+
+    // Write the rates
+    writeRates(RateSample, T);
     /*
 #pragma omp critical
     {
@@ -182,9 +194,6 @@ int main(int argc, char** argv){
       std::cout << "Classical Resonant Rate (again) = " << ResRate << "\n";
     }
     */
-    // The classical rates can be easily summed
-    classicalRate.push_back(ADRate[0]+ADRate[1]+ResRate);
-    std::cout << "Classical Total Rate = " << classicalRate.back() << "\n";
   }
 
   

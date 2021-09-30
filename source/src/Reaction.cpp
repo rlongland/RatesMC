@@ -64,7 +64,7 @@ void Reaction::addResonance(int i, double E_cm, double dE_cm, double wg, double 
   Resonances.push_back(Res);
 }
 
-void Reaction::getName(){
+void Reaction::printName(){
   cout << "The reaction name is: " << Name << "\n";
 }
 

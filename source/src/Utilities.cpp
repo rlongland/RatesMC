@@ -24,6 +24,7 @@ std::ofstream testfile;
 std::ofstream ptfile;
 std::ofstream sampfile;
 std::ofstream contribfile;
+std::ofstream outfile;
 int NSamples;
 int NTemps;
 bool ErrorFlag;
@@ -31,7 +32,7 @@ std::vector<double> Temp;
 
 // counters
 int PenZeroCount=0, IntegratedCount=0, SubSampledPosCount=0, SampledNegCount=0,
-  NANCount=0, BelowIntLimit=0, IntfNANCount=0;
+  NANCount=0, BelowIntLimit=0, IntfNANCount=0, LogZeroCount=0;
 
 // Read an integer from a single line
 int readInt(std::ifstream &infile){
@@ -473,6 +474,20 @@ void transpose(std::vector<std::vector<double> > &b){
 }
 
 //----------------------------------------------------------------------
+void writeOutputFileHeaders(Reaction *R){
+
+  outfile << R->getName() << std::endl;
+  outfile << "Samples = " << NSamples << std::endl;
+  outfile << " T9     RRate_low       Classical Rate  Median Rate" << 
+    "     Mean Rate       RRate_high      Log-Normal mu" <<
+    "      Log-Normal sigma" << 
+    " A-D Statistic" << std::endl;
+  
+
+  
+}
+
+//----------------------------------------------------------------------
 void writeContributions(std::vector<std::vector<double> > Contributions, double Temperature){
 
   //std::cout << "At the end we have\n";
@@ -527,6 +542,132 @@ void writeContributions(std::vector<std::vector<double> > Contributions, double 
     
 
   
+}
+
+//----------------------------------------------------------------------
+// Write the rate to output and LaTeX file
+void writeRates(std::vector<double> Rates, double Temperature){
+
+  // If there are enough samples, calculate the mean, variance,
+  // log-mean and log-variance and bin the rates
+  // Turn off the gsl error handler in case we have a negative number here
+
+  double MeanRate, RateMu, RateSigma;
+  // The 1- and 2-sigma high and low rates
+  double Low2Rate, LowRate, MedianRate, HighRate, High2Rate;
+  
+  gsl_set_error_handler_off();
+  double lograte[NSamples];
+  gsl_sf_result LogResult;
+  if(NSamples > 2){
+    for(int s=0;s<NSamples;s++){
+      //summed[k] *= RateFactor;
+      int status = gsl_sf_log_e(Rates[s],&LogResult);
+      // Check to make sure log didn't error
+      if(status){
+	ErrorFlag = true;
+	LogZeroCount++;
+	lograte[s] = 0.0;
+      } else {
+	lograte[s] = LogResult.val;
+      }
+    }
+    /*    
+      // No longer need to bin rates
+      //      BinRates(summed,Temp[i],i,distfileName);
+      for(int k=0;k<NSamples;k++){
+	sampfile << summed[k] << endl;
+	summed[k] /= RateFactor;
+      }
+      sampfile << endl;
+    */
+  }
+
+  // Now, find the uncertainties. Before finding quantiles, need to sort
+  std::sort(Rates.begin(), Rates.end());
+  // Now convert the rates into a gsl vector
+  gsl_vector_const_view gsl_Rates =
+    gsl_vector_const_view_array( &Rates[0], Rates.size() );
+
+  // Means and variances
+  MeanRate = gsl_stats_mean(gsl_Rates.vector.data,1,NSamples);
+  RateMu = gsl_stats_mean(lograte,1,NSamples);
+  RateSigma = sqrt(gsl_stats_variance(lograte,1,NSamples));
+  
+  // Uncertainties calculated from quantiles
+  LowRate = gsl_stats_quantile_from_sorted_data   (gsl_Rates.vector.data,1,Rates.size(),0.16);
+  Low2Rate =  gsl_stats_quantile_from_sorted_data (gsl_Rates.vector.data,1,Rates.size(),0.025);
+  HighRate =  gsl_stats_quantile_from_sorted_data (gsl_Rates.vector.data,1,Rates.size(),0.84); 
+  High2Rate =  gsl_stats_quantile_from_sorted_data(gsl_Rates.vector.data,1,Rates.size(),0.975); 
+  MedianRate =  gsl_stats_median_from_sorted_data (gsl_Rates.vector.data,1,Rates.size());
+  
+  /*    // Turn off the gsl error handler in case we have a negative number here
+    gsl_set_error_handler_off();
+    gsl_sf_result LogMean;
+
+    int status = gsl_sf_log_e(MeanRate[i],&LogMean);
+
+    // if log calculation failed, set mu and sigma to zero and print error
+    if(status){
+      ErrorFlag = true;
+      cout << "\nERROR: Something went wrong in logarithm, negative or zero rate?!\n"
+	   << endl;
+      RateMu[i] = 0.0;
+      RateSigma[i] = 0.0;
+    } else {
+      // Calculate mu and sigma (OLD WAY as of 1/18/2007)
+      //       RateMu[i] = LogMean.val - 0.5*gsl_sf_log(1.0+
+      // 					   (VarianceRate[i]/
+      // 					    gsl_pow_2(MeanRate[i])));
+      //       RateSigma[i] = sqrt(gsl_sf_log(1.0+(VarianceRate[i]/
+      // 					  gsl_pow_2(MeanRate[i]))));
+
+      // Check to see if mu is close to ln(median)
+      //cout << "MedianRate = " << MedianRate[i] << endl;
+      double mu_err = (RateMu[i]-gsl_sf_log(MedianRate[i]))/
+	gsl_sf_log(MedianRate[i]);
+
+      // Sigma error using high and low rates
+      //       double sigma_err =
+      // 	(RateSigma[i]-gsl_sf_log(sqrt(HighRate[i]/LowRate[i])))/
+      // 	gsl_sf_log(sqrt(HighRate[i]/LowRate[i]));
+
+      // sigma error using high and medium rates
+      double sigma_err =
+ 	(RateSigma[i]-gsl_sf_log(HighRate[i]/MedianRate[i]))/
+ 	gsl_sf_log(HighRate[i]/MedianRate[i]);
+
+
+      // Renormalisation taken out, see backup from 20070114 to put back in
+      if(fabs(mu_err) > 0.03 || fabs(sigma_err)>0.2){
+	ErrorFlag = true;
+	WeirdMuSigmaCount++;
+
+	// 	logfile << "\tWARNING: The lognormal parameters do not describe\n" <<
+	// 	  "\t\tthe distribution well." << endl;
+
+	Parenth[i][0] = ' ';
+	Parenth[i][1] = ' ';
+      }
+
+    }
+
+    if(LogZeroCount > 0){
+      logfile << "\tWARNING: The Rate was zero, creating \n\t\tproblems in ln " <<
+	LogZeroCount << " times" << endl;
+    }
+
+    // Check validity of lognormal. Only for more than 1 sample
+    if(NSamples > 1){
+      AndDar_Asqrd[i] = CheckFit(summed,RateMu[i],RateSigma[i],RateFactor);
+    } else {
+      AndDar_Asqrd[i] = 0.0;
+    }
+  */
+
+  
+
+
 }
 
 //----------------------------------------------------------------------

@@ -19,7 +19,7 @@ extern bool bEnergyCorrelations;
 
 // Counters
 extern int PenZeroCount,IntegratedCount,SubSampledPosCount,SampledNegCount,
-  NANCount,BelowIntLimit,IntfNANCount;
+  NANCount,BelowIntLimit,IntfNANCount, LogZeroCount;
 
 // Flags
 extern bool ErrorFlag;
@@ -31,6 +31,7 @@ extern std::ofstream testfile;
 extern std::ofstream ptfile;
 extern std::ofstream sampfile;
 extern std::ofstream contribfile;
+extern std::ofstream outfile;
 
 // Other program-wide variables
 extern std::vector<double> Temp;
@@ -62,8 +63,13 @@ double PenFactor(double E, double L, double Mass0, double Mass1,
 
 // Transpose a 2D double vector
 void transpose(std::vector<std::vector<double> > &b);
+
+// Write headers (reaction name, etc) into output files
+void writeOutputFileHeaders(Reaction *R);
 // Write the contributions of each resonance to file
 void writeContributions(std::vector<std::vector<double> > Contributions, double Temperature);
+// Write the rates to file
+void writeRates(std::vector<double> Rates, double Temperature);
 
 // Check for zero
 bool isZero(double x);

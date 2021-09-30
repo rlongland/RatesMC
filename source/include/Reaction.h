@@ -13,7 +13,7 @@ class Reaction{
   ~Reaction();
 
   // Getters
-  void getName();
+  void printName();
 
   // Setters
   void setName(std::string a){Name=a;}
@@ -35,6 +35,7 @@ class Reaction{
   void writeSamples();
   
   // Getters
+  std::string getName(){return Name;}
   double getsmallestdE(){return smallestdE;}
   int getGamma_index(){return Gamma_index;}
 
