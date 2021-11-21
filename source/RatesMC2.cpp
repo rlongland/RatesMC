@@ -58,15 +58,18 @@ int main(int argc, char** argv){
   
   // Input and output files
   std::string ofilename;
+  std::string ofullfilename;
   std::string ifilename;
   if(argc==1){
     ifilename = "RatesMC.in";
     ofilename = "RatesMC.out";
+    ofullfilename = "RatesMC.full";
   } else {
     ifilename = argv[1];
   }
   outfile.open(ofilename);
-  
+  outfullfile.open(ofullfilename);
+
   // Make a reaction. This is where everything is held
   Reaction *Reac = new Reaction();
   
@@ -119,6 +122,8 @@ int main(int argc, char** argv){
     std::cout << "Proc(" << ID << ") T = " << T; // << "\n";
     std::cout << "\n" ;
 
+    logfile << "Temperature = " << T << " GK" << std::endl;
+    
     // --------------
     // CALCULATE RATE
     // --------------
@@ -184,7 +189,7 @@ int main(int argc, char** argv){
     writeContributions(Contributions, T);
 
     // Write the rates
-    writeRates(RateSample, T);
+    writeRates(RateSample, classicalRate.back(), T);
     /*
 #pragma omp critical
     {
@@ -194,6 +199,10 @@ int main(int argc, char** argv){
       std::cout << "Classical Resonant Rate (again) = " << ResRate << "\n";
     }
     */
+
+    // For this temperature, let the user know if nothing went wrong!
+    if(!ErrorFlag) logfile << "\tNo Errors Occured!" << std::endl;
+
   }
 
   
@@ -207,6 +216,8 @@ int main(int argc, char** argv){
   logfile.close();
   testfile.close();
   ptfile.close();
+  outfile.close();
+  outfullfile.close();
   
   return 1;
 }

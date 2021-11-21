@@ -9,6 +9,7 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf_log.h>
+#include <gsl/gsl_sf_exp.h>
 #include <gsl/gsl_sf_coulomb.h>
 #include <gsl/gsl_statistics.h>
 #include <gsl/gsl_vector.h>
@@ -25,6 +26,7 @@ std::ofstream ptfile;
 std::ofstream sampfile;
 std::ofstream contribfile;
 std::ofstream outfile;
+std::ofstream outfullfile;
 int NSamples;
 int NTemps;
 bool ErrorFlag;
@@ -32,7 +34,8 @@ std::vector<double> Temp;
 
 // counters
 int PenZeroCount=0, IntegratedCount=0, SubSampledPosCount=0, SampledNegCount=0,
-  NANCount=0, BelowIntLimit=0, IntfNANCount=0, LogZeroCount=0;
+  NANCount=0, BelowIntLimit=0, IntfNANCount=0, LogZeroCount=0,
+  WeirdMuSigmaCount=0;
 
 // Read an integer from a single line
 int readInt(std::ifstream &infile){
@@ -360,7 +363,7 @@ void defineTemperatures(){
 			 0.8,0.9,1.0,1.25,1.5,1.75,2,2.5,3,
 			 3.5,4,5,6,7,8,9,10};
   */
-  std::vector<double> defaultT{0.5};
+  std::vector<double> defaultT{0.5,1.0};
   Temp = defaultT;
 
   logfile << "--------------------------------------------------\n";
@@ -478,11 +481,16 @@ void writeOutputFileHeaders(Reaction *R){
 
   outfile << R->getName() << std::endl;
   outfile << "Samples = " << NSamples << std::endl;
-  outfile << " T9     RRate_low       Classical Rate  Median Rate" << 
-    "     Mean Rate       RRate_high      Log-Normal mu" <<
+  outfile << " T9      RRate_low       Classical Rate  Median Rate" << 
+    "     Mean Rate       RRate_high     Log-Normal mu" <<
     "      Log-Normal sigma" << 
     " A-D Statistic" << std::endl;
   
+  outfullfile << R->getName() << std::endl;
+  outfullfile << "Samples = " << NSamples << std::endl;
+  outfullfile << " T9      RRate_2low      RRate_low       Classical Rate  Median Rate" << 
+    "     Mean Rate       RRate_high     RRate_2high     Log-Normal mu" <<
+    "      Log-Normal sigma A-D Statistic" << std::endl;
 
   
 }
@@ -546,7 +554,7 @@ void writeContributions(std::vector<std::vector<double> > Contributions, double 
 
 //----------------------------------------------------------------------
 // Write the rate to output and LaTeX file
-void writeRates(std::vector<double> Rates, double Temperature){
+void writeRates(std::vector<double> Rates, double ARate, double Temperature){
 
   // If there are enough samples, calculate the mean, variance,
   // log-mean and log-variance and bin the rates
@@ -555,6 +563,9 @@ void writeRates(std::vector<double> Rates, double Temperature){
   double MeanRate, RateMu, RateSigma;
   // The 1- and 2-sigma high and low rates
   double Low2Rate, LowRate, MedianRate, HighRate, High2Rate;
+  // Parentheses characters
+  char Parenth[2] = {' ',' '};
+
   
   gsl_set_error_handler_off();
   double lograte[NSamples];
@@ -595,79 +606,174 @@ void writeRates(std::vector<double> Rates, double Temperature){
   RateSigma = sqrt(gsl_stats_variance(lograte,1,NSamples));
   
   // Uncertainties calculated from quantiles
-  LowRate = gsl_stats_quantile_from_sorted_data   (gsl_Rates.vector.data,1,Rates.size(),0.16);
   Low2Rate =  gsl_stats_quantile_from_sorted_data (gsl_Rates.vector.data,1,Rates.size(),0.025);
+  LowRate = gsl_stats_quantile_from_sorted_data   (gsl_Rates.vector.data,1,Rates.size(),0.16);
+  MedianRate =  gsl_stats_median_from_sorted_data (gsl_Rates.vector.data,1,Rates.size());
   HighRate =  gsl_stats_quantile_from_sorted_data (gsl_Rates.vector.data,1,Rates.size(),0.84); 
   High2Rate =  gsl_stats_quantile_from_sorted_data(gsl_Rates.vector.data,1,Rates.size(),0.975); 
-  MedianRate =  gsl_stats_median_from_sorted_data (gsl_Rates.vector.data,1,Rates.size());
   
-  /*    // Turn off the gsl error handler in case we have a negative number here
-    gsl_set_error_handler_off();
-    gsl_sf_result LogMean;
+  // Turn off the gsl error handler in case we have a negative number here
+  gsl_set_error_handler_off();
+  gsl_sf_result LogMean;
 
-    int status = gsl_sf_log_e(MeanRate[i],&LogMean);
+  int status = gsl_sf_log_e(MeanRate,&LogMean);
 
-    // if log calculation failed, set mu and sigma to zero and print error
-    if(status){
+  // if log calculation failed, set mu and sigma to zero and print error
+  if(status){
+    ErrorFlag = true;
+    std::cout << "\nERROR: Something went wrong in logarithm, negative or zero rate?!\n"
+	      << std::endl;
+    RateMu = 0.0;
+    RateSigma = 0.0;
+  } else {
+    // Calculate mu and sigma 
+    // Check to see if mu is close to ln(median)
+    double mu_err = (RateMu-gsl_sf_log(MedianRate))/
+      gsl_sf_log(MedianRate);
+
+    // sigma error using high and medium rates
+    double sigma_err =
+      (RateSigma - gsl_sf_log(HighRate/MedianRate))/
+      gsl_sf_log(HighRate/MedianRate);
+    
+    
+    if(fabs(mu_err) > 0.03 || fabs(sigma_err)>0.2){
       ErrorFlag = true;
-      cout << "\nERROR: Something went wrong in logarithm, negative or zero rate?!\n"
-	   << endl;
-      RateMu[i] = 0.0;
-      RateSigma[i] = 0.0;
-    } else {
-      // Calculate mu and sigma (OLD WAY as of 1/18/2007)
-      //       RateMu[i] = LogMean.val - 0.5*gsl_sf_log(1.0+
-      // 					   (VarianceRate[i]/
-      // 					    gsl_pow_2(MeanRate[i])));
-      //       RateSigma[i] = sqrt(gsl_sf_log(1.0+(VarianceRate[i]/
-      // 					  gsl_pow_2(MeanRate[i]))));
-
-      // Check to see if mu is close to ln(median)
-      //cout << "MedianRate = " << MedianRate[i] << endl;
-      double mu_err = (RateMu[i]-gsl_sf_log(MedianRate[i]))/
-	gsl_sf_log(MedianRate[i]);
-
-      // Sigma error using high and low rates
-      //       double sigma_err =
-      // 	(RateSigma[i]-gsl_sf_log(sqrt(HighRate[i]/LowRate[i])))/
-      // 	gsl_sf_log(sqrt(HighRate[i]/LowRate[i]));
-
-      // sigma error using high and medium rates
-      double sigma_err =
- 	(RateSigma[i]-gsl_sf_log(HighRate[i]/MedianRate[i]))/
- 	gsl_sf_log(HighRate[i]/MedianRate[i]);
-
-
-      // Renormalisation taken out, see backup from 20070114 to put back in
-      if(fabs(mu_err) > 0.03 || fabs(sigma_err)>0.2){
-	ErrorFlag = true;
-	WeirdMuSigmaCount++;
-
-	// 	logfile << "\tWARNING: The lognormal parameters do not describe\n" <<
-	// 	  "\t\tthe distribution well." << endl;
-
-	Parenth[i][0] = ' ';
-	Parenth[i][1] = ' ';
-      }
-
+      WeirdMuSigmaCount++;
+      
+      Parenth[0] = ' ';
+      Parenth[1] = ' ';
     }
 
-    if(LogZeroCount > 0){
-      logfile << "\tWARNING: The Rate was zero, creating \n\t\tproblems in ln " <<
-	LogZeroCount << " times" << endl;
-    }
-
-    // Check validity of lognormal. Only for more than 1 sample
-    if(NSamples > 1){
-      AndDar_Asqrd[i] = CheckFit(summed,RateMu[i],RateSigma[i],RateFactor);
-    } else {
-      AndDar_Asqrd[i] = 0.0;
-    }
-  */
+  }
 
   
+  if(LogZeroCount > 0){
+    logfile << "\tWARNING: The Rate was zero, creating \n\t\tproblems in ln " <<
+      LogZeroCount << " times" << std::endl;
+  }
+
+  // Check validity of lognormal. Only for more than 1 sample
+  double AndDar_Asqrd=0.0;
+  if(NSamples > 1){
+    AndDar_Asqrd = CalcAD(Rates,RateMu,RateSigma);
+  } else {
+    AndDar_Asqrd = 0.0;
+  }
+
+  //  std::cout << "AD = " << AndDar_Asqrd << std::endl;
+  // Print stuff
+  std::cout << "\n";
+  std::cout << "For T9 = " << Temperature << " the median rate = ";
+  std::cout.precision(3);
+  std::cout << std::scientific << MedianRate << "\n"  << std::endl;
+  std::cout.unsetf(std::ios_base::scientific);
 
 
+  if(LowRate < 1.0e-99)LowRate=0.0;
+  if(ARate < 1.0e-99)ARate=0.0;
+  if(Low2Rate < 1.0e-99)Low2Rate=0.0;
+  if(High2Rate < 1.0e-99)High2Rate=0.0;
+  if(MedianRate < 1.0e-99)MedianRate=0.0;
+  if(MeanRate < 1.0e-99)MeanRate=0.0;
+  if(HighRate < 1.0e-99)HighRate=0.0;
+    
+  char buffer[200];
+  // RatesMC.out output
+  sprintf(buffer,"%6.3f  %10.3e      %10.3e      %10.3e      %10.3e      %10.3e     %c% 10.4e%c     %c% 10.4e%c      %9.3e",
+	  Temperature,LowRate,ARate,MedianRate,MeanRate,HighRate,
+	  Parenth[0],RateMu,Parenth[1],
+	  Parenth[0],RateSigma,Parenth[1],
+	  AndDar_Asqrd);
+  outfile << buffer << std::endl;
+  //  outfile << std::endl;
+  
+  // RatesMC.full output
+  sprintf(buffer,"%6.3f  %10.3e      %10.3e      %10.3e      %10.3e      %10.3e      %10.3e     %10.3e      %c% 10.3e%c      %c% 10.3e%c       %9.3e",
+	  Temperature,Low2Rate, LowRate, ARate, MedianRate, MeanRate, HighRate,
+	  High2Rate, Parenth[0],RateMu,Parenth[1],Parenth[0],RateSigma,Parenth[1],AndDar_Asqrd);
+  outfullfile << buffer << std::endl;
+  //  outfullfile << std::endl;
+  
+
+}
+
+//----------------------------------------------------------------------
+#include <gsl/gsl_sf_erf.h>
+//---------------------------------------------------------------
+// Check how well the lognormal fits
+double CalcAD(std::vector<double> Rates,double Mu,double Sigma){
+
+  // For now, do a Kolmogorov-Smirnov Goodness-of-Fit Test
+  double KS = 0.0;
+  double CumLognorm[NSamples+1];
+  double X,maxarray[3];
+  double AndDar_S=0.0, AndDar_Asqrd=0.0;
+  int NanADCount = 0;
+
+  // For the anderson-Darling test, convert mu and sigma to normal parameters
+  // and take the log of each point
+  //double DistMean = gsl_sf_log(gsl_sf_exp(Mu + 0.5*gsl_pow_2(Sigma)));
+  //double DistVar = gsl_sf_log((gsl_sf_exp(gsl_pow_2(Sigma))-1.0)*
+  //		      gsl_sf_exp(2.0*Mu + gsl_pow_2(Sigma)));
+
+  CumLognorm[0]=0.0;
+  for(int i=1;i<(NSamples+1);i++){
+    X = Rates[i];
+    // if X=0, can't take log, so check
+    if(X==0.0){
+      CumLognorm[i] = CumLognorm[i-1];
+    } else {
+      CumLognorm[i] = CumLognorm[i-1]+((1.0/(X*Sigma*sqrt(2.0*M_PI)))*
+				       gsl_sf_exp(-gsl_pow_2(gsl_sf_log(X)-Mu)/
+						  (2.0*gsl_pow_2(Sigma))));
+    }
+  }
+  double norm = 1/CumLognorm[NSamples];
+  double AndDar_S_tmp;
+
+  for(int i=1;i<(NSamples+1);i++){
+    X = Rates[i];
+
+    // check to make sure X isn't zero
+    if(X==0.0){
+      AndDar_S_tmp = 0.0;
+    } else {
+      // also calculate the Anderson-Darling test
+      double F = 0.5*(gsl_sf_erf((gsl_sf_log(Rates[i-1])-Mu)/
+				 (sqrt(2.0)*Sigma)) + 1.0);
+      double OneMinusF = 1.0-
+	0.5*(gsl_sf_erf((gsl_sf_log(Rates[NSamples-i])-Mu)/
+			(sqrt(2.0)*Sigma)) + 1.0);
+
+      AndDar_S_tmp =
+	((2.0*i-1.0)/NSamples)*(gsl_sf_log(F)+gsl_sf_log(OneMinusF));
+    }
+
+    // check for NaN (if F is too small)
+    if(!isnan(AndDar_S_tmp)){
+      AndDar_S += AndDar_S_tmp;
+    } else {
+      NanADCount++;
+    }
+
+    maxarray[0]=KS;
+    maxarray[1]=norm*CumLognorm[i] - double(i-1.0)/NSamples;
+    maxarray[2]=double(i)/NSamples - norm*CumLognorm[i];
+    KS = gsl_stats_max(maxarray,1,3);
+  }
+
+
+  AndDar_Asqrd = (-NSamples-AndDar_S)*(1+4.0/NSamples+25.0/gsl_pow_2(NSamples));
+
+  if(NanADCount > 0){
+    logfile << "\tWARNING: Anderson-Darling test cannot \n\t\tbe calculated for " << NanADCount <<
+      " sample(s).\n" << std::endl;
+    ErrorFlag=true;
+  }
+  //  cout << KS << "\t" << AndDar_Asqrd << endl;
+
+  return AndDar_Asqrd;
 }
 
 //----------------------------------------------------------------------

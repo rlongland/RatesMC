@@ -32,6 +32,7 @@ extern std::ofstream ptfile;
 extern std::ofstream sampfile;
 extern std::ofstream contribfile;
 extern std::ofstream outfile;
+extern std::ofstream outfullfile;
 
 // Other program-wide variables
 extern std::vector<double> Temp;
@@ -69,7 +70,10 @@ void writeOutputFileHeaders(Reaction *R);
 // Write the contributions of each resonance to file
 void writeContributions(std::vector<std::vector<double> > Contributions, double Temperature);
 // Write the rates to file
-void writeRates(std::vector<double> Rates, double Temperature);
+void writeRates(std::vector<double> Rates, double ARate, double Temperature);
+
+// Check how well the lognormal fits
+double CalcAD(std::vector<double> Rates,double Mu,double Sigma);
 
 // Check for zero
 bool isZero(double x);
