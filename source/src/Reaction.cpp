@@ -14,6 +14,7 @@
 
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf_exp.h>
+#include <gsl/gsl_sf_log.h>
 #include <gsl/gsl_integration.h>
 
 #include "Resonance.h"
@@ -358,8 +359,14 @@ double Reaction::calcNonResonantIntegrated(double Temp, int j){
       ARate[j][i]=0.0;
     }
   } else {
-    logNormalize(ADRate,dS[j]*ADRate,mu,sigma);
-    
+    // Either use the fractional uncertainty in S
+    if(dS[j] >= 0){
+      logNormalize(ADRate,dS[j]*ADRate,mu,sigma);
+      // Or interpret it as a factor uncertainty
+    } else {
+      mu = gsl_sf_log(ADRate);
+      sigma = gsl_sf_log(-dS[j]);
+    }
     // if mu and sigma return as zero, the rate is zero (very small)
     if((mu==0. && sigma==0.)){
       ADRate=0.0;

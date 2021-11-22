@@ -108,6 +108,9 @@ void readNonResonant(std::ifstream &infile, Reaction &R, int part){
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
   R.setNonResonant(s,sp,spp,ds,cutoffe,part);
 
+  if(ds < 0)logfile << "Non-resonant part " << part+1 << " has a factor uncertainty of " 
+		    << -ds << std::endl;
+  
 }
 
 /* 
