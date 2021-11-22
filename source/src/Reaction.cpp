@@ -14,6 +14,7 @@
 
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf_exp.h>
+#include <gsl/gsl_integration.h>
 
 #include "Resonance.h"
 #include "Reaction.h"
@@ -203,7 +204,6 @@ std::vector<double> Reaction::getResonantRateSample(int s){
 
 //----------------------------------------------------------------------
 // Calculate the direct capture, non-resonant part of the reaction rate
-// WORKING!
 double Reaction::calcNonResonant(double Temp, int j){
 
   //  std::cout << Temp << " " << j << "\n";
@@ -232,7 +232,7 @@ double Reaction::calcNonResonant(double Temp, int j){
   
   // Turn off the error handler in case exp returns zero
   gsl_set_error_handler_off();
-  ADRate = (C1e/pow(Temp,2./3.))*gsl_sf_exp(-C2e/pow(Temp,1./3.)-
+  ADRate = 1.0e-3*(C1e/pow(Temp,2./3.))*gsl_sf_exp(-C2e/pow(Temp,1./3.)-
 					    pow(Temp/cutoff_T,2.))*
     (1 + C3e*pow(Temp,1./3.) + C4e*pow(Temp,2./3.) + C5e*Temp +
      C6e*pow(Temp,4./3.) + C7e*pow(Temp,5./3.));
@@ -268,16 +268,143 @@ double Reaction::calcNonResonant(double Temp, int j){
       }
     } else {
       for(int i=0;i<NSamples;i++){
-	ARate[j][i] = gsl_ran_lognormal(r,mu,sigma)/(1.5399e11/pow(mue*Temp,1.5));
+	ARate[j][i] = gsl_ran_lognormal(r,mu,sigma);///(1.5399e11/pow(mue*Temp,1.5));
 	//	std::cout << ARate[j][i] << "\n";
       }
     }
   }
 
 
-  ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
+  ADRate = ADRate;///(1.5399e11/pow(mue*Temp,1.5));
   
   return ADRate;
+}
+
+//----------------------------------------------------------------------
+// Calculate the non-resonant part of the reaction rate by integrating the
+// astrophysical s-factor
+// Ugly-ass hack
+Reaction * ReactionPtr;
+double NonResonantIntegrandWrapper(double x, void *params)
+{
+  return ReactionPtr->NonResonantIntegrand(x, params);
+}
+// end ugly-ass hack
+double Reaction::calcNonResonantIntegrated(double Temp, int j){
+
+  //  std::cout << Temp << " " << j << "\n";
+  double mue = M0*M1/(M0+M1);
+  //  double mu, sigma;
+
+  double ADRate,mu,sigma;
+
+  // Calculate the rate first and then sample at the end.
+  double E_min = 0.0;
+  double E_max = CutoffE[j]/1000.0;
+  //  std::cout << E_max << std::endl;
+    // GSL Integration functions
+  double result, error;
+  
+  // Define integration limits
+  double x = E_min, x1 = E_max;
+
+  // The array that needs to be passed to the integration function
+  double alpha[7];
+  alpha[0] = j;  // The index of the non-resonant part
+  alpha[1] = mue;
+  alpha[2] = Temp;
+  alpha[3] = S[j]/1000.0;
+  alpha[4] = Sp[j];
+  alpha[5] = Spp[j]*1000.0;
+  alpha[6] = Z0*Z1;
+  //alpha[1] = (int)writeIntegrand;
+
+
+  // Turn off the error handler
+  gsl_set_error_handler_off();
+
+  gsl_integration_workspace * w = gsl_integration_workspace_alloc(1000);
+  gsl_function F;
+  // Can't use Integrand directly because GSL is shit
+  F.function = &NonResonantIntegrandWrapper;
+  //  F.function = &Integrand;
+  F.params = &alpha;
+
+  int status = gsl_integration_qag(&F,      // Function to be integrated
+				   E_min,   // Start of integration
+				   E_max,   // End of integration
+				   0,       // absolute error
+				   1e-3,    // relative error
+				   1000,    // max number of steps (cannot exceed size of workspace
+				   6,       // key - (6=61 point Gauss-Kronrod rules)
+				   w,       // workspace
+				   &result, // The result
+				   &error);
+
+
+  gsl_set_error_handler(NULL);
+
+  ADRate = result*(3.7318e10/(sqrt(mue)*pow(Temp,1.5)));
+
+  //std::cout << "AD Rate = " << ADRate << std::endl;
+  
+
+  // If ADRate is negative, set to zero, this is unphysical
+  if(ADRate < 0.){
+    ErrorFlag = true;
+    logfile << "\tWARNING: The non-resonant part caused a negative rate, \n\t\tsetting to zero." << endl;
+    ADRate = 0.0;
+    for(int i=0;i<NSamples;i++){
+      ARate[j][i]=0.0;
+    }
+  } else {
+    logNormalize(ADRate,dS[j]*ADRate,mu,sigma);
+    
+    // if mu and sigma return as zero, the rate is zero (very small)
+    if((mu==0. && sigma==0.)){
+      ADRate=0.0;
+      for(int i=0;i<NSamples;i++){
+	ARate[j][i]=0.0;
+      }
+    } else {
+      for(int i=0;i<NSamples;i++){
+	ARate[j][i] = gsl_ran_lognormal(r,mu,sigma);///(1.5399e11/pow(mue*Temp,1.5));
+	//	std::cout << ARate[j][i] << "\n";
+      }
+    }
+  }
+
+
+  ADRate = ADRate;///(1.5399e11/pow(mue*Temp,1.5));
+  
+  return ADRate;
+}
+
+double Reaction::NonResonantIntegrand(double x, void * params){
+
+  //  std::cout << "inside " << x << std::endl; 
+  double* par = (double*)params;
+  int index = (int)par[0];
+  double mue = (double)par[1];
+  double T = (double)par[2];
+  double S = (double)par[3];
+  double Sp = (double)par[4];
+  double Spp = (double)par[5];
+  double Z0Z1 = (double)par[6];
+
+  //  std::cout << index << " " << mue << " " << T << std::endl;
+  //  std::cout << S << std::endl;
+  double Ssum = S + Sp*x + 0.5*Spp*x*x;
+
+  //  std::cout << "Ssum = " << Ssum << std::endl;
+  
+  double eta = 0.989510*Z0Z1*sqrt(mue/x);
+  double Sommerfeld = gsl_sf_exp(-eta);
+  double Boltzmann = gsl_sf_exp(-11.605*x/T);
+  
+  double integrand = Ssum*Sommerfeld*Boltzmann;
+
+  return integrand;
 }
 
 //----------------------------------------------------------------------

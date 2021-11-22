@@ -33,6 +33,7 @@ extern std::ofstream sampfile;
 extern std::ofstream contribfile;
 extern std::ofstream outfile;
 extern std::ofstream outfullfile;
+extern std::ofstream latexfile;
 
 // Other program-wide variables
 extern std::vector<double> Temp;
@@ -71,6 +72,9 @@ void writeOutputFileHeaders(Reaction *R);
 void writeContributions(std::vector<std::vector<double> > Contributions, double Temperature);
 // Write the rates to file
 void writeRates(std::vector<double> Rates, double ARate, double Temperature);
+// Write the LaTeX file
+void WriteLatex2(double Temperature, double LowRate, double MedianRate, double HighRate,
+		 double RateSigma);
 
 // Check how well the lognormal fits
 double CalcAD(std::vector<double> Rates,double Mu,double Sigma);

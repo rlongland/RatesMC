@@ -1,7 +1,7 @@
 /* ======================================================================
    RatesMC2
    Author: R. Longland
-   Date: 2018-11-13
+   Start Date: 2018-11-13
 
    Description: Monte Carlo reaction rate code. This version 2 is for
    public release!
@@ -9,10 +9,7 @@
    TO DO:
     - Check accounting for negative energy resonances
     - Check +ve energy resonances that go negative
-    - Output RatesMC.out
-    - Output RatesMC.latex
     - Allow factor uncertainty on non-resonant rate
-    - More default temperatures (0.001 - 0.009 GK)
     - Output S-factor for any broad resonances + non-resonant terms
     - Output broad resonance integrand? All resonances at all temperatures?
     - Output Porter-Thomas samples
@@ -69,6 +66,7 @@ int main(int argc, char** argv){
   }
   outfile.open(ofilename);
   outfullfile.open(ofullfilename);
+  latexfile.open("RatesMC.latex");
 
   // Make a reaction. This is where everything is held
   Reaction *Reac = new Reaction();
@@ -131,7 +129,8 @@ int main(int argc, char** argv){
     double ADRate[2];
     for(int j=0; j<2; j++){
       ADRate[j] = Reac -> calcNonResonant(T, j);
-      std::cout << "ADRate = " << ADRate[j] << "\n";
+      double tmp = Reac -> calcNonResonantIntegrated(T, j);
+      std::cout << "ADRateold = " << ADRate[j] << " ADRatenew = " << tmp  << "\n";
     }
     
     // Calculate the resonant rate
@@ -188,8 +187,9 @@ int main(int argc, char** argv){
     // Write the contributions
     writeContributions(Contributions, T);
 
-    // Write the rates
+    // Write the rates + LaTeX
     writeRates(RateSample, classicalRate.back(), T);
+
     /*
 #pragma omp critical
     {

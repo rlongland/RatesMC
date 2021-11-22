@@ -1,10 +1,10 @@
 35Ar(p,g)36K
 ****************************************************************************************************************
 1               ! Zproj
-18              ! Ztarget
+14              ! Ztarget 18
 0               ! Zexitparticle (=0 when only 2 channels open)
-1.0078          ! Aproj         
-34.975          ! Atarget
+1.007276          ! Aproj 1.0078         
+28.968815          ! Atarget 34.975
 0               ! Aexitparticle (=0 when only 2 channels open)
 0.5             ! Jproj
 1.5             ! Jtarget
@@ -22,7 +22,7 @@
 Non-resonant contribution
 S(keVb) S'(b)           S''(b/keV)      fracErr Cutoff Energy (keV)
 1.24e2  -8.66e-2        9.96e-5         0.4     1000.0
-0.0     0.0             0.0             0.0     0.0
+107.2     0.0             0.0             0.5     1000.0
 ****************************************************************************************************************
 Resonant Contribution
 Note: G1 = entrance channel, G2 = exit channel, G3 = spectator channel !! Ecm, Exf in (keV); wg, Gx in (eV) !!

@@ -27,6 +27,7 @@ std::ofstream sampfile;
 std::ofstream contribfile;
 std::ofstream outfile;
 std::ofstream outfullfile;
+std::ofstream latexfile;
 int NSamples;
 int NTemps;
 bool ErrorFlag;
@@ -355,15 +356,17 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 void defineTemperatures(){
 
   /*
-  std::vector<double> defaultT{0.01,0.011,0.012,0.013,0.014,0.015,
-			 0.016,0.018,0.020,0.025,0.03,0.04,
-			 0.05,0.06,0.07,0.08,0.09,0.1,0.11,
-			 0.12,0.13,0.14,0.15,0.16,0.18,0.20,
-			 0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,
-			 0.8,0.9,1.0,1.25,1.5,1.75,2,2.5,3,
-			 3.5,4,5,6,7,8,9,10};
+  std::vector<double> defaultT{0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.009,
+			       0.01,0.011,0.012,0.013,0.014,0.015,
+			       0.016,0.018,0.020,0.025,0.03,0.04,
+			       0.05,0.06,0.07,0.08,0.09,0.1,0.11,
+			       0.12,0.13,0.14,0.15,0.16,0.18,0.20,
+			       0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,
+			       0.8,0.9,1.0,1.25,1.5,1.75,2,2.5,3,
+			       3.5,4,5,6,7,8,9,10};
   */
-  std::vector<double> defaultT{0.5,1.0};
+  
+  std::vector<double> defaultT{0.01,0.1,1.0};
   Temp = defaultT;
 
   logfile << "--------------------------------------------------\n";
@@ -694,8 +697,68 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
 	  High2Rate, Parenth[0],RateMu,Parenth[1],Parenth[0],RateSigma,Parenth[1],AndDar_Asqrd);
   outfullfile << buffer << std::endl;
   //  outfullfile << std::endl;
-  
 
+  WriteLatex2(Temperature, LowRate, MedianRate, HighRate, RateSigma);
+
+}
+
+//----------------------------------------------------------------------
+// Function to write a latex table
+void WriteLatex2(double Temperature, double LowRate, double MedianRate, double HighRate,
+		 double RateSigma){
+
+  double low_x,low_f,median_x,median_f,high_x,high_f,fu;
+
+  // Write a test rate to file
+  //   ofile << reactionname << endl;
+  //   ofile << "Samples = " << NSamples << endl;
+  //   ofile << "T9 & Min Rate & Mean Rate & Max Rate & mu & sigma \\\\" << endl;
+
+  // set the precision
+  latexfile.precision(3);
+  latexfile.setf(std::ios::fixed,std::ios::floatfield);
+  latexfile << std::setfill('0');
+  latexfile << setiosflags(std::ios::internal);
+  //  for(int i=0;i<NTemps;i++){
+
+  // Calculate all of the exponent stuff
+  low_f = floor(log(LowRate)/log(10.0));
+  low_x = LowRate*pow(10.0,-low_f);
+  median_f = floor(log(MedianRate)/log(10.0));
+  median_x = MedianRate*pow(10.0,-median_f);
+  high_f = floor(log(HighRate)/log(10.0));
+  high_x = HighRate*pow(10.0,-high_f);
+  //mu_sign = (RateMu>0)-(RateMu<0);
+  //mu_f = floor(log(fabs(RateMu))/log(10.0));
+  //mu_x = RateMu*pow(10.0,-mu_f);
+  //sigma_f = floor(log(RateSigma)/log(10.0));
+  //sigma_x = RateSigma*pow(10.0,-sigma_f);
+  //AD_f = floor(log(AD)/log(10.0));
+  //AD_x = AD*pow(10.0,-AD_f);
+  fu = exp(RateSigma);
+
+  int prec = 3 - floor(log10(fu));
+    
+  latexfile << Temperature << " & " << std::setprecision(2) << low_x <<"$\\times$10$^{"
+	    << std::setprecision(0) << std::setw(3)
+	    << setiosflags(std::ios::showpos)
+	    << low_f << "}$ & " << std::setprecision(2)
+	    << resetiosflags(std::ios::showpos)
+	    << median_x << "$\\times$10$^{" << std::setw(3)
+	    << setiosflags(std::ios::showpos)
+	    << std::setprecision(0) << median_f << "}$ &\n" << std::setprecision(2)
+	    << resetiosflags(std::ios::showpos)
+	    << "      " << high_x << "$\\times$10$^{" << std::setw(3)
+	    << setiosflags(std::ios::showpos)
+	    << std::setprecision(0) << high_f << "}$ & " << std::setprecision(prec)
+	    << resetiosflags(std::ios::showpos)
+	    << fu << " \\\\ " << std::setprecision(3)
+	    << resetiosflags(std::ios::showpos) << std::endl;
+  
+  //  latexfile << "\n";
+  //latexfile.close();
+
+  return;
 }
 
 //----------------------------------------------------------------------
