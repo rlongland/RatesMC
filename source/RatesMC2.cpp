@@ -7,6 +7,7 @@
    public release!
 
    TO DO:
+    - Constants for resonances
     - Check accounting for negative energy resonances
     - Check +ve energy resonances that go negative
     - Output S-factor for any broad resonances + non-resonant terms
@@ -43,15 +44,6 @@ int main(int argc, char** argv){
   // Write the welcome screen
   WelcomeScreen();
 
-  // Open log file
-  logfile.open("RatesMC.log");
-
-  // Open the test file for writing samples, etc.
-  testfile.open("test.dat");
-
-  // Open the file that stores Porter Thomas values
-  ptfile.open("PT.dat");
-  
   // Input and output files
   std::string ofilename;
   std::string ofullfilename;
@@ -61,10 +53,19 @@ int main(int argc, char** argv){
     ofilename = "RatesMC.out";
     ofullfilename = "RatesMC.full";
   } else {
+    std::cout << "Custom filenames not yet implemented!" << std::endl;
+    return 0;
     ifilename = argv[1];
   }
   outfile.open(ofilename);
   outfullfile.open(ofullfilename);
+  // Open log file
+  logfile.open("RatesMC.log");
+  // Open the test file for writing samples, etc.
+  testfile.open("test.dat");
+  // Open the file that stores Porter Thomas values
+  ptfile.open("PT.dat");
+  // LaTeX output file
   latexfile.open("RatesMC.latex");
 
   // Make a reaction. This is where everything is held
