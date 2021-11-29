@@ -36,6 +36,8 @@ class Resonance {
   double calcBroad(double T);
   double calcNarrow(double T);
 
+  void scaleByConstant(double RateFactor);
+  
   void printRate();
 
   double getRateSample(int s){return Rate_sample[s];}

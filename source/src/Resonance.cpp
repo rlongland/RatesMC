@@ -9,6 +9,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <algorithm>
 #include "stdio.h"
 
 #include <math.h>
@@ -452,7 +453,7 @@ double Resonance::calcBroad(double T){
 double Resonance::calcNarrow(double T){
 
   //  double classicalRate=0.0;
-  
+    
   // If wg is already defined, it's easy
   if(wg > 0){
     classicalRate = singleNarrow(wg, E_cm, T);
@@ -505,7 +506,12 @@ double Resonance::calcNarrow(double T){
   return classicalRate;
 }
 
-
+//----------------------------------------------------------------------
+// Multiple the rate samples by a constant
+void Resonance::scaleByConstant(double RateFactor){
+  std::transform(Rate_sample.begin(), Rate_sample.end(), Rate_sample.begin(),
+		 [RateFactor](double &c){ return c*RateFactor; });
+}
 //----------------------------------------------------------------------
 // Print out the rate
 void Resonance::printRate(){

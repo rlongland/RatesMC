@@ -67,6 +67,10 @@ int main(int argc, char** argv){
   ptfile.open("PT.dat");
   // LaTeX output file
   latexfile.open("RatesMC.latex");
+  // Reaction rate sample
+  sampfile.open("RatesMC.samp");
+  // Contribution file
+  contribfile.open("RatesMC.cont");
 
   // Make a reaction. This is where everything is held
   Reaction *Reac = new Reaction();
@@ -76,6 +80,7 @@ int main(int argc, char** argv){
 
   // Make output file headers
   writeOutputFileHeaders(Reac);
+  Reac -> setupContribHeader();
   
   // Set up the random sampler
   setupRandom();
@@ -88,9 +93,9 @@ int main(int argc, char** argv){
 
   // Write the reaction information to log file for diagnostics
   Reac -> writeReaction();
-  //Reac -> printReaction();
-  
-  Reac -> writeSamples();         // Write all samples to a file
+
+  // Write all samples to a file for later analysis
+  Reac -> writeSamples();         
 
   // Loop through temperatures (this is parallelization happens)
   // At each temperature
@@ -103,12 +108,6 @@ int main(int argc, char** argv){
   // Define the classical rates
   std::vector<double> classicalRate;
 
-  // Open the output files
-  sampfile.open("RatesMC.samp");
-  contribfile.open("RatesMC.cont");
-
-  Reac -> setupContribHeader();
-  
   // Now do the big loop over temperatures in parallel!!
   // Do all of the calculations first, then collect everything together
   omp_set_num_threads(1);
@@ -128,9 +127,10 @@ int main(int argc, char** argv){
     // Calculate the non-resonant rate
     double ADRate[2];
     for(int j=0; j<2; j++){
-      ADRate[j] = Reac -> calcNonResonant(T, j);
-      double tmp = Reac -> calcNonResonantIntegrated(T, j);
-      std::cout << "ADRateold = " << ADRate[j] << " ADRatenew = " << tmp  << "\n";
+      //      ADRate[j] = Reac -> calcNonResonant(T, j);
+      //      double tmp = Reac -> calcNonResonantIntegrated(T, j);
+      ADRate[j] = Reac -> calcNonResonantIntegrated(T, j);
+      //      std::cout << "ADRateold = " << ADRate[j] << " ADRatenew = " << tmp  << "\n";
     }
     
     // Calculate the resonant rate

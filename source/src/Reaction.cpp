@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <stdio.h>
 #include <math.h>
+#include <algorithm>
 
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf_exp.h>
@@ -157,6 +158,10 @@ void Reaction::setupContribHeader(){
 // Calculate the resonant reaction rate
 double Reaction::calcResonant(double Temp){
 
+  // Factor for final rate (iliadis Eqn 3.114)
+  double mue = M0*M1/(M0+M1);
+  double RateFactor = (1.5399e11/pow(mue*Temp,1.5));
+  
   // Vector of rate storage
   std::vector<double> individialRate;
   double classicalRate=0.0;
@@ -169,23 +174,29 @@ double Reaction::calcResonant(double Temp){
       std::cout << "Resonance " << R.getIndex() << " at "
       		<< R.getE_cm() << " keV is narrow\n";
       individialRate.push_back(R.calcNarrow(Temp));
-      classicalRate += individialRate.back();
-      
       // If it's broad
     } else {
       std::cout << "Resonance " << R.getIndex() << " at "
       		<< R.getE_cm() << " keV is being numerically integrated\n";
       individialRate.push_back(R.calcBroad(Temp));
-      classicalRate += individialRate.back();
     }
+
+    // Multiply every sample by the reaction rate constant above
+    R.scaleByConstant(RateFactor);
+    
+    //    std::transform(individialRate.begin(), individialRate.end(), individialRate.begin(),
+    //		   [RateFactor](int &c){ return c*RateFactor; });
+
+    // The classical rate is the last element of the individual rates
+    classicalRate += individialRate.back();
 
     // Once calculated, print the rate and some diagnostics for each resonance
     R.printRate();
   }
 
-  std::cout << "Total classical rate from resonances = " << classicalRate << "\n";
+  std::cout << "Total classical rate from resonances = " << classicalRate*RateFactor << "\n";
 
-  return classicalRate;
+  return classicalRate*RateFactor;
 }
 
 //----------------------------------------------------------------------
