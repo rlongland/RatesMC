@@ -449,7 +449,9 @@ double Resonance::calcBroad(double T){
 
   return classicalRate;
 }
-// Function to numerically integrate broad resonances
+
+//----------------------------------------------------------------------
+// Function to calculate the rate for a narrow resonance
 double Resonance::calcNarrow(double T){
 
   //  double classicalRate=0.0;
@@ -458,7 +460,7 @@ double Resonance::calcNarrow(double T){
   if(wg > 0){
     classicalRate = singleNarrow(wg, E_cm, T);
     for(int s=0; s<NSamples; s++){
-      // If the sampled energy of a resonance is 0, just set rate to zero
+      // If the sampled energy of a resonance is 0 or less, just set rate to zero
       if(E_sample[s]>0){
 	Rate_sample[s] = singleNarrow(wg_sample[s], E_sample[s], T);
       } else {
@@ -470,28 +472,16 @@ double Resonance::calcNarrow(double T){
   } else {
     // Calculate the sum samples from Gammas
     double omega = (2.*Jr+1.)/((2.*J1+1.0)*(2.*J0+1.0));
+
+    // Classical value using the input values for Gamma and E
     double g = G[0]*G[1]/(G[0]+G[1]+G[2]);
-
-    //    std::cout << G[0] << " " << G[1] << " " << G[2] << "\n";
-    
     classicalRate = singleNarrow(omega*g, E_cm, T);
-    //  std::cout << classicalRate << "\n";
 
+    // Now the MC Rate. 
     for(int s=0;s<NSamples;s++){
-      // Here, I need to make a fudge to integrate a sample if
-      // its energy is negative.
-      if(E_sample[s] < 0.0){
-	/*
-	Rate_sample[s] = SingleIntegral(E_sample[j][k],G_sample[0][j][k],
-				 G_sample[1][j][k],
-				 G_sample[2][j][k],
-				 erFrac[0][j][k],erFrac[1][j][k],
-				 erFrac[2][j][k],j,i);
-	*/
-      }else{
-//	std::cout << s << "\n";
-//	std::cout << G_sample.size() << "\n";
-//	std::cout << G_sample[0][s] << " " << G_sample[1][s] << " " << G_sample[2][s] << "\n";
+      // Here, I need to make a fudge to integrate a sample if its
+      // energy is negative.
+      if(E_sample[s] > 0.0){
 	Rate_sample[s] = omega*
 	  ((G_sample[0][s]*G_sample[1][s]*
 	    erFrac[0][s]*erFrac[1][s])/
@@ -499,6 +489,14 @@ double Resonance::calcNarrow(double T){
 	    G_sample[1][s]*erFrac[1][s]+
 	    G_sample[2][s]*erFrac[2][s]))*
 	  exp(-11.605*E_sample[s]/T);
+      }else{
+	/*
+	Rate_sample[s] = SingleIntegral(E_sample[j][k],G_sample[0][j][k],
+				 G_sample[1][j][k],
+				 G_sample[2][j][k],
+				 erFrac[0][j][k],erFrac[1][j][k],
+				 erFrac[2][j][k],j,i);
+	*/
       }
     } // Loop over samples
   } // If wg is/not known

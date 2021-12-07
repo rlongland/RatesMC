@@ -8,8 +8,8 @@
 
    TO DO:
     - Constants for resonances
-    - Check accounting for negative energy resonances
-    - Check +ve energy resonances that go negative
+    - Check accounting for negative energy resonances 
+    - Check +ve energy resonances that go negative (line 494 in Resonance.cpp and NumericalRate function)
     - Output S-factor for any broad resonances + non-resonant terms
     - Output broad resonance integrand? All resonances at all temperatures?
     - Output Porter-Thomas samples
@@ -127,10 +127,10 @@ int main(int argc, char** argv){
     // Calculate the non-resonant rate
     double ADRate[2];
     for(int j=0; j<2; j++){
+      //      Old method using analytical formula
       //      ADRate[j] = Reac -> calcNonResonant(T, j);
-      //      double tmp = Reac -> calcNonResonantIntegrated(T, j);
+      // New method of simply integrating the astrophysical s-factor
       ADRate[j] = Reac -> calcNonResonantIntegrated(T, j);
-      //      std::cout << "ADRateold = " << ADRate[j] << " ADRatenew = " << tmp  << "\n";
     }
     
     // Calculate the resonant rate

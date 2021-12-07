@@ -163,11 +163,10 @@ double Reaction::calcResonant(double Temp){
   double RateFactor = (1.5399e11/pow(mue*Temp,1.5));
   
   // Vector of rate storage
-  std::vector<double> individialRate;
-  double classicalRate=0.0;
-  std::vector<double> Rate;
-  Rate.resize(NSamples);
-  
+  std::vector<double> individialRate;   // individualRate stores the "classical" rate for each resonance
+  double classicalRate=0.0;             // classicalRate is to summed individialRate
+
+  // Loop over all resonances
   for(Resonance &R : Resonances){
     // if the resonance is narrow
     if(!R.getisBroad()){
