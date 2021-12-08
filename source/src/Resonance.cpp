@@ -201,7 +201,7 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
 
 	// Find the lognormal parameters to generate the random partial width
 	logNormalize(G[channel], dG[channel], mu, sigma);
-	
+	//	std::cout << G[channel] << " " << dG[channel] << " " <<  mu << " " <<  sigma << std::endl;
 	// Calculate the correlated partial widths for this channel
 	corr = smallestdG[channel] * G[channel]/dG[channel];
 	for(int s=0; s<NSamples; s++){
@@ -335,7 +335,7 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
 	    }
 	  }
 	} else if(channel==1){
-	  std::cout << channel << "\n";
+	  //std::cout << channel << "\n";
 	  meanPex = PenFactor(E_cm+Reac.Q-Reac.Qexit-Exf,L[channel],
 			      M0+M1-M2,M2,Z0+Z1-Z2,Z2,R);
 	  for(int s=0; s<NSamples; s++){
@@ -429,7 +429,7 @@ double Resonance::calcBroad(double T){
 			    E_sample[s], G_sample[0][s], G_sample[1][s], G_sample[2][s],
 			    erFrac[0][s], erFrac[1][s], erFrac[2][s],
 			    false);
-    //    std::cout << "In Resonance, Rate_sample[s] = " << Rate_sample[s] << "\n";
+    // std::cout << "In Resonance, Rate_sample[s] = " << Rate_sample[s] << "\n";
     
   }
   //  std::cout << "\n";
@@ -853,7 +853,7 @@ double Resonance::Integrand(double x,
   double S3 = exp(-11.605*x/Temp);
 
   
-  double integrand = S1*S3/S2*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
+  double integrand = S1*S3/S2;//*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
   //std::cout << x << " " << integrand << "\n";
 
   //cout << x << "\t" << dydx[0] << endl;

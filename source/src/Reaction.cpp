@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <algorithm>
+#include <numeric>
+
 
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf_exp.h>
@@ -160,42 +162,48 @@ double Reaction::calcResonant(double Temp){
 
   // Factor for final rate (iliadis Eqn 3.114)
   double mue = M0*M1/(M0+M1);
-  double RateFactor = (1.5399e11/pow(mue*Temp,1.5));
+  double RateFactorNarrow = (1.5399e11/pow(mue*Temp,1.5));
+  double RateFactorBroad = 3.7318e10/(pow(mue,0.5)*pow(Temp,1.5));
   
   // Vector of rate storage
-  std::vector<double> individialRate;   // individualRate stores the "classical" rate for each resonance
+  std::vector<double> individualRate;   // individualRate stores the "classical" rate for each resonance
   double classicalRate=0.0;             // classicalRate is to summed individialRate
 
   // Loop over all resonances
   for(Resonance &R : Resonances){
     // if the resonance is narrow
     if(!R.getisBroad()){
-      std::cout << "Resonance " << R.getIndex() << " at "
-      		<< R.getE_cm() << " keV is narrow\n";
-      individialRate.push_back(R.calcNarrow(Temp));
+      //      std::cout << "Resonance " << R.getIndex() << " at "
+      //      		<< R.getE_cm() << " keV is narrow\n";
+      individualRate.push_back(RateFactorNarrow*R.calcNarrow(Temp));
+      // Multiply every sample by the reaction rate constant above
+      R.scaleByConstant(RateFactorNarrow);
       // If it's broad
     } else {
-      std::cout << "Resonance " << R.getIndex() << " at "
-      		<< R.getE_cm() << " keV is being numerically integrated\n";
-      individialRate.push_back(R.calcBroad(Temp));
+      //      std::cout << "Resonance " << R.getIndex() << " at "
+      //      		<< R.getE_cm() << " keV is being numerically integrated\n";
+      individualRate.push_back(RateFactorBroad*R.calcBroad(Temp));
+      // Multiply every sample by the reaction rate constant above
+      R.scaleByConstant(RateFactorBroad);
     }
 
-    // Multiply every sample by the reaction rate constant above
-    R.scaleByConstant(RateFactor);
+
     
     //    std::transform(individialRate.begin(), individialRate.end(), individialRate.begin(),
     //		   [RateFactor](int &c){ return c*RateFactor; });
 
     // The classical rate is the last element of the individual rates
-    classicalRate += individialRate.back();
+    //    classicalRate += individialRate.back();
 
     // Once calculated, print the rate and some diagnostics for each resonance
     R.printRate();
   }
 
-  std::cout << "Total classical rate from resonances = " << classicalRate*RateFactor << "\n";
+  classicalRate = std::accumulate(individualRate.begin(), individualRate.end(), 0.0);
 
-  return classicalRate*RateFactor;
+  std::cout << "Total classical rate from resonances = " << classicalRate << "\n";
+
+  return classicalRate;
 }
 
 //----------------------------------------------------------------------
