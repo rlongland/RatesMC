@@ -444,7 +444,7 @@ double Resonance::calcBroad(double T){
 				true);
   testfile << "!" << std::endl;
   
-  std::cout << "classicalRate = " << classicalRate << "\n";
+  //std::cout << "classicalRate = " << classicalRate << "\n";
   //classicalRate /= (1.5399e11/pow(mue*T,1.5));
 
   return classicalRate;

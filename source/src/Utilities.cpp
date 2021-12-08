@@ -384,7 +384,7 @@ void defineTemperatures(){
 			       3.5,4,5,6,7,8,9,10};
   */
   
-  std::vector<double> defaultT{0.15}; //0.01,0.15,1.0};
+  std::vector<double> defaultT{0.01,0.15,1.0};
   Temp = defaultT;
 
   logfile << "--------------------------------------------------\n";
@@ -788,21 +788,24 @@ void summarizeErrors(double Temp){
   } else {
 
     if(SampledNegCount>0){
-      logfile << "A positive resonance had a negative energy "
+      logfile << " A positive resonance had a negative energy "
 	      << SampledNegCount << " times" << std::endl;
+      SampledNegCount = 0;
     }
     if(SubSampledPosCount>0){
-      logfile << "A negative resonance had a positive energy "
+      logfile << " A negative resonance had a positive energy "
 	      << SubSampledPosCount << " times" << std::endl;
+      SubSampledPosCount = 0;
     }
     if(IntegratedCount>0){
-      logfile << "A positive narrow resonance had a negative energy "
+      logfile << " A positive narrow resonance had a negative energy "
 	      << IntegratedCount << " times" << std::endl;
+      IntegratedCount = 0;
     }
-    
+    ErrorFlag = false;
   }
 
-  
+  logfile << "----------------------------------------\n";
   
 }
 

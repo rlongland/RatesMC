@@ -187,21 +187,14 @@ double Reaction::calcResonant(double Temp){
       R.scaleByConstant(RateFactorBroad);
     }
 
-
-    
-    //    std::transform(individialRate.begin(), individialRate.end(), individialRate.begin(),
-    //		   [RateFactor](int &c){ return c*RateFactor; });
-
-    // The classical rate is the last element of the individual rates
-    //    classicalRate += individialRate.back();
-
     // Once calculated, print the rate and some diagnostics for each resonance
-    R.printRate();
+    //R.printRate();
   }
 
+  // Sum all the classical individual resonanances
   classicalRate = std::accumulate(individualRate.begin(), individualRate.end(), 0.0);
 
-  std::cout << "Total classical rate from resonances = " << classicalRate << "\n";
+  //  std::cout << "Total classical rate from resonances = " << classicalRate << "\n";
 
   return classicalRate;
 }

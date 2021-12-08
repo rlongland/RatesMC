@@ -7,7 +7,6 @@
    public release!
 
    TO DO:
-    - Constants for resonances
     - Output S-factor for any broad resonances + non-resonant terms
     - Output broad resonance integrand? All resonances at all temperatures?
     - Output Porter-Thomas samples
@@ -122,6 +121,7 @@ int main(int argc, char** argv){
     std::cout << "Proc(" << ID << ") T = " << T; // << "\n";
     std::cout << "\n" ;
 
+    //logfile << "--------------------\n";
     logfile << "Temperature = " << T << " GK" << std::endl;
     
     // ------------------------
@@ -146,7 +146,7 @@ int main(int argc, char** argv){
 
     // The classical rates can be easily summed
     classicalRate.push_back(ADRate[0]+ADRate[1]+ResRate);
-    std::cout << "Classical Total Rate = " << classicalRate.back() << "\n";
+    //std::cout << "Classical Total Rate = " << classicalRate.back() << "\n";
 
     // Contribution array (NSamples)by(NRes+2)
     std::vector<std::vector<double> > Contributions;
