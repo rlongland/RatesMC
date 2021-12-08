@@ -21,17 +21,17 @@
 ****************************************************************************************************************
 Non-resonant contribution
 S(keVb) S'(b)           S''(b/keV)      fracErr Cutoff Energy (keV)
-1.24e2  -8.66e-2        9.96e-5         0.4     1000.0
+!1.24e2  -8.66e-2        9.96e-5         0.4     1000.0
 107.2     0.0             0.0             0.5     1000.0
 ****************************************************************************************************************
 Resonant Contribution
 Note: G1 = entrance channel, G2 = exit channel, G3 = spectator channel !! Ecm, Exf in (keV); wg, Gx in (eV) !!
 Note: if Er<0, theta^2=C2S*theta_sp^2 must be entered instead of entrance channel partial width
 Ecm     DEcm    wg      Dwg     J     G1        DG1        L1    G2      DG2      L2   G3  DG3  L3  Exf   Int
-!-0.1    21      0       0       2     0.0372    0.0149     1     2.7e-4  1.35e-4  1    0   0    0   0.0   1
- 224    21      0       0       2     5.7e-7    2.28e-7    0     1.0e-2  0.5e-2   1    0   0    0   0.0   1
- 604    31      0       0       3     4.2e-1    1.68e-1    1     4.7e-4  2.35e-4  1    0   0    0   0.0   1
- 744    31      0       0       2     2.5e0     1.0e0      0     1.1e-2  0.55e-2  1    0   0    0   0.0   1
+-0.1    21      0       0       2     0.0372    0.0149     1     2.7e-4  1.35e-4  1    0   0    0   0.0   1
+! 224    21      0       0       2     5.7e-7    2.28e-7    0     1.0e-2  0.5e-2   1    0   0    0   0.0   1
+! 604    31      0       0       3     4.2e-1    1.68e-1    1     4.7e-4  2.35e-4  1    0   0    0   0.0   1
+! 744    31      0       0       2     2.5e0     1.0e0      0     1.1e-2  0.55e-2  1    0   0    0   0.0   1
 ****************************************************************************************************************
 Upper Limits of Resonances
 Note: enter partial width upper limit by chosing non-zero value for PT, where PT=<theta^2> for particles and...

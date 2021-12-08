@@ -78,24 +78,41 @@ int countEntries(std::ifstream &infile){
   // First save position
   int place=infile.tellg();
 
+  // Get a line
   std::getline(infile, line);
   std::stringstream ss(line);
   std::string entry;
+  // Use c++ stringstream to grab separated elements from the line and
+  // put them in a vector of strings
   while( ss >> entry ){
     entries.push_back(entry);
-    //std::cout << entry << " ";
   }
-  //  std::cout << "\n";
 
   // Return to saved position in file
   infile.seekg(place);
-  
+
+  // Return the length of the vector of strings
   return entries.size();
   
 }
 
 void readNonResonant(std::ifstream &infile, Reaction &R, int part){
 
+  // First save position
+  int place=infile.tellg();
+
+  // Read a bit of data to make sure it's not commented-out
+  std::string data;
+  infile >> data;
+  std::size_t found = data.find("!");
+  if (found!=std::string::npos){
+    infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+    R.setNonResonant(0,0,0,0,0,part);
+    return;
+  }
+  // Return to saved position in file
+  infile.seekg(place);
+  
   int ne = countEntries(infile);
   //std::cout << "There are " << ne << " entries\n";
   if(ne != 5){
@@ -184,7 +201,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     if (found!=std::string::npos){
       if(isUpperLimit)
 	logfile << "Upper limit ";
-      logfile << "Resonance is commented-out (" << data << ")" << std::endl;;
+      logfile << "Resonance is commented-out (" << data << ")" << std::endl;
       infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
       continue;
     }
