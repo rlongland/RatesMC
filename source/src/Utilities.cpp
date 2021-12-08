@@ -30,7 +30,7 @@ std::ofstream outfullfile;
 std::ofstream latexfile;
 int NSamples;
 int NTemps;
-bool ErrorFlag;
+bool ErrorFlag = false;
 std::vector<double> Temp;
 
 // counters
@@ -175,15 +175,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     // First try to read resonance energy to see if it's a real resonance input
     std::string data;
     infile >> data;
-    /*
-    std::stringstream ss(data);
-    std::string entry;
-    ss >> entry; 
-    if(!std::isdigit( entry[0] ) && !(entry[0] == '-') ) {
-      //      std::cout << "Found end of resonances!\n" << data << "\n";
-      break;
-    }
-    */
+
     // Look for '***', which signifies the end of resonance input
     std::size_t found;
     found = data.find("***");
@@ -234,16 +226,22 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     }
 
     // Convert to correct units
-    E_cm  *= 1.0e-3;   // to be in MeV
-    dE_cm *= 1.0e-3;   // to be in MeV
-    wg    *= 1.0e-6;   // to be in eV
-    dwg   *= 1.0e-6;   // eV
-    G1    *= 1.0e-6;   // eV
-    dG1   *= 1.0e-6;   // eV
-    G2    *= 1.0e-6;   // eV
-    dG2   *= 1.0e-6;   // eV
-    G3    *= 1.0e-6;   // eV
-    dG3   *= 1.0e-6;   // eV
+    E_cm  *= 1.0e-3;   // keV to MeV
+    dE_cm *= 1.0e-3;   // keV to MeV
+    wg    *= 1.0e-6;   // eV to MeV
+    dwg   *= 1.0e-6;   // eV to MeV
+    G1    *= 1.0e-6;   // eV to MeV
+    dG1   *= 1.0e-6;   // eV to MeV
+    G2    *= 1.0e-6;   // eV to MeV
+    dG2   *= 1.0e-6;   // eV to MeV
+    G3    *= 1.0e-6;   // eV to MeV
+    dG3   *= 1.0e-6;   // eV to MeV
+
+    // if E_cm is negative, G1 is actually unitless, so undo the unit operation above
+    if(E_cm < 0){
+      G1 /= 1.0e-6;
+      dG1 /= 1.0e-6;
+    }
 
     infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
@@ -386,7 +384,7 @@ void defineTemperatures(){
 			       3.5,4,5,6,7,8,9,10};
   */
   
-  std::vector<double> defaultT{0.01,0.1,1.0};
+  std::vector<double> defaultT{0.1}; //0.01,0.1,1.0};
   Temp = defaultT;
 
   logfile << "--------------------------------------------------\n";
@@ -779,6 +777,29 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate, double H
   //latexfile.close();
 
   return;
+}
+
+//----------------------------------------------------------------------
+void summarizeErrors(double Temp){
+
+  // For this temperature, let the user know if nothing went wrong!
+  if(!ErrorFlag) {
+    logfile << "\tNo Errors Occured!" << std::endl;
+  } else {
+
+    if(SampledNegCount>0){
+      logfile << "A positive resonance had a negative energy "
+	      << SampledNegCount << " times" << std::endl;
+    }
+    if(SubSampledPosCount>0){
+      logfile << "A negative resonance had a positive energy "
+	      << SubSampledPosCount << " times" << std::endl;
+    }
+    
+  }
+
+  
+  
 }
 
 //----------------------------------------------------------------------

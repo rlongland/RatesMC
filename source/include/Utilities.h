@@ -75,6 +75,7 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature);
 // Write the LaTeX file
 void WriteLatex2(double Temperature, double LowRate, double MedianRate, double HighRate,
 		 double RateSigma);
+void summarizeErrors(double Temp);
 
 // Check how well the lognormal fits
 double CalcAD(std::vector<double> Rates,double Mu,double Sigma);

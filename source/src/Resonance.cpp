@@ -555,12 +555,13 @@ double Resonance::singleNarrow(double wg, double E, double T){
 }
 
 //----------------------------------------------------------------------
+// This function gets called for each sample
 double Resonance::NumericalRate(double T,
 				double E, double G0, double G1, double G2,
 				double erFrac0, double erFrac1, double erFrac2,
 				bool writeIntegrand){
 
-  //std::cout << T << " " << E << " " << G0 << " " << G1 << " " << G2 << " " << erFrac0
+  //std::cout << "\n" <<  T << " " << E << " " << G0 << " " << G1 << " " << G2 << " " << erFrac0
   //	    << " " << erFrac1 << " " << erFrac2 << "\n";
   
   double ARate=0.0;
@@ -592,12 +593,18 @@ double Resonance::NumericalRate(double T,
     SampledNegCount++;
     G0 = mue*gsl_pow_2(R)*G0/
       (2.0*41.80161396*PenFactor(E_cm, L[0],M0,M1,Z0,Z1,R));
+    //std::cout << "Positive resonance went negative!\n";
+    //std::cout << "E_cm = " << E_cm << "E_sample = " << E << "G[0] = " << G[0]
+    //          << " G_sample = " << G0 << std::endl;
   } else if(E_cm < 0.0 && E > 0.0){
     // or convert to real resonance if E>0.0
     ErrorFlag = true;
     SubSampledPosCount++;
     G0 = G0*2.0*41.80161396*PenFactor(E, L[0],M0,M1,Z0,Z1,R)/
       (mue*gsl_pow_2(R));
+    //std::cout << "Negative resonance went positive!\n";
+    //std::cout << "E_cm = " << E_cm << "E_sample = " << E << "G[0] = " << G[0]
+    //	      << " G_sample = " << G0 << std::endl;  
   }
 
   //  The penetration factor at the resonance energy (the "true" PF)
@@ -607,7 +614,8 @@ double Resonance::NumericalRate(double T,
   } else {
     Pr = 0.0;
   }
-
+  //std::cout << "Pr = " << Pr << "\n";
+ 
   // Calculate the exit particle energy, depends on if it is spectator
   //if(NChannels[j]==3){
   if(Reac.getGamma_index() == 2){
@@ -623,8 +631,8 @@ double Resonance::NumericalRate(double T,
   }
 
 
-  //cout << index << "\t" << Pr << "\t" << Pr_exit << "\t" << E << "\t" << T << "\t"
-  //     << G0 << "\t" << G1 << "\t" << G2 << endl;
+  //  std::cout << index << "\t" << Pr << "\t" << Pr_exit << "\t" << E << "\t" << T << "\t"
+  //	    << G0 << "\t" << G1 << "\t" << G2 << std::endl;
 
   //--------------------------------------------------
   // GSL Integration functions
@@ -692,6 +700,18 @@ double Resonance::NumericalRate(double T,
   pts[3] = E+Delta*gammaT;
   pts[4] = E_max;
 
+  // If it's subthreshold
+  if(E < 0.0){
+    pts[2] = pts[1];
+    pts[3] = pts[4];
+  }
+
+  /*
+    std::cout << "Integration pts = " ;
+    for(int i=0; i<4; i++) std::cout << pts[i] << " ";
+    std::cout << std::endl;
+  */
+  
   //if(writeIntegrand)
   //  std::cout << E_min << " " << gammaT << " " << E << " " << pts[2]-pts[1] << " " << E_max << "\n";
   
@@ -798,7 +818,7 @@ double Resonance::Integrand(double x,
     Scale[0] = 1.0;
     G0 = 2.0*P*G0*41.80161396/(mue*gsl_pow_2(R));
   }
-  //std::cout << "Scale = " << Scale << "\n";
+  //std::cout << "Scale[0] = " << Scale[0] << " E = " << x << " G0(E) = " << G0 << "\n";
   
   for(int i=1;i<3;i++){
     if(G[i] > 0.0){
@@ -913,16 +933,16 @@ void Resonance::write(){
 
   //  logfile << "--------------------------------------------------" << "\n";
   //logfile << "     This is resonance: " << index << "\n";
-  logfile << " Resonace " << std::setw(3) << index <<"    E_cm = " << E_cm  << " +/- " << dE_cm << "\n";
-  logfile << "                 wg   = " << wg << " +/- " << dwg << "\n";
+  logfile << " Resonace " << std::setw(3) << index <<"    E_cm = " << E_cm  << " +/- " << dE_cm << " MeV\n";
+  logfile << "                 wg   = " << wg << " +/- " << dwg << " MeV\n";
   logfile << "                 Jr   = " << Jr << "\n";
-  logfile << "                 G1   = " << G[0] << " +/- " << dG[0] << " (L = " << L[0] << ")\n";
+  logfile << "                 G1   = " << G[0] << " +/- " << dG[0] << " MeV (L = " << L[0] << ")\n";
   if(isUpperLimit)
     logfile << "                 PT   = " << PT[0] << " +/- " << dPT[0] << "\n";
-  logfile << "                 G2   = " << G[1] << " +/- " << dG[1] << " (L = " << L[1] << ")\n";
+  logfile << "                 G2   = " << G[1] << " +/- " << dG[1] << " MeV (L = " << L[1] << ")\n";
   if(isUpperLimit)
     logfile << "                 PT   = " << PT[1] << " +/- " << dPT[1] << "\n";
-  logfile << "                 G3   = " << G[2] << " +/- " << dG[2] << " (L = " << L[2] << ")\n";
+  logfile << "                 G3   = " << G[2] << " +/- " << dG[2] << " MeV (L = " << L[2] << ")\n";
   if(isUpperLimit)
     logfile << "                 PT   = " << PT[2] << " +/- " << dPT[2] << "\n";
   logfile << "                 Exf  = " << Exf << "\n";

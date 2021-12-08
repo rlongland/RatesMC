@@ -200,8 +200,8 @@ int main(int argc, char** argv){
     }
     */
 
-    // For this temperature, let the user know if nothing went wrong!
-    if(!ErrorFlag) logfile << "\tNo Errors Occured!" << std::endl;
+    // Summarize any errors that may have occurred
+    summarizeErrors(T);
 
   }
 
