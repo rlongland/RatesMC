@@ -795,6 +795,10 @@ void summarizeErrors(double Temp){
       logfile << "A negative resonance had a positive energy "
 	      << SubSampledPosCount << " times" << std::endl;
     }
+    if(IntegratedCount>0){
+      logfile << "A positive narrow resonance had a negative energy "
+	      << IntegratedCount << " times" << std::endl;
+    }
     
   }
 

@@ -490,6 +490,8 @@ double Resonance::calcNarrow(double T){
 	    G_sample[2][s]*erFrac[2][s]))*
 	  exp(-11.605*E_sample[s]/T);
       }else{
+	ErrorFlag = true;
+	IntegratedCount++;
 	
 	Rate_sample[s] = NumericalRate(T,
 				       E_sample[s],
@@ -499,7 +501,7 @@ double Resonance::calcNarrow(double T){
 				       erFrac[0][s],
 				       erFrac[1][s],
 				       erFrac[2][s],
-				       0);
+				       false);
 	
       }
     } // Loop over samples
@@ -597,9 +599,9 @@ double Resonance::NumericalRate(double T,
     SampledNegCount++;
     G0 = mue*gsl_pow_2(R)*G0/
       (2.0*41.80161396*PenFactor(E_cm, L[0],M0,M1,Z0,Z1,R));
-    //std::cout << "Positive resonance went negative!\n";
-    //std::cout << "E_cm = " << E_cm << "E_sample = " << E << "G[0] = " << G[0]
-    //          << " G_sample = " << G0 << std::endl;
+    //    std::cout << "Positive resonance went negative!\n";
+    //    std::cout << "E_cm = " << E_cm << "E_sample = " << E << "G[0] = " << G[0]
+    //              << " G_sample = " << G0 << std::endl;
   } else if(E_cm < 0.0 && E > 0.0){
     // or convert to real resonance if E>0.0
     ErrorFlag = true;
