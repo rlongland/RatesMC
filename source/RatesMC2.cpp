@@ -8,11 +8,11 @@
 
    TO DO:
     - Constants for resonances
-    - Check accounting for negative energy resonances 
-    - Check +ve energy resonances that go negative (line 494 in Resonance.cpp and NumericalRate function)
+    - Test +ve energy resonances that go negative (line 494 in Resonance.cpp and NumericalRate function)
     - Output S-factor for any broad resonances + non-resonant terms
     - Output broad resonance integrand? All resonances at all temperatures?
     - Output Porter-Thomas samples
+    - Error accounting output
     - R codes for analysis
       - PlotUncertainty.R (like PlotCompare/PlotContour)
       - PlotPanel6.R

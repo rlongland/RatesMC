@@ -490,13 +490,17 @@ double Resonance::calcNarrow(double T){
 	    G_sample[2][s]*erFrac[2][s]))*
 	  exp(-11.605*E_sample[s]/T);
       }else{
-	/*
-	Rate_sample[s] = SingleIntegral(E_sample[j][k],G_sample[0][j][k],
-				 G_sample[1][j][k],
-				 G_sample[2][j][k],
-				 erFrac[0][j][k],erFrac[1][j][k],
-				 erFrac[2][j][k],j,i);
-	*/
+	
+	Rate_sample[s] = NumericalRate(T,
+				       E_sample[s],
+				       G_sample[0][s],
+				       G_sample[1][s],
+				       G_sample[2][s],
+				       erFrac[0][s],
+				       erFrac[1][s],
+				       erFrac[2][s],
+				       0);
+	
       }
     } // Loop over samples
   } // If wg is/not known
