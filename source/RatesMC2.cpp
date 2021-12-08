@@ -113,6 +113,10 @@ int main(int argc, char** argv){
   omp_set_num_threads(1);
 #pragma omp parallel for ordered
   for(double T : Temp){
+    // ------------------------
+    // FOR EACH TEMPERATURE
+    // ------------------------
+    
     int ID = omp_get_thread_num();
     std::cout << std::endl;
     std::cout << "--------------------------------------------------\n";
@@ -121,9 +125,10 @@ int main(int argc, char** argv){
 
     logfile << "Temperature = " << T << " GK" << std::endl;
     
-    // --------------
+    // ------------------------
     // CALCULATE RATE
-    // --------------
+    // ------------------------
+    
     // Calculate the non-resonant rate
     double ADRate[2];
     for(int j=0; j<2; j++){
@@ -136,9 +141,14 @@ int main(int argc, char** argv){
     // Calculate the resonant rate
     double ResRate = Reac -> calcResonant(T);
 
-    // --------------
+    // ------------------------
     // COLLECT RATE
-    // --------------
+    // ------------------------
+
+    // The classical rates can be easily summed
+    classicalRate.push_back(ADRate[0]+ADRate[1]+ResRate);
+    std::cout << "Classical Total Rate = " << classicalRate.back() << "\n";
+
     // Contribution array (NSamples)by(NRes+2)
     std::vector<std::vector<double> > Contributions;
     // Vector of rate samples at this temperature
@@ -156,12 +166,8 @@ int main(int argc, char** argv){
       // Sum the total rate
       double totalRate = ADRate0 + ADRate1;
       for(double res : resonancesSample){
-	//std::cout << res << " ";
 	totalRate += res;
       }
-      //std::cout << "\n";
-
-      //std::cout << "Total rate = " << totalRate << "\n";
 
       // Calculate contribution for each resonance. 
       std::vector<double> Cont;
@@ -169,21 +175,13 @@ int main(int argc, char** argv){
       Cont.push_back(ADRate1/totalRate);
       for(double res : resonancesSample)
 	Cont.push_back(res/totalRate);
-      //for(int i=0; i<Cont.size(); i++)
-      //	std::cout << Cont[i] << " ";
-	//std::cout << "\n";
       Contributions.push_back(Cont);
       
       // Fill the total reaction rate vector
       RateSample.push_back(totalRate);
       
     }
-    // The classical rates can be easily summed
-    classicalRate.push_back(ADRate[0]+ADRate[1]+ResRate);
-    std::cout << "Classical Total Rate = " << classicalRate.back() << "\n";
 
-
-    
     // Write the contributions
     writeContributions(Contributions, T);
 
