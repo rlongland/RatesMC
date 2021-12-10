@@ -13,7 +13,7 @@ void WelcomeScreen();
 
 // Versions
 std::string VersionNumber = "2.0.0";
-std::string VersionDate = "Nov. 13, 2018  ";
+std::string VersionDate = "Nov. 13, 2018";
 
 
 #endif

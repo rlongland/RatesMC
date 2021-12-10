@@ -501,18 +501,23 @@ void transpose(std::vector<std::vector<double> > &b){
 void writeOutputFileHeaders(Reaction *R){
 
   outfile << R->getName() << std::endl;
+  outfile << "Calculated with RatesMC " << VersionNumber << " (" <<
+    VersionDate << ")" << std::endl;
   outfile << "Samples = " << NSamples << std::endl;
-  outfile << " T9      RRate_low       Classical Rate  Median Rate" << 
-    "     Mean Rate       RRate_high     Log-Normal mu" <<
-    "      Log-Normal sigma" << 
-    " A-D Statistic" << std::endl;
+  outfile << " T9      RRate_low       Median Rate" << 
+    "     RRate_high     f.u."  << std::endl;
   
   outfullfile << R->getName() << std::endl;
+  outfullfile << "Calculated with RatesMC " << VersionNumber << " (" <<
+    VersionDate << ")" << std::endl;
   outfullfile << "Samples = " << NSamples << std::endl;
   outfullfile << " T9      RRate_2low      RRate_low       Classical Rate  Median Rate" << 
     "     Mean Rate       RRate_high     RRate_2high     Log-Normal mu" <<
     "      Log-Normal sigma A-D Statistic" << std::endl;
 
+  sampfile << R->getName() << std::endl;
+  sampfile << "Calculated with RatesMC " << VersionNumber << " (" <<
+    VersionDate << ")" << std::endl;
   
 }
 
@@ -581,7 +586,7 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
   // log-mean and log-variance and bin the rates
   // Turn off the gsl error handler in case we have a negative number here
 
-  double MeanRate, RateMu, RateSigma;
+  double MeanRate, RateMu, RateSigma, fu;
   // The 1- and 2-sigma high and low rates
   double Low2Rate, LowRate, MedianRate, HighRate, High2Rate;
   // Parentheses characters
@@ -625,7 +630,8 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
   MeanRate = gsl_stats_mean(gsl_Rates.vector.data,1,NSamples);
   RateMu = gsl_stats_mean(lograte,1,NSamples);
   RateSigma = sqrt(gsl_stats_variance(lograte,1,NSamples));
-  
+  fu = gsl_sf_exp(RateSigma);
+    
   // Uncertainties calculated from quantiles
   Low2Rate =  gsl_stats_quantile_from_sorted_data (gsl_Rates.vector.data,1,Rates.size(),0.025);
   LowRate = gsl_stats_quantile_from_sorted_data   (gsl_Rates.vector.data,1,Rates.size(),0.16);
@@ -701,11 +707,8 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
     
   char buffer[200];
   // RatesMC.out output
-  sprintf(buffer,"%6.3f  %10.3e      %10.3e      %10.3e      %10.3e      %10.3e     %c% 10.4e%c     %c% 10.4e%c      %9.3e",
-	  Temperature,LowRate,ARate,MedianRate,MeanRate,HighRate,
-	  Parenth[0],RateMu,Parenth[1],
-	  Parenth[0],RateSigma,Parenth[1],
-	  AndDar_Asqrd);
+  sprintf(buffer,"%6.3f  %10.3e      %10.3e      %10.3e       %10.3e",
+	  Temperature,LowRate,MedianRate,HighRate,fu);
   outfile << buffer << std::endl;
   //  outfile << std::endl;
   
@@ -776,6 +779,19 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate, double H
   //  latexfile << "\n";
   //latexfile.close();
 
+  return;
+}
+
+//----------------------------------------------------------------------
+void writeRateSamples(std::vector<double> RateSample, double Temp){
+
+  sampfile << "T9 = " << Temp << std::endl;
+  sampfile << "Samples = " << RateSample.size() << std::endl;
+
+  for(double rate : RateSample)
+    sampfile << rate << "\n";
+
+  sampfile << std::endl;
   return;
 }
 

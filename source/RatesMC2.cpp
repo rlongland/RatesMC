@@ -7,6 +7,8 @@
    public release!
 
    TO DO:
+    - Output Rate samples
+    - RatesMC.out and RatesMC.full output files
     - Output S-factor for any broad resonances + non-resonant terms
     - Output broad resonance integrand? All resonances at all temperatures?
     - Output Porter-Thomas samples
@@ -187,6 +189,9 @@ int main(int argc, char** argv){
     // Write the rates + LaTeX
     writeRates(RateSample, classicalRate.back(), T);
 
+    // Write the rate samples
+    writeRateSamples(RateSample, T);
+    
     /*
 #pragma omp critical
     {

@@ -4,6 +4,9 @@
 #include "Reaction.h"
 #include <gsl/gsl_rng.h>
 
+extern std::string VersionNumber;
+extern std::string VersionDate;
+
 // Random number generator
 extern gsl_rng * r;
 
@@ -75,6 +78,9 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature);
 // Write the LaTeX file
 void WriteLatex2(double Temperature, double LowRate, double MedianRate, double HighRate,
 		 double RateSigma);
+// Write the sample file
+void writeRateSamples(std::vector<double> RateSample, double Temp);
+// Write a summary of all errors at this temperature to the log file
 void summarizeErrors(double Temp);
 
 // Check how well the lognormal fits
