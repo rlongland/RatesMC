@@ -1,5 +1,5 @@
-name="RatesMC.out"
-samplename = "RatesMC.samp"
+name="../RatesMC.full"
+samplename = "../RatesMC.samp"
 ntemps = 51
 
 lognorm_norm <- function(){
@@ -23,8 +23,8 @@ layout(matrix(c(1:9), 3, 3, byrow = TRUE))
 
 #settings <- par(mar=c(2.1,5.1,2.1,1.1))
 
-Samples = as.double(read.table(name,skip=1,header=FALSE,nrows=1)[3])
-data <- read.table(name,skip=3,header=FALSE,stringsAsFactors=FALSE)
+Samples = as.double(read.table(name,skip=2,header=FALSE,nrows=1)[3])
+data <- read.table(name,skip=4,header=FALSE,stringsAsFactors=FALSE)
 NumberPlot<-1
 
 # set up the options for error handling
@@ -36,17 +36,16 @@ cat("   Reading samples...\n")
 
 
 for( i in 1:ntemps ) {
-
   setTxtProgressBar(pb, i)
   
 ##  samples <- withRestarts(read.table(samplename,skip=i*3+(i-1)*Samples,
 ##                                  nrows=Samples,header=FALSE),
 ##                       abort=function(){ })$V1
   samples <- withRestarts(scan(samplename,what=double(),nmax=Samples,
-                               skip=i*3+(i-1)*Samples,quiet=TRUE),
+                               skip=1+(i*3+(i-1)*Samples),quiet=TRUE),
                           abort=function(){ })
   # check to make sure hist was read
-  if(is.null(samples)){
+  if(is.null(samples) | length(samples)==0){
     cat("\nReached the end of file\n")
     break
   }
@@ -58,11 +57,11 @@ for( i in 1:ntemps ) {
   hist[,3]<-(hist[,3])/sum(hist[,3])
 
   # get rid of brackets
-  data[i,7] <- gsub("([()])","",data[i,7])
-  data[i,8] <- gsub("([()])","",data[i,8])
+  data[i,9] <- gsub("([()])","",data[i,9])
+  data[i,10] <- gsub("([()])","",data[i,10])
   
-  mu <- as.double(data[i,7])
-  sigma <- as.double(data[i,8])
+  mu <- as.double(data[i,9])
+  sigma <- as.double(data[i,10])
 
   mean <- exp(mu+(sigma^2)/2)
   var <- (exp(sigma^2) -1)*exp((2*mu + sigma^2))
@@ -87,7 +86,7 @@ for( i in 1:ntemps ) {
   xpos <- grconvertX(0.75,from="npc",to="user")
   ypos <- grconvertY(0.85,from="npc",to="user")
   
-  AD_text <- paste("A-D =",format(data[i,9],digits=3),"\nT9 =",data[i,1])
+  AD_text <- paste("A-D =",format(data[i,11],digits=3),"\nT9 =",data[i,1])
 
   text(xpos,ypos,AD_text,cex=1.5)
 

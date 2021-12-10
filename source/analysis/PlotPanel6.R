@@ -1,5 +1,5 @@
-name="RatesMC.out"
-samplename = "RatesMC.samp"
+name="../RatesMC.full"
+samplename = "../RatesMC.samp"
 ntemps = 6
 templist = c(11,14,18,28,33,37)
 
@@ -52,15 +52,15 @@ if(GamPos > 0) {
   word3 <- "gamma"
 }
 
-Samples = as.double(read.table(name,skip=1,header=FALSE,nrows=1)[3])
-data <- read.table(name,skip=3,header=FALSE,stringsAsFactors=FALSE)
+Samples = as.double(read.table(name,skip=2,header=FALSE,nrows=1)[3])
+data <- read.table(name,skip=4,header=FALSE,stringsAsFactors=FALSE)
 NumberPlot<-1
 
 
 for( i in 1:ntemps ) {
 
-  samples <- withRestarts(read.table(samplename,skip=templist[i]*3+
-                                     (templist[i]-1)*Samples,
+  samples <- withRestarts(read.table(samplename,skip=1+(templist[i]*3+
+                                     (templist[i]-1)*Samples),
                                   nrows=Samples,header=FALSE),
                        abort=function(){ })$V1
 
@@ -71,11 +71,11 @@ for( i in 1:ntemps ) {
   hist[,3]<-(hist[,3])/sum(hist[,3])
 
   # get rid of brackets
-  data[templist[i],7] <- gsub("([()])","",data[templist[i],7])
-  data[templist[i],8] <- gsub("([()])","",data[templist[i],8])
+  data[templist[i],9] <- gsub("([()])","",data[templist[i],9])
+  data[templist[i],10] <- gsub("([()])","",data[templist[i],10])
   
-  mu <- as.double(data[templist[i],7])
-  sigma <- as.double(data[templist[i],8])
+  mu <- as.double(data[templist[i],9])
+  sigma <- as.double(data[templist[i],10])
 
   mean <- exp(mu+(sigma^2)/2)
   var <- (exp(sigma^2) -1)*exp((2*mu + sigma^2))
