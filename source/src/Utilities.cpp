@@ -384,7 +384,7 @@ void defineTemperatures(){
 			       3.5,4,5,6,7,8,9,10};
   */
   
-  std::vector<double> defaultT{0.01,0.15,1.0};
+  std::vector<double> defaultT{0.01,0.15,1.0,2.5,5.0,10.0};
   Temp = defaultT;
 
   logfile << "--------------------------------------------------\n";
