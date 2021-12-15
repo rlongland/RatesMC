@@ -29,8 +29,9 @@
 #include <fstream>
 #include <limits>
 
-
 #include "omp.h"
+
+#include "gsl/gsl_sf_log.h"
 
 #include "RatesMC2.h"
 #include "Utilities.h"
@@ -44,6 +45,11 @@ int main(int argc, char** argv){
   // Write the welcome screen
   WelcomeScreen();
 
+  //  gsl_error_handler_t myHandler;
+  //  gsl_set_error_handler(&);
+  //gsl_sf_log(0.0);
+  //gsl_set_error_handler(NULL);
+  
   // Input and output files
   std::string ofilename;
   std::string ofullfilename;

@@ -644,7 +644,7 @@ double Resonance::NumericalRate(double T,
   //--------------------------------------------------
   // GSL Integration functions
   double result, error;
-  size_t neval;
+  size_t nevals;
   
   // Define integration limits
   double x = E_min, x1 = E_max;
@@ -664,10 +664,7 @@ double Resonance::NumericalRate(double T,
   double gammaT = G0+G1+G2;
   
   //  std::cout << "making integration workspace\n";
-  //alpha[0] = 1;
-  
-  gsl_integration_workspace * w = gsl_integration_workspace_alloc(10000);
-
+  //alpha[0] = 1;  
   
   gsl_function F;
   // Can't use Integrand directly because GSL is shit
@@ -707,6 +704,8 @@ double Resonance::NumericalRate(double T,
 
 
   if(E > E_min){
+
+
     int npts = 3;
     double pts[5];
     pts[0] = E_min;
@@ -724,7 +723,7 @@ double Resonance::NumericalRate(double T,
   pts[2] = E_max;
 
   // If it's subthreshold
-  if(E < 0.0){
+  if(E < 0.0){npts
     pts[1] = pts[0];
   }
   */
@@ -740,36 +739,57 @@ double Resonance::NumericalRate(double T,
     //        std::cout << E << "\n";
 
   // Turn off the error handler
-    gsl_set_error_handler_off();
-    
-    int status = gsl_integration_qagp (&F,      // Function to be integrated
-				       pts,     // Where known singularity is
-				       npts,       // number of singularities
-				       1e-50,       // absolute error
-				       1e-5,    // relative error
-				       10000,    // max number of steps (cannot exceed size of workspace
-				       w,       // workspace
-				       &result, // The result
-				       &error);
-    
+    gsl_error_handler_t *temp_handler;
+    temp_handler = gsl_set_error_handler_off();
 
-    /*int status = gsl_integration_qawc (&F,      // Function to be integrated
-				       E_min,
-				       E_max,
-				       E,
-				       1e-50,       // absolute error
-				       1e-5,    // relative error
-				       10000,    // max number of steps (cannot exceed size of workspace
-				       w,       // workspace
-				       &result, // The result
-				       &error);
-    */
+    gsl_integration_cquad_workspace * w2 = gsl_integration_cquad_workspace_alloc(10000);
+
+    int status = gsl_integration_cquad (&F,      // Function to be integrated
+					E_min,     // Where known singularity is
+					E_max,       // number of singularities
+					1e-50,       // absolute error
+					1e-3,    // relative error
+					w2,       // workspace
+					&result, // The result
+					&error,
+					&nevals);
+
+      
+    //    if(gammaT > 1e-6){
+      /*
+      int status = gsl_integration_qagp (&F,      // Function to be integrated
+					 pts,     // Where known singularity is
+					 npts,       // number of singularities
+					 1e-50,       // absolute error
+					 1e-3,    // relative error
+					 10000,    // max number of steps (cannot exceed size of workspace
+					 w,       // workspace
+					 &result, // The result
+					 &error);
+      */
+      //} else {
+      /*
+      int status = gsl_integration_qawc (&F,      // Function to be integrated
+					 E_min,
+					 E_max,
+					 E,
+					 1e-50,       // absolute error
+					 1e-3,    // relative error
+					 10000,    // max number of steps (cannot exceed size of workspace
+					 w,       // workspace
+					 &result, // The result
+					 &error);
+    }
+      */
 	//  if (status) {
     //  fprintf (stderr, "failed, gsl_errno=%d\n", status);
     //}
-    gsl_set_error_handler(NULL);
+    gsl_set_error_handler(temp_handler);
+    gsl_integration_cquad_workspace_free(w2);
 
   } else if (E<0.0) {
+
+    gsl_integration_workspace * w = gsl_integration_workspace_alloc(10000);
 
     // Turn off the error handler
     gsl_set_error_handler_off();
@@ -790,6 +810,8 @@ double Resonance::NumericalRate(double T,
     //  fprintf (stderr, "failed, gsl_errno=%d\n", status);
     //}
     gsl_set_error_handler(NULL);
+
+    gsl_integration_workspace_free(w);
 
 
   } else {
@@ -826,7 +848,6 @@ double Resonance::NumericalRate(double T,
     //std::cout << ARate << "\n";
   //  ARate = y[0];
   
-  gsl_integration_workspace_free(w);
   //  gsl_integration_cquad_workspace_free(w);
   
   // If G0 or G1 were zero, sum is NAN, catch this!

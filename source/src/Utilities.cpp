@@ -955,3 +955,10 @@ unsigned long int random_seed()
   return(seed);
 
 }
+
+//----------------------------------------------------------------------
+// Error handler
+void RatesMC_Error_Handler(const char * reason,
+			   const char * file,
+			   int line,
+			   int gsl_errno){};
