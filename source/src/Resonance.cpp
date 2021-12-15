@@ -442,7 +442,7 @@ double Resonance::calcBroad(double T){
 				E_cm, G[0], G[1], G[2],
 				1.0,1.0,1.0,
 				true);
-  testfile << "!" << std::endl;
+  //  testfile << "!" << std::endl;
   
   //std::cout << "classicalRate = " << classicalRate << "\n";
   //classicalRate /= (1.5399e11/pow(mue*T,1.5));
@@ -569,7 +569,7 @@ double Resonance::NumericalRate(double T,
 
   //std::cout << "\n" <<  T << " " << E << " " << G0 << " " << G1 << " " << G2 << " " << erFrac0
   //	    << " " << erFrac1 << " " << erFrac2 << "\n";
-  
+
   double ARate=0.0;
   
   double Pr(0.0), Pr_exit(0.0);
@@ -663,10 +663,8 @@ double Resonance::NumericalRate(double T,
   
   //  std::cout << "making integration workspace\n";
 
-  // Turn off the error handler
-  gsl_set_error_handler_off();
   
-  gsl_integration_workspace * w = gsl_integration_workspace_alloc(1000);
+  gsl_integration_workspace * w = gsl_integration_workspace_alloc(10000);
   gsl_function F;
   // Can't use Integrand directly because GSL is shit
   F.function = &ResonanceIntegrandWrapper;
@@ -699,39 +697,65 @@ double Resonance::NumericalRate(double T,
   */
 
   double Delta = 200.0;
+  int npts = 3;
   double pts[5];
   pts[0] = E_min;
-  pts[1] = std::max(E_min,E-Delta*gammaT);
-  pts[2] = E;
-  pts[3] = E+Delta*gammaT;
-  pts[4] = E_max;
+  //  pts[1] = std::max(E_min,E-Delta*gammaT);
+  pts[1] = E;
+  //  pts[3] = E+Delta*gammaT;
+  pts[2] = E_max;
 
   // If it's subthreshold
   if(E < 0.0){
-    pts[2] = pts[1];
-    pts[3] = pts[4];
+    npts=2;
+    pts[0] = E_min;
+    pts[1] = E_max;
   }
+  
 
   /*
-    std::cout << "Integration pts = " ;
-    for(int i=0; i<4; i++) std::cout << pts[i] << " ";
-    std::cout << std::endl;
+  double pts[3];
+  pts[0] = E_min;
+  pts[1] = E;
+  pts[2] = E_max;
+
+  // If it's subthreshold
+  if(E < 0.0){
+    pts[1] = pts[0];
+  }
   */
+  
+  std::cout << "Integration pts = " ;
+  for(int i=0; i<npts; i++) std::cout << pts[i] << " ";
+  std::cout << std::endl;
+  
   
   //if(writeIntegrand)
   //  std::cout << E_min << " " << gammaT << " " << E << " " << pts[2]-pts[1] << " " << E_max << "\n";
+
+  // Turn off the error handler
+  gsl_set_error_handler_off();
   
   int status = gsl_integration_qagp (&F,      // Function to be integrated
 				     pts,     // Where known singularity is
-				     5,       // number of singularities
+				     npts,       // number of singularities
 				     0,       // absolute error
-				     1e-1,    // relative error
-				     1000,    // max number of steps (cannot exceed size of workspace
+				     1e-2,    // relative error
+				     10000,    // max number of steps (cannot exceed size of workspace
 				     w,       // workspace
 				     &result, // The result
 				     &error);
-
+  if (status) {
+    fprintf (stderr, "failed, gsl_errno=%d\n", status);
+    
+  }
   gsl_set_error_handler(NULL);
+
+  //testfile.flush();
+  //testfile.clear();
+  //testfile.seekp(0,testfile.beg);
+  //  testfile.close();
+  //  testfile.open("test.dat");
   
   /*
   gsl_integration_cquad_workspace * w = gsl_integration_cquad_workspace_alloc(1000);
@@ -754,7 +778,7 @@ double Resonance::NumericalRate(double T,
   // Turn the error handler back on
   //gsl_set_error_handler(NULL);
 
-    ARate = result;
+  ARate = result;
     //std::cout << ARate << "\n";
   //  ARate = y[0];
   
@@ -854,14 +878,19 @@ double Resonance::Integrand(double x,
 
   
   double integrand = S1*S3/S2;//*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
-  //std::cout << x << " " << integrand << "\n";
+
+  //  if(integrand < 1.e-99)integrand=0.0;
+  
+  //  std::cout << x << " " << integrand << "\n";
 
   //cout << x << "\t" << dydx[0] << endl;
 
+  //  integrand = gsl_max(integrand,1e-300);
+  
   // Write the integrand to a file if requested
   if(writeIntegrand)
-    testfile << std::scientific << std::setprecision(9) << x-Er << " " << integrand << "\n";
-  
+    testfile << std::scientific << std::setprecision(9) << x << " " << integrand << std::endl;
+
   // astrohpysical s-factor
   // cout << x << "\t" << x*(S1/S2)/exp(-0.989534*Z0*Z1*sqrt(mue/x)) << endl;
   // Numerator of x section
