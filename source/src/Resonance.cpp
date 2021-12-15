@@ -741,18 +741,19 @@ double Resonance::NumericalRate(double T,
 
   // Turn off the error handler
     gsl_set_error_handler_off();
-    /*
+    
     int status = gsl_integration_qagp (&F,      // Function to be integrated
 				       pts,     // Where known singularity is
 				       npts,       // number of singularities
-				       1e-100,       // absolute error
-				       1e-7,    // relative error
+				       1e-50,       // absolute error
+				       1e-5,    // relative error
 				       10000,    // max number of steps (cannot exceed size of workspace
 				       w,       // workspace
 				       &result, // The result
 				       &error);
-    */
-    int status = gsl_integration_qawc (&F,      // Function to be integrated
+    
+
+    /*int status = gsl_integration_qawc (&F,      // Function to be integrated
 				       E_min,
 				       E_max,
 				       E,
@@ -762,7 +763,7 @@ double Resonance::NumericalRate(double T,
 				       w,       // workspace
 				       &result, // The result
 				       &error);
-
+    */
 	//  if (status) {
     //  fprintf (stderr, "failed, gsl_errno=%d\n", status);
     //}
