@@ -574,12 +574,13 @@ double Resonance::NumericalRate(double T,
   
   double Pr(0.0), Pr_exit(0.0);
 
-  ResonancePtr=this;
-    
+  ResonancePtr = this;
+  //auto ptr = [=](double x, void * params)->double{return ptr2->Integrand(x, params);};
+  
   // if reaction is endothermic, need to make minimum energy
   // enough to ensure no integration over negative energies
   double E_min = EMin;
-
+  
   // if particle is in spectator channel, integration should
   //  not be truncated
   if(Reac.Qexit > Reac.Q && Reac.getGamma_index() == 2)
@@ -643,6 +644,7 @@ double Resonance::NumericalRate(double T,
   //--------------------------------------------------
   // GSL Integration functions
   double result, error;
+  size_t neval;
   
   // Define integration limits
   double x = E_min, x1 = E_max;
@@ -662,15 +664,20 @@ double Resonance::NumericalRate(double T,
   double gammaT = G0+G1+G2;
   
   //  std::cout << "making integration workspace\n";
-
+  //alpha[0] = 1;
   
   gsl_integration_workspace * w = gsl_integration_workspace_alloc(10000);
+
+  
   gsl_function F;
   // Can't use Integrand directly because GSL is shit
   F.function = &ResonanceIntegrandWrapper;
   //  F.function = &Integrand;
   F.params = &alpha;
-
+  
+  //  gsl_function_pp<decltype(ptr)> Fp(ptr);
+  //  gsl_function *F = static_cast<gsl_function*>(&Fp);
+  //  F->params = &alpha;
   //std::cout << "Integrating!\n";
  
   /*
@@ -697,20 +704,17 @@ double Resonance::NumericalRate(double T,
   */
 
   double Delta = 200.0;
-  int npts = 3;
-  double pts[5];
-  pts[0] = E_min;
-  //  pts[1] = std::max(E_min,E-Delta*gammaT);
-  pts[1] = E;
-  //  pts[3] = E+Delta*gammaT;
-  pts[2] = E_max;
 
-  // If it's subthreshold
-  if(E < 0.0){
-    npts=2;
+
+  if(E > E_min){
+    int npts = 3;
+    double pts[5];
     pts[0] = E_min;
-    pts[1] = E_max;
-  }
+    //  pts[1] = std::max(E_min,E-Delta*gammaT);
+    pts[1] = E;
+    //  pts[3] = E+Delta*gammaT;
+    pts[2] = E_max;
+
   
 
   /*
@@ -725,37 +729,76 @@ double Resonance::NumericalRate(double T,
   }
   */
   
-  std::cout << "Integration pts = " ;
-  for(int i=0; i<npts; i++) std::cout << pts[i] << " ";
-  std::cout << std::endl;
+    //  std::cout << "Integration pts = " ;
+    //for(int i=0; i<npts; i++) std::cout << pts[i] << " ";
+    //std::cout << std::endl;
   
   
   //if(writeIntegrand)
   //  std::cout << E_min << " " << gammaT << " " << E << " " << pts[2]-pts[1] << " " << E_max << "\n";
 
-  // Turn off the error handler
-  gsl_set_error_handler_off();
-  
-  int status = gsl_integration_qagp (&F,      // Function to be integrated
-				     pts,     // Where known singularity is
-				     npts,       // number of singularities
-				     0,       // absolute error
-				     1e-2,    // relative error
-				     10000,    // max number of steps (cannot exceed size of workspace
-				     w,       // workspace
-				     &result, // The result
-				     &error);
-  if (status) {
-    fprintf (stderr, "failed, gsl_errno=%d\n", status);
-    
-  }
-  gsl_set_error_handler(NULL);
+    //        std::cout << E << "\n";
 
+  // Turn off the error handler
+    gsl_set_error_handler_off();
+    /*
+    int status = gsl_integration_qagp (&F,      // Function to be integrated
+				       pts,     // Where known singularity is
+				       npts,       // number of singularities
+				       1e-100,       // absolute error
+				       1e-7,    // relative error
+				       10000,    // max number of steps (cannot exceed size of workspace
+				       w,       // workspace
+				       &result, // The result
+				       &error);
+    */
+    int status = gsl_integration_qawc (&F,      // Function to be integrated
+				       E_min,
+				       E_max,
+				       E,
+				       1e-50,       // absolute error
+				       1e-5,    // relative error
+				       10000,    // max number of steps (cannot exceed size of workspace
+				       w,       // workspace
+				       &result, // The result
+				       &error);
+
+	//  if (status) {
+    //  fprintf (stderr, "failed, gsl_errno=%d\n", status);
+    //}
+    gsl_set_error_handler(NULL);
+
+  } else if (E<0.0) {
+
+    // Turn off the error handler
+    gsl_set_error_handler_off();
+
+    //    std::cout << E << "\n";
+  
+    int status = gsl_integration_qag (&F,      // Function to be integrated
+				      E_min,     // start
+				      E_max,
+				      1.0e-100,       // absolute error
+				      1.0e-7,    // relative error
+				      1000,
+				      GSL_INTEG_GAUSS61,
+				      w,
+				      &result, // The result
+				      &error);
+    //  if (status) {
+    //  fprintf (stderr, "failed, gsl_errno=%d\n", status);
+    //}
+    gsl_set_error_handler(NULL);
+
+
+  } else {
+    result = 0.0;
+  }
   //testfile.flush();
   //testfile.clear();
   //testfile.seekp(0,testfile.beg);
-  //  testfile.close();
-  //  testfile.open("test.dat");
+  testfile.close();
+  testfile.open("test.dat");
   
   /*
   gsl_integration_cquad_workspace * w = gsl_integration_cquad_workspace_alloc(1000);
@@ -886,6 +929,11 @@ double Resonance::Integrand(double x,
   //cout << x << "\t" << dydx[0] << endl;
 
   //  integrand = gsl_max(integrand,1e-300);
+  double diff = std::abs(x-Er);
+  bool singular_point = (diff <= (std::numeric_limits<double>::epsilon()*Er));
+
+  if(singular_point) integrand = std::numeric_limits<double>::quiet_NaN();
+
   
   // Write the integrand to a file if requested
   if(writeIntegrand)

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 
+
 class Reaction;
 
 class Resonance {

@@ -116,13 +116,16 @@ int main(int argc, char** argv){
     // ------------------------
     // FOR EACH TEMPERATURE
     // ------------------------
+
     
     int ID = omp_get_thread_num();
     std::cout << std::endl;
     std::cout << "--------------------------------------------------\n";
     std::cout << "Proc(" << ID << ") T = " << T; // << "\n";
     std::cout << "\n" ;
+    
 
+    
     //logfile << "--------------------\n";
     logfile << "Temperature = " << T << " GK" << std::endl;
     
