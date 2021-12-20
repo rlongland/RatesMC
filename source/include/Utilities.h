@@ -22,7 +22,7 @@ extern bool bEnergyCorrelations;
 
 // Counters
 extern int PenZeroCount,IntegratedCount,SubSampledPosCount,SampledNegCount,
-  NANCount,BelowIntLimit,IntfNANCount, LogZeroCount;
+  NANCount,InfCount,BelowIntLimit,IntfNANCount, LogZeroCount;
 
 // Flags
 extern bool ErrorFlag;

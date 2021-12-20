@@ -35,7 +35,7 @@ std::vector<double> Temp;
 
 // counters
 int PenZeroCount=0, IntegratedCount=0, SubSampledPosCount=0, SampledNegCount=0,
-  NANCount=0, BelowIntLimit=0, IntfNANCount=0, LogZeroCount=0,
+  NANCount=0, InfCount=0, BelowIntLimit=0, IntfNANCount=0, LogZeroCount=0,
   WeirdMuSigmaCount=0;
 
 // Read an integer from a single line

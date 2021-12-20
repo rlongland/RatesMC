@@ -409,7 +409,7 @@ void Resonance::writeSamples(std::ofstream& samplefile, int s){
 // Function to numerically integrate broad resonances
 double Resonance::calcBroad(double T){
 
-  double classicalRate=0.0;
+  double classicalRate=0.0;//, ARate;
 
   // Calculate the rate samples
   for(int s=0; s<NSamples; s++){
@@ -428,7 +428,7 @@ double Resonance::calcBroad(double T){
     Rate_sample[s] = NumericalRate(T,
 			    E_sample[s], G_sample[0][s], G_sample[1][s], G_sample[2][s],
 			    erFrac[0][s], erFrac[1][s], erFrac[2][s],
-			    false);
+				   false);
     // std::cout << "In Resonance, Rate_sample[s] = " << Rate_sample[s] << "\n";
     
   }
@@ -703,11 +703,11 @@ double Resonance::NumericalRate(double T,
   double Delta = 200.0;
 
 
-  if(E > E_min){
+  //  if(E > E_min){
 
 
     int npts = 3;
-    double pts[5];
+    double pts[npts];
     pts[0] = E_min;
     //  pts[1] = std::max(E_min,E-Delta*gammaT);
     pts[1] = E;
@@ -742,31 +742,37 @@ double Resonance::NumericalRate(double T,
     gsl_error_handler_t *temp_handler;
     temp_handler = gsl_set_error_handler_off();
 
-    gsl_integration_cquad_workspace * w2 = gsl_integration_cquad_workspace_alloc(10000);
-
+    
+    gsl_integration_cquad_workspace * w = gsl_integration_cquad_workspace_alloc(10000);
     int status = gsl_integration_cquad (&F,      // Function to be integrated
 					E_min,     // Where known singularity is
 					E_max,       // number of singularities
 					1e-50,       // absolute error
 					1e-3,    // relative error
-					w2,       // workspace
+					w,       // workspace
 					&result, // The result
 					&error,
 					&nevals);
-
-      
+    gsl_integration_cquad_workspace_free(w);
+    
+    //if(status != 0){
+    //  std::cout << "Integration error = " << gsl_strerror(status) << "\n";
+    //}
+    
     //    if(gammaT > 1e-6){
-      /*
-      int status = gsl_integration_qagp (&F,      // Function to be integrated
-					 pts,     // Where known singularity is
-					 npts,       // number of singularities
-					 1e-50,       // absolute error
-					 1e-3,    // relative error
-					 10000,    // max number of steps (cannot exceed size of workspace
-					 w,       // workspace
-					 &result, // The result
-					 &error);
-      */
+    /*
+    gsl_integration_workspace * w = gsl_integration_workspace_alloc(10000);
+    int status = gsl_integration_qagp (&F,      // Function to be integrated
+				       pts,     // Where known singularity is
+				       npts,       // number of singularities
+				       1e-50,       // absolute error
+				       1e-3,    // relative error
+				       10000,    // max number of steps (cannot exceed size of workspace
+				       w,       // workspace
+				       &result, // The result
+				       &error);
+    gsl_integration_workspace_free(w);
+    */
       //} else {
       /*
       int status = gsl_integration_qawc (&F,      // Function to be integrated
@@ -785,8 +791,8 @@ double Resonance::NumericalRate(double T,
     //  fprintf (stderr, "failed, gsl_errno=%d\n", status);
     //}
     gsl_set_error_handler(temp_handler);
-    gsl_integration_cquad_workspace_free(w2);
 
+    /*
   } else if (E<0.0) {
 
     gsl_integration_workspace * w = gsl_integration_workspace_alloc(10000);
@@ -817,11 +823,12 @@ double Resonance::NumericalRate(double T,
   } else {
     result = 0.0;
   }
+    */
   //testfile.flush();
   //testfile.clear();
   //testfile.seekp(0,testfile.beg);
-  testfile.close();
-  testfile.open("test.dat");
+  //testfile.close();
+  //testfile.open("test.dat");
   
   /*
   gsl_integration_cquad_workspace * w = gsl_integration_cquad_workspace_alloc(1000);
@@ -855,6 +862,11 @@ double Resonance::NumericalRate(double T,
     ARate = 0.0;
     ErrorFlag = 1;
     NANCount++;
+  }
+  if(isinf(ARate)){
+    ARate = 0.0;
+    ErrorFlag = 1;
+    InfCount++;
   }
 
   // Print evsr file if NHists = -1

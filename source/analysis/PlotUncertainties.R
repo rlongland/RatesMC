@@ -14,14 +14,14 @@ ExtraRate <- FALSE
 extrafilename <- "testing.dat" #"Tmatch.HF"
 
 ## Color scheme ("Blues" from ColorBrewer)
-pal <- c("#DEEBF7", "#9ECAE1", "#3182BD")
+##pal <- c("#DEEBF7", "#9ECAE1", "#3182BD")
 pal <- c("#BDD7E7", "#6BAED6", "#2171B5")
 
 ## Temeprature range to plot
 TMin <- 0.01
 TMax <- 10
 ## Y-axis range
-#YRangeUser <- c(0.1,10)
+YRangeUser <- NULL ##c(0.1e-10,1e10)
 
 ## Control to change the axis and tick label scales
 axislabelscale <- 1.0
@@ -192,13 +192,14 @@ for(i in (1:ntemps)[MyRate[,1]<TMatch & MyRate[,3]>0]){
                                skip=1+(i*3+(i-1)*Samples),quiet=TRUE),
                           abort=function(){ })
   tmp <- sort(tmp)
-
+  tmp[tmp==0] <- NA
+  
   csum[,,i] <- cbind(tmp/MyRate[i,3],seq(from=0,to=2,length.out=Samples))
   
   ## Find the 1- and 2-sigma uncertainties
-  onesig[i,] <- quantile(csum[,1,i],probs=c(0.16,0.84))
-  twosig[i,] <- quantile(csum[,1,i],probs=c(0.05,0.95))
-  threesig[i,] <- quantile(csum[,1,i],probs=c(0.0015,0.9985))
+  onesig[i,] <- quantile(csum[,1,i],probs=c(0.16,0.84),na.rm=TRUE)
+  twosig[i,] <- quantile(csum[,1,i],probs=c(0.05,0.95),na.rm=TRUE)
+  threesig[i,] <- quantile(csum[,1,i],probs=c(0.01,0.99),na.rm=TRUE)
   
   ## Adjust the cumulative distribution to correspond to percentiles
   csum[csum[,2,i]>1,2,i] <- 2-csum[csum[,2,i]>1,2,i]
@@ -211,10 +212,10 @@ close(pb)
 ## Calculate the full range to plot. Use the minimum and maximum
 ## ratios from the histograms since the range is already calculated for
 ## them by the RatesMC code
-if(exists("YRangeUser")){
+if(!is.null(YRangeUser)){
     YRange <- YRangeUser
 } else {
-    YRange <- range(csum[,1,],na.rm=TRUE)
+    YRange <- range(threesig,na.rm=TRUE)
 }
 
 ## The first pdf of the uncertainty bands
