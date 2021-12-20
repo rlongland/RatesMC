@@ -5,8 +5,11 @@
 ########################################
 
 outputfile <- "../RatesMC.out"
-litfilename <- ""#"RatesMC-comparison.out"
+litfilename <- "RatesMC-comparison.out"
 sampfile <- "../RatesMC.samp"
+
+## Is literature a RatesMC.out file?
+litisRatesMC <- TRUE
 
 ## Include another comparison rate?
 ## Include this as a separate [T, rate] file
@@ -93,17 +96,19 @@ ReacName <- gsub("([[:digit:]]+)", "phantom()^{\\1}*", ReacName)
 ## Read in my data
 Samples <- as.double(read.table(sampfile,skip=3,header=FALSE,nrows=1)[3])
 data <- read.table(outputfile,skip=4,header=FALSE,stringsAsFactors=FALSE)
+
 ## LitData is the data to compare with
-## TODO
-##LitBool <- FALSE
-##if(file.exists(litfilename)){
-##  LitData <- read.table(litfilename,header=FALSE,skip=headerskip,
-##                        stringsAsFactors=FALSE)
-##  LitBool <- TRUE
-##}
-##if(ExtraRate)
-##  ExtraData <- read.table(extrafilename,skip=1,header=FALSE,
-##                          stringsAsFactors=FALSE)
+LitBool <- FALSE
+headerskip <- 1
+if(litisRatesMC)headerskip <- 3
+if(file.exists(litfilename)){
+  LitData <- read.table(litfilename,header=FALSE,skip=headerskip,
+                        stringsAsFactors=FALSE)
+  LitBool <- TRUE
+}
+if(ExtraRate)
+  ExtraData <- read.table(extrafilename,skip=1,header=FALSE,
+                          stringsAsFactors=FALSE)
 
 ## If the rates file is Tmatch.out, we expect 7 columns, if it's
 ## RatesMC.out, there's 9
@@ -117,19 +122,18 @@ TMatch <- 11
 ##}
 outisTMatch = FALSE
 
-## TODO
-## if(LitBool){
-##   for(i in 1:length(LitData[,1])){
-##     for(j in 2:4){
-##       LitData[i,j] <- gsub("([()])","",LitData[i,j])
-##     }
-##   }
-## 
-##   LitData$V1 <- as.double(LitData$V1)
-##   LitData$V2 <- as.double(LitData$V2)
-##   LitData$V3 <- as.double(LitData$V4)
-##   LitData$V4 <- as.double(LitData$V6)
-## }
+if(LitBool){
+   for(i in 1:length(LitData[,1])){
+     for(j in 2:4){
+       LitData[i,j] <- gsub("([()])","",LitData[i,j])
+     }
+   }
+ 
+   LitData$V1 <- as.double(LitData$V1)
+   LitData$V2 <- as.double(LitData$V2)
+   LitData$V3 <- as.double(LitData$V4)
+   LitData$V4 <- as.double(LitData$V6)
+}
 
 # Temp is data$V1
 # Low rate is data$V2
@@ -148,29 +152,28 @@ if(outisTMatch){
 CompRate <- cbind(data$V1,MyRate[,2]/MyRate[,3],MyRate[,4]/MyRate[,3])
 
 ## sometimes, the literature has no uncertainty bands. Check for this:
-## TODO
-## if(LitBool){
-##   if(length(LitData[1,]) > 2){
-##     ## The Literature uncertainty bands
-##     LitCompRate <- cbind(LitData$V1,LitData$V2/LitData$V3,LitData$V4/LitData$V3)
-##   }
-## 
-##   ## First the temperature grids have to be matched
-##   matchlist1 <- as.double(na.omit(match(LitData[,1],MyRate[,1])))
-##   matchlist2 <- as.double(na.omit(match(MyRate[,1],LitData[,1])))
-## 
-##   RateComp <- cbind(MyRate[matchlist1,1],
-##                     LitData[matchlist2,2]/MyRate[matchlist1,3],
-##                     LitData[matchlist2,3]/MyRate[matchlist1,3],
-##                     LitData[matchlist2,4]/MyRate[matchlist1,3])
-## }
-## if(ExtraRate){
-##   matchliste1 <- as.double(na.omit(match(ExtraData[,1],MyRate[,1])))
-##   matchliste2 <- as.double(na.omit(match(MyRate[,1],ExtraData[,1])))
-## 
-##   ExtraComp <- cbind(MyRate[matchliste1,1],
-##                      ExtraData[matchliste2,2]/MyRate[matchliste1,3])
-## }
+if(LitBool){
+    if(length(LitData[1,]) > 2){
+        ## The Literature uncertainty bands
+        LitCompRate <- cbind(LitData$V1,LitData$V2/LitData$V3,LitData$V4/LitData$V3)
+    }
+ 
+    ## First the temperature grids have to be matched
+    matchlist1 <- as.double(na.omit(match(LitData[,1],MyRate[,1])))
+    matchlist2 <- as.double(na.omit(match(MyRate[,1],LitData[,1])))
+    
+    RateComp <- cbind(MyRate[matchlist1,1],
+                      LitData[matchlist2,2]/MyRate[matchlist1,3],
+                      LitData[matchlist2,3]/MyRate[matchlist1,3],
+                      LitData[matchlist2,4]/MyRate[matchlist1,3])
+ }
+ if(ExtraRate){
+   matchliste1 <- as.double(na.omit(match(ExtraData[,1],MyRate[,1])))
+   matchliste2 <- as.double(na.omit(match(MyRate[,1],ExtraData[,1])))
+ 
+   ExtraComp <- cbind(MyRate[matchliste1,1],
+                      ExtraData[matchliste2,2]/MyRate[matchliste1,3])
+ }
 
 
 ## -----------------------------------------------------------------
@@ -260,6 +263,13 @@ polygon(xx,yy,col=pal[2],border=NA)
 xx <- c(Temps,rev(Temps),Temps[1])
 yy <- c(onesig[,1],rev(onesig[,2]),onesig[1,1])
 polygon(xx,yy,col=pal[3],border=NA)
+
+
+if(LitBool){
+    lines(x=RateComp[,1], y=RateComp[,3],col="red")
+    lines(x=RateComp[,1], y=RateComp[,2],col="red",lty=2)
+    lines(x=RateComp[,1], y=RateComp[,4],col="red",lty=2)    
+}
 
 
 if(drawGrid){
