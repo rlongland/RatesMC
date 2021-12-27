@@ -85,6 +85,7 @@ int countEntries(std::ifstream &infile){
   // Use c++ stringstream to grab separated elements from the line and
   // put them in a vector of strings
   while( ss >> entry ){
+    //    std::cout << entry << "  ";
     entries.push_back(entry);
   }
 
@@ -337,15 +338,29 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   
   NSamples = readInt(infile);
   NTemps = readInt(infile);
-  int itmp;
-  infile >> itmp;
-  bool bPartialWidthCorrelations = (bool)itmp;
-  infile >> itmp;
-  bool bEnergyCorrelations = (bool)itmp;
-  infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
-  // Skip 3 lines
-  skipLines(infile, 3);
+  // Only read correlations input if it exists
+  int place=infile.tellg();
+  infile >> dummy;
+  std::size_t found = dummy.find("***");
+  if(found!=std::string::npos){
+    std::cout << "WARNING: It looks like you are using an old RatesMC.in.\n" <<
+      "         I'll assume you don't care about correlations!\n" << std::endl;
+    bool bPartialWidthCorrelations = false;
+    bool bEnergyCorrelations = false;
+
+  } else {  
+    int itmp;
+    infile >> itmp;
+    bool bPartialWidthCorrelations = (bool)itmp;
+    infile >> itmp;
+    bool bEnergyCorrelations = (bool)itmp;
+    infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+    skipLines(infile, 1);
+  }
+  
+  // Skip 2 lines
+  skipLines(infile, 2);
 
   // Non-resonant line 1
   readNonResonant(infile, *R, 0);
