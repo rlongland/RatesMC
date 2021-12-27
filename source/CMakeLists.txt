@@ -16,6 +16,10 @@ add_executable(RatesMC2 RatesMC2.cpp ${SOURCE_FILES}) # be sure there's exactly 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/RatesMC.in
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
+## Copy the deploy file over if needed
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/deploy
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
 ## Copy the R analysis scripts over if needed
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/analysis
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
