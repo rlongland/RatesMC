@@ -1,0 +1,6 @@
+#!/bin/bash
+
+HEAD=`pwd`/../
+
+cp $HEAD/build/RatesMC tests/
+cp $HEAD/build/analysis/PlotUncertainties.R tests/
