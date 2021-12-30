@@ -349,7 +349,8 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
     bool bPartialWidthCorrelations = false;
     bool bEnergyCorrelations = false;
 
-  } else {  
+  } else {
+    infile.seekg(place);
     int itmp;
     infile >> itmp;
     bool bPartialWidthCorrelations = (bool)itmp;

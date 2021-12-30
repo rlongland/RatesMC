@@ -249,8 +249,8 @@ void Resonance::makeSamples(std::vector<std::vector<double> > Ref_sample, double
 	  // if it's not the Gamma channel
 	} else { 
 	  
-	  std::cout << "Res " << index << " at E_cm = " << E_cm <<  " keV:\n"
-	  	    << "      Channel " << channel << " is Gamma_particle\n";
+	  //	  std::cout << "Res " << index << " at E_cm = " << E_cm <<  " keV:\n"
+	  // 	    << "      Channel " << channel << " is Gamma_particle\n";
 
 	  // If it's an exit particle, we need to account for the Q-value
 	  if(E_cm > 0.0 || channel != 0){
