@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.4)
 project(RatesMC2)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 file(GLOB CPP_FILES src/*.cpp)
 file(GLOB H_FILES include/*.h)
 set(SOURCE_FILES ${CPP_FILES} ${H_FILES})

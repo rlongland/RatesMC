@@ -1,0 +1,32 @@
+[
+{
+  "directory": "/home/longland/code/RatesMC2/build",
+  "command": "/usr/bin/c++  -I/home/longland/code/RatesMC2/source -I/home/longland/code/RatesMC2/source/include  -fopenmp -o CMakeFiles/RatesMC2.dir/RatesMC2.o -c /home/longland/code/RatesMC2/source/RatesMC2.cpp",
+  "file": "/home/longland/code/RatesMC2/source/RatesMC2.cpp"
+},
+{
+  "directory": "/home/longland/code/RatesMC2/build",
+  "command": "/usr/bin/c++  -I/home/longland/code/RatesMC2/source -I/home/longland/code/RatesMC2/source/include  -fopenmp -o CMakeFiles/RatesMC2.dir/src/DirectCapture.o -c /home/longland/code/RatesMC2/source/src/DirectCapture.cpp",
+  "file": "/home/longland/code/RatesMC2/source/src/DirectCapture.cpp"
+},
+{
+  "directory": "/home/longland/code/RatesMC2/build",
+  "command": "/usr/bin/c++  -I/home/longland/code/RatesMC2/source -I/home/longland/code/RatesMC2/source/include  -fopenmp -o CMakeFiles/RatesMC2.dir/src/Reaction.o -c /home/longland/code/RatesMC2/source/src/Reaction.cpp",
+  "file": "/home/longland/code/RatesMC2/source/src/Reaction.cpp"
+},
+{
+  "directory": "/home/longland/code/RatesMC2/build",
+  "command": "/usr/bin/c++  -I/home/longland/code/RatesMC2/source -I/home/longland/code/RatesMC2/source/include  -fopenmp -o CMakeFiles/RatesMC2.dir/src/Resonance.o -c /home/longland/code/RatesMC2/source/src/Resonance.cpp",
+  "file": "/home/longland/code/RatesMC2/source/src/Resonance.cpp"
+},
+{
+  "directory": "/home/longland/code/RatesMC2/build",
+  "command": "/usr/bin/c++  -I/home/longland/code/RatesMC2/source -I/home/longland/code/RatesMC2/source/include  -fopenmp -o CMakeFiles/RatesMC2.dir/src/Settings.o -c /home/longland/code/RatesMC2/source/src/Settings.cpp",
+  "file": "/home/longland/code/RatesMC2/source/src/Settings.cpp"
+},
+{
+  "directory": "/home/longland/code/RatesMC2/build",
+  "command": "/usr/bin/c++  -I/home/longland/code/RatesMC2/source -I/home/longland/code/RatesMC2/source/include  -fopenmp -o CMakeFiles/RatesMC2.dir/src/Utilities.o -c /home/longland/code/RatesMC2/source/src/Utilities.cpp",
+  "file": "/home/longland/code/RatesMC2/source/src/Utilities.cpp"
+}
+]
