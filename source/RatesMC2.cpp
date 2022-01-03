@@ -7,20 +7,21 @@
    public release!
 
    TO DO:
-	 - Output Rate samples
-	 - RatesMC.out and RatesMC.full output files
+	 - Error accounting output
+	 - nan accounting
+	 - AD calculation broken
 	 - Output S-factor for any broad resonances + non-resonant terms
 	 - Output broad resonance integrand? All resonances at all temperatures?
 	 - Output Porter-Thomas samples
-	 - Error accounting output
 	 - R codes for analysis
-	 - PlotUncertainty.R (like PlotCompare/PlotContour)
-	 - PlotPanel6.R
-	 - PlotPanelall.R
-	 - PlotSFactor.R (plots the S-factor for broad and non-resonant parts)
-	 - PlotIntegrand.R (plots the rate integrand at a given temperature)
-	 - PlotPT.R (plots the Porter-Thomas samples for a given resonance)
-	 - PlotCorrelations.R (plots some set of Rate vs. input parameter at a given T)
+	   - Check for nans? Are they in output files?
+	   - PlotUncertainty.R (like PlotCompare/PlotContour)
+	   - PlotPanel6.R
+	   - PlotPanelall.R
+	   - PlotSFactor.R (plots the S-factor for broad and non-resonant parts)
+		 - PlotIntegrand.R (plots the rate integrand at a given temperature)
+		 - PlotPT.R (plots the Porter-Thomas samples for a given resonance)
+		 - PlotCorrelations.R (plots some set of Rate vs. input parameter at a given T)
    ======================================================================
 */
 
