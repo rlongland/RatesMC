@@ -7,20 +7,20 @@
    public release!
 
    TO DO:
-    - Output Rate samples
-    - RatesMC.out and RatesMC.full output files
-    - Output S-factor for any broad resonances + non-resonant terms
-    - Output broad resonance integrand? All resonances at all temperatures?
-    - Output Porter-Thomas samples
-    - Error accounting output
-    - R codes for analysis
-      - PlotUncertainty.R (like PlotCompare/PlotContour)
-      - PlotPanel6.R
-      - PlotPanelall.R
-      - PlotSFactor.R (plots the S-factor for broad and non-resonant parts)
-      - PlotIntegrand.R (plots the rate integrand at a given temperature)
-      - PlotPT.R (plots the Porter-Thomas samples for a given resonance)
-      - PlotCorrelations.R (plots some set of Rate vs. input parameter at a given T)
+	 - Output Rate samples
+	 - RatesMC.out and RatesMC.full output files
+	 - Output S-factor for any broad resonances + non-resonant terms
+	 - Output broad resonance integrand? All resonances at all temperatures?
+	 - Output Porter-Thomas samples
+	 - Error accounting output
+	 - R codes for analysis
+	 - PlotUncertainty.R (like PlotCompare/PlotContour)
+	 - PlotPanel6.R
+	 - PlotPanelall.R
+	 - PlotSFactor.R (plots the S-factor for broad and non-resonant parts)
+	 - PlotIntegrand.R (plots the rate integrand at a given temperature)
+	 - PlotPT.R (plots the Porter-Thomas samples for a given resonance)
+	 - PlotCorrelations.R (plots some set of Rate vs. input parameter at a given T)
    ======================================================================
 */
 
@@ -28,6 +28,7 @@
 #include <iomanip>
 #include <fstream>
 #include <limits>
+#include <cmath>
 
 #include "omp.h"
 
@@ -90,7 +91,7 @@ int main(int argc, char** argv){
   
   // Set up the random sampler
   setupRandom();
-  
+
   // Prepare MC samples
   //  - For each resonance, sample all input parameters
   //  - Store every input parameter in a matrix (column = parameter, row = sample)
@@ -176,15 +177,17 @@ int main(int argc, char** argv){
       // Sum the total rate
       double totalRate = ADRate0 + ADRate1;
       for(double res : resonancesSample){
-	totalRate += res;
+				//if( !std::isnan(res) )
+				totalRate += res;
       }
+			//std::cout << s << "  " << totalRate << "\n";
 
       // Calculate contribution for each resonance. 
       std::vector<double> Cont;
       Cont.push_back(ADRate0/totalRate);
       Cont.push_back(ADRate1/totalRate);
       for(double res : resonancesSample)
-	Cont.push_back(res/totalRate);
+				Cont.push_back(res/totalRate);
       Contributions.push_back(Cont);
       
       // Fill the total reaction rate vector
@@ -202,13 +205,13 @@ int main(int argc, char** argv){
     writeRateSamples(RateSample, T);
     
     /*
-#pragma omp critical
-    {
+			#pragma omp critical
+			{
 
       // print out the thread number and temperature
       // #pragma omp ordered
       std::cout << "Classical Resonant Rate (again) = " << ResRate << "\n";
-    }
+			}
     */
 
     // Summarize any errors that may have occurred
@@ -240,7 +243,7 @@ void WelcomeScreen(){
   std::cout << " ********************************************" << std::endl;
   std::cout << " *           Welcome to RatesMC             *" << std::endl;
   std::cout << " *         V. " << VersionNumber << "  " << VersionDate 
-	    << "        *" << std::endl;
+						<< "        *" << std::endl;
   std::cout << " *     Written by:   Richard Longland       *" << std::endl;
   std::cout << " *                                          *" << std::endl;
   std::cout << " ********************************************" << std::endl;

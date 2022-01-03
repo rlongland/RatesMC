@@ -127,7 +127,7 @@ void readNonResonant(std::ifstream &infile, Reaction &R, int part){
   R.setNonResonant(s,sp,spp,ds,cutoffe,part);
 
   if(ds < 0)logfile << "Non-resonant part " << part+1 << " has a factor uncertainty of " 
-		    << -ds << std::endl;
+										<< -ds << std::endl;
   
 }
 
@@ -183,7 +183,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     if (found!=std::string::npos){
       logfile << "Found end of ";
       if(isUpperLimit)
-	logfile << "upper limit ";
+				logfile << "upper limit ";
       logfile << "resonances\n" << data << std::endl;
       break;
     }
@@ -193,7 +193,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     found = data.find("!");
     if (found!=std::string::npos){
       if(isUpperLimit)
-	logfile << "Upper limit ";
+				logfile << "Upper limit ";
       logfile << "Resonance is commented-out (" << data << ")" << std::endl;
       infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
       continue;
@@ -204,25 +204,25 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     //    logfile << E_cm << std::endl;;
     if(!isUpperLimit){
       infile >> dE_cm >> wg >> dwg >> Jr 
-	     >> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
-	     >> Exf >> isBroad;
+						 >> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
+						 >> Exf >> isBroad;
     } else {
       // Upper limit resonances.
       // Old style with no DPT
       if(nEnt == 17){
-	infile >> dE_cm >> Jr 
-	       >> G1 >> dG1 >> L1 >> PT1 >> G2 >> dG2 >> L2 >> PT2
-	       >> G3 >> dG3 >> L3 >> PT3
-	       >> Exf >> isBroad;
+				infile >> dE_cm >> Jr 
+							 >> G1 >> dG1 >> L1 >> PT1 >> G2 >> dG2 >> L2 >> PT2
+							 >> G3 >> dG3 >> L3 >> PT3
+							 >> Exf >> isBroad;
 	
       }
       // New style with DPT
       else if(nEnt == 20){
-	logfile << "Reading resonance\n";
-	infile >> dE_cm >> Jr 
-	       >> G1 >> dG1 >> L1 >> PT1 >> DPT1 >> G2 >> dG2 >> L2 >> PT2 >> DPT2
-	       >> G3 >> dG3 >> L3 >> PT3 >> DPT3
-	       >> Exf >> isBroad;
+				logfile << "Reading resonance\n";
+				infile >> dE_cm >> Jr 
+							 >> G1 >> dG1 >> L1 >> PT1 >> DPT1 >> G2 >> dG2 >> L2 >> PT2 >> DPT2
+							 >> G3 >> dG3 >> L3 >> PT3 >> DPT3
+							 >> Exf >> isBroad;
       }
     }
 
@@ -249,10 +249,10 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     // Add this resonance to the list of resonances stored in the
     // reaction
     R.addResonance(i++, E_cm, dE_cm, wg, dwg, Jr,
-		   G1, dG1, L1, PT1, DPT1,
-		   G2, dG2, L2, PT2, DPT2,
-		   G3, dG3, L3, PT3, DPT3,
-		   Exf, isBroad, isUpperLimit);
+									 G1, dG1, L1, PT1, DPT1,
+									 G2, dG2, L2, PT2, DPT2,
+									 G3, dG3, L3, PT3, DPT3,
+									 Exf, isBroad, isUpperLimit);
     
   }
   
@@ -391,13 +391,13 @@ void defineTemperatures(){
 
   
   std::vector<double> defaultT{0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.009,
-			       0.01,0.011,0.012,0.013,0.014,0.015,
-			       0.016,0.018,0.020,0.025,0.03,0.04,
-			       0.05,0.06,0.07,0.08,0.09,0.1,0.11,
-			       0.12,0.13,0.14,0.15,0.16,0.18,0.20,
-			       0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,
-			       0.8,0.9,1.0,1.25,1.5,1.75,2,2.5,3,
-			       3.5,4,5,6,7,8,9,10};
+															 0.01,0.011,0.012,0.013,0.014,0.015,
+															 0.016,0.018,0.020,0.025,0.03,0.04,
+															 0.05,0.06,0.07,0.08,0.09,0.1,0.11,
+															 0.12,0.13,0.14,0.15,0.16,0.18,0.20,
+															 0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,
+															 0.8,0.9,1.0,1.25,1.5,1.75,2,2.5,3,
+															 3.5,4,5,6,7,8,9,10};
   
   
   //std::vector<double> defaultT{0.001,0.01,0.15,1.0,2.5,5.0,10.0};
@@ -446,7 +446,7 @@ void logNormalize(double mean, double sd, double& mu, double& sigma){
 //----------------------------------------------------------------------
 // Penetration factor calculation
 double PenFactor(double E, double L, double Mass0, double Mass1,
-		 int Charge0, int Charge1, double R){
+								 int Charge0, int Charge1, double R){
 
   //  std::cout << E << " " << L << " " << Mass0 << " " << Mass1 << " " << Charge0
   //	    << " " << Charge1 << " " << R << "\n";
@@ -465,7 +465,7 @@ double PenFactor(double E, double L, double Mass0, double Mass1,
   double eta = 0.15748927*(double)Charge0*(double)Charge1*sqrt(mue/E);
 
   int status = gsl_sf_coulomb_wave_FG_e (eta, rho, L, 0, &F, &Fp, &G,
-					 &Gp, &exp_F, &exp_G);
+																				 &Gp, &exp_F, &exp_G);
 
   // Check to see if this failed. If it's out of range, set P=0,
   // if not, print an error and exit
@@ -476,7 +476,7 @@ double PenFactor(double E, double L, double Mass0, double Mass1,
       return 0.0;
     } else {
       std::cout << "\nERROR: Something went wrong in coulomb wavefunction!" <<
-	"\n\tGSL Error: " << gsl_strerror (status)<< std::endl;
+				"\n\tGSL Error: " << gsl_strerror (status)<< std::endl;
       std::cout << "The Energy was " << E*1e3 << " keV." << std::endl;
       abort();
     }
@@ -541,54 +541,60 @@ void writeOutputFileHeaders(Reaction *R){
 void writeContributions(std::vector<std::vector<double> > Contributions, double Temperature){
 
   //std::cout << "At the end we have\n";
-    //std::cout << "RateSample of length: " << RateSample.size() << "\n";
-    transpose(Contributions);
-    //std::cout << "Contributions of length: " << Contributions.size() << " X "
-    //	      << Contributions[0].size() << "\n";
-    //std::cout << std::endl;
+	//std::cout << "RateSample of length: " << RateSample.size() << "\n";
+	transpose(Contributions);
+	//std::cout << "Contributions of length: " << Contributions.size() << " X "
+	//	      << Contributions[0].size() << "\n";
+	//std::cout << std::endl;
     
-    // From the contributions, calculate Low, median, and high
-    // contribution for each resonance
-    // Sort, and find quantiles for each rate contribution
-    std::vector<double> LowCont;
-    std::vector<double> HighCont;
-    std::vector<double> MedianCont;
-    for(int j=0;j<Contributions.size();j++){
+	// From the contributions, calculate Low, median, and high
+	// contribution for each resonance
+	// Sort, and find quantiles for each rate contribution
+	std::vector<double> LowCont;
+	std::vector<double> HighCont;
+	std::vector<double> MedianCont;
+	for(int j=0;j<Contributions.size();j++){
 
-      // Sort the Contributions for each resonance
-      std::sort (Contributions[j].begin(), Contributions[j].end());
+		// Remove all nan values
+		Contributions[j].erase(std::remove_if(std::begin(Contributions[j]),
+																					std::end(Contributions[j]),
+																					[](const auto& value) { return std::isnan(value); }),
+													 std::end(Contributions[j]));
+			
+		// Sort the Contributions for each resonance
+		std::sort (Contributions[j].begin(), Contributions[j].end());
+			
+		// Now convert this into a gsl vector
+		gsl_vector_const_view gsl_v =
+			gsl_vector_const_view_array( &Contributions[j][0], Contributions[j].size() );
       
-      // Now convert this into a gsl vector
-      gsl_vector_const_view gsl_v =
-	gsl_vector_const_view_array( &Contributions[j][0], Contributions[j].size() );
-      
-      LowCont.push_back(gsl_stats_quantile_from_sorted_data(gsl_v.vector.data,1, Contributions[j].size(),0.16));
-      HighCont.push_back(gsl_stats_quantile_from_sorted_data(gsl_v.vector.data,1, Contributions[j].size(),0.84));
-      MedianCont.push_back(gsl_stats_median_from_sorted_data(gsl_v.vector.data,1,Contributions[j].size()));
-    }
+		LowCont.push_back(gsl_stats_quantile_from_sorted_data(gsl_v.vector.data,1, Contributions[j].size(),0.16));
+		HighCont.push_back(gsl_stats_quantile_from_sorted_data(gsl_v.vector.data,1, Contributions[j].size(),0.84));
+		MedianCont.push_back(gsl_stats_median_from_sorted_data(gsl_v.vector.data,1,Contributions[j].size()));
+	}
 
-    /*
-    for(int i=0; i<LowCont.size(); i++){
-      std::cout << "i = " << i << "  LowCont = " << LowCont[i] <<  "  MedianCont = " << MedianCont[i]
-		<< "  HighCont = " << HighCont[i] << "\n";
-    }
-    */
     
-    // Write to file
-    contribfile.precision(3);
-    contribfile.width(5);
-    contribfile << Temperature << std::scientific << "   " ;
-    for(int i=0; i<MedianCont.size(); i++){
-      if(LowCont[i] < 1.0e-99)LowCont[i]=0.0;
-      if(MedianCont[i] < 1.0e-99)MedianCont[i]=0.0;
-      if(HighCont[i] < 1.0e-99)HighCont[i]=0.0;
-      //if(j<2 || UseInRate[j-2] || j>=NRes+2){
-      contribfile << LowCont[i] << "  " << MedianCont[i] << "  " <<
-	  HighCont[i] << "  ";
-    }
+	// for(int i=0; i<LowCont.size(); i++){
+	//   std::cout << "i = " << i << "  LowCont = " << LowCont[i] <<  "  MedianCont = " << MedianCont[i]
+	// << "  HighCont = " << HighCont[i] << "\n";
+	// }
     
-    contribfile << std::endl;
-    contribfile.unsetf(std::ios_base::scientific);
+    
+	// Write to file
+	contribfile.precision(3);
+	contribfile.width(5);
+	contribfile << Temperature << std::scientific << "   " ;
+	for(int i=0; i<MedianCont.size(); i++){
+		if(LowCont[i] < 1.0e-99)LowCont[i]=0.0;
+		if(MedianCont[i] < 1.0e-99)MedianCont[i]=0.0;
+		if(HighCont[i] < 1.0e-99)HighCont[i]=0.0;
+		//if(j<2 || UseInRate[j-2] || j>=NRes+2){
+		contribfile << LowCont[i] << "  " << MedianCont[i] << "  " <<
+			HighCont[i] << "  ";
+	}
+    
+	contribfile << std::endl;
+	contribfile.unsetf(std::ios_base::scientific);
     
 
   
@@ -610,7 +616,7 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
 
   
   gsl_set_error_handler_off();
-  double lograte[NSamples];
+	std::vector<double> logRates;
   gsl_sf_result LogResult;
   if(NSamples > 2){
     for(int s=0;s<NSamples;s++){
@@ -618,34 +624,49 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
       int status = gsl_sf_log_e(Rates[s],&LogResult);
       // Check to make sure log didn't error
       if(status){
-	ErrorFlag = true;
-	LogZeroCount++;
-	lograte[s] = 0.0;
+				ErrorFlag = true;
+				LogZeroCount++;
+				logRates.push_back(std::nan(""));
       } else {
-	lograte[s] = LogResult.val;
+				logRates.push_back(LogResult.val);
+				//				std::cout << lograte[s] << "\n";
       }
     }
     /*    
-      // No longer need to bin rates
-      //      BinRates(summed,Temp[i],i,distfileName);
-      for(int k=0;k<NSamples;k++){
-	sampfile << summed[k] << endl;
-	summed[k] /= RateFactor;
-      }
-      sampfile << endl;
+		// No longer need to bin rates
+		//      BinRates(summed,Temp[i],i,distfileName);
+		for(int k=0;k<NSamples;k++){
+		sampfile << summed[k] << endl;
+		summed[k] /= RateFactor;
+		}
+		sampfile << endl;
     */
   }
 
+	// Remove all nan rates
+	Rates.erase(std::remove_if(std::begin(Rates),
+														 std::end(Rates),
+														 [](const auto& value) { return std::isnan(value); }),
+							std::end(Rates));
+	logRates.erase(std::remove_if(std::begin(logRates),
+														 std::end(logRates),
+														 [](const auto& value) { return std::isnan(value); }),
+							std::end(logRates));
+	
+	
   // Now, find the uncertainties. Before finding quantiles, need to sort
-  std::sort(Rates.begin(), Rates.end());
+	std::sort(Rates.begin(), Rates.end());
   // Now convert the rates into a gsl vector
   gsl_vector_const_view gsl_Rates =
     gsl_vector_const_view_array( &Rates[0], Rates.size() );
+  gsl_vector_const_view gsl_logRates =
+    gsl_vector_const_view_array( &logRates[0], logRates.size() );
 
+	
   // Means and variances
-  MeanRate = gsl_stats_mean(gsl_Rates.vector.data,1,NSamples);
-  RateMu = gsl_stats_mean(lograte,1,NSamples);
-  RateSigma = sqrt(gsl_stats_variance(lograte,1,NSamples));
+  MeanRate = gsl_stats_mean(gsl_Rates.vector.data,1,Rates.size());
+  RateMu = gsl_stats_mean(gsl_logRates.vector.data,1,logRates.size());
+  RateSigma = sqrt(gsl_stats_variance(gsl_logRates.vector.data,1,logRates.size()));
   fu = gsl_sf_exp(RateSigma);
     
   // Uncertainties calculated from quantiles
@@ -665,7 +686,7 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
   if(status){
     ErrorFlag = true;
     std::cout << "\nERROR: Something went wrong in logarithm, negative or zero rate?!\n"
-	      << std::endl;
+							<< std::endl;
     RateMu = 0.0;
     RateSigma = 0.0;
   } else {
@@ -724,14 +745,14 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
   char buffer[200];
   // RatesMC.out output
   sprintf(buffer,"%6.3f  %10.3e      %10.3e      %10.3e       %10.3e",
-	  Temperature,LowRate,MedianRate,HighRate,fu);
+					Temperature,LowRate,MedianRate,HighRate,fu);
   outfile << buffer << std::endl;
   //  outfile << std::endl;
   
   // RatesMC.full output
   sprintf(buffer,"%6.3f  %10.3e      %10.3e      %10.3e      %10.3e      %10.3e      %10.3e     %10.3e      %c% 10.3e%c      %c% 10.3e%c       %9.3e",
-	  Temperature,Low2Rate, LowRate, ARate, MedianRate, MeanRate, HighRate,
-	  High2Rate, Parenth[0],RateMu,Parenth[1],Parenth[0],RateSigma,Parenth[1],AndDar_Asqrd);
+					Temperature,Low2Rate, LowRate, ARate, MedianRate, MeanRate, HighRate,
+					High2Rate, Parenth[0],RateMu,Parenth[1],Parenth[0],RateSigma,Parenth[1],AndDar_Asqrd);
   outfullfile << buffer << std::endl;
   //  outfullfile << std::endl;
 
@@ -742,7 +763,7 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
 //----------------------------------------------------------------------
 // Function to write a latex table
 void WriteLatex2(double Temperature, double LowRate, double MedianRate, double HighRate,
-		 double RateSigma){
+								 double RateSigma){
 
   double low_x,low_f,median_x,median_f,high_x,high_f,fu;
 
@@ -777,20 +798,20 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate, double H
   int prec = 3 - floor(log10(fu));
     
   latexfile << Temperature << " & " << std::setprecision(2) << low_x <<"$\\times$10$^{"
-	    << std::setprecision(0) << std::setw(3)
-	    << setiosflags(std::ios::showpos)
-	    << low_f << "}$ & " << std::setprecision(2)
-	    << resetiosflags(std::ios::showpos)
-	    << median_x << "$\\times$10$^{" << std::setw(3)
-	    << setiosflags(std::ios::showpos)
-	    << std::setprecision(0) << median_f << "}$ &\n" << std::setprecision(2)
-	    << resetiosflags(std::ios::showpos)
-	    << "      " << high_x << "$\\times$10$^{" << std::setw(3)
-	    << setiosflags(std::ios::showpos)
-	    << std::setprecision(0) << high_f << "}$ & " << std::setprecision(prec)
-	    << resetiosflags(std::ios::showpos)
-	    << fu << " \\\\ " << std::setprecision(3)
-	    << resetiosflags(std::ios::showpos) << std::endl;
+						<< std::setprecision(0) << std::setw(3)
+						<< setiosflags(std::ios::showpos)
+						<< low_f << "}$ & " << std::setprecision(2)
+						<< resetiosflags(std::ios::showpos)
+						<< median_x << "$\\times$10$^{" << std::setw(3)
+						<< setiosflags(std::ios::showpos)
+						<< std::setprecision(0) << median_f << "}$ &\n" << std::setprecision(2)
+						<< resetiosflags(std::ios::showpos)
+						<< "      " << high_x << "$\\times$10$^{" << std::setw(3)
+						<< setiosflags(std::ios::showpos)
+						<< std::setprecision(0) << high_f << "}$ & " << std::setprecision(prec)
+						<< resetiosflags(std::ios::showpos)
+						<< fu << " \\\\ " << std::setprecision(3)
+						<< resetiosflags(std::ios::showpos) << std::endl;
   
   //  latexfile << "\n";
   //latexfile.close();
@@ -821,17 +842,17 @@ void summarizeErrors(double Temp){
 
     if(SampledNegCount>0){
       logfile << " A positive resonance had a negative energy "
-	      << SampledNegCount << " times" << std::endl;
+							<< SampledNegCount << " times" << std::endl;
       SampledNegCount = 0;
     }
     if(SubSampledPosCount>0){
       logfile << " A negative resonance had a positive energy "
-	      << SubSampledPosCount << " times" << std::endl;
+							<< SubSampledPosCount << " times" << std::endl;
       SubSampledPosCount = 0;
     }
     if(IntegratedCount>0){
       logfile << " A positive narrow resonance had a negative energy "
-	      << IntegratedCount << " times" << std::endl;
+							<< IntegratedCount << " times" << std::endl;
       IntegratedCount = 0;
     }
     ErrorFlag = false;
@@ -849,7 +870,7 @@ double CalcAD(std::vector<double> Rates,double Mu,double Sigma){
 
   // For now, do a Kolmogorov-Smirnov Goodness-of-Fit Test
   double KS = 0.0;
-  double CumLognorm[NSamples+1];
+  double CumLognorm[Rates.size()+1];
   double X,maxarray[3];
   double AndDar_S=0.0, AndDar_Asqrd=0.0;
   int NanADCount = 0;
@@ -861,21 +882,21 @@ double CalcAD(std::vector<double> Rates,double Mu,double Sigma){
   //		      gsl_sf_exp(2.0*Mu + gsl_pow_2(Sigma)));
 
   CumLognorm[0]=0.0;
-  for(int i=1;i<(NSamples+1);i++){
+  for(int i=1;i<(Rates.size()+1);i++){
     X = Rates[i];
     // if X=0, can't take log, so check
     if(X==0.0){
       CumLognorm[i] = CumLognorm[i-1];
     } else {
       CumLognorm[i] = CumLognorm[i-1]+((1.0/(X*Sigma*sqrt(2.0*M_PI)))*
-				       gsl_sf_exp(-gsl_pow_2(gsl_sf_log(X)-Mu)/
-						  (2.0*gsl_pow_2(Sigma))));
+																			 gsl_sf_exp(-gsl_pow_2(gsl_sf_log(X)-Mu)/
+																									(2.0*gsl_pow_2(Sigma))));
     }
   }
-  double norm = 1/CumLognorm[NSamples];
+  double norm = 1/CumLognorm[Rates.size()];
   double AndDar_S_tmp;
 
-  for(int i=1;i<(NSamples+1);i++){
+  for(int i=1;i<(Rates.size()+1);i++){
     X = Rates[i];
 
     // check to make sure X isn't zero
@@ -884,13 +905,13 @@ double CalcAD(std::vector<double> Rates,double Mu,double Sigma){
     } else {
       // also calculate the Anderson-Darling test
       double F = 0.5*(gsl_sf_erf((gsl_sf_log(Rates[i-1])-Mu)/
-				 (sqrt(2.0)*Sigma)) + 1.0);
+																 (sqrt(2.0)*Sigma)) + 1.0);
       double OneMinusF = 1.0-
-	0.5*(gsl_sf_erf((gsl_sf_log(Rates[NSamples-i])-Mu)/
-			(sqrt(2.0)*Sigma)) + 1.0);
+				0.5*(gsl_sf_erf((gsl_sf_log(Rates[Rates.size()-i])-Mu)/
+												(sqrt(2.0)*Sigma)) + 1.0);
 
       AndDar_S_tmp =
-	((2.0*i-1.0)/NSamples)*(gsl_sf_log(F)+gsl_sf_log(OneMinusF));
+				((2.0*i-1.0)/Rates.size())*(gsl_sf_log(F)+gsl_sf_log(OneMinusF));
     }
 
     // check for NaN (if F is too small)
@@ -901,13 +922,13 @@ double CalcAD(std::vector<double> Rates,double Mu,double Sigma){
     }
 
     maxarray[0]=KS;
-    maxarray[1]=norm*CumLognorm[i] - double(i-1.0)/NSamples;
-    maxarray[2]=double(i)/NSamples - norm*CumLognorm[i];
+    maxarray[1]=norm*CumLognorm[i] - double(i-1.0)/Rates.size();
+    maxarray[2]=double(i)/Rates.size() - norm*CumLognorm[i];
     KS = gsl_stats_max(maxarray,1,3);
   }
 
 
-  AndDar_Asqrd = (-NSamples-AndDar_S)*(1+4.0/NSamples+25.0/gsl_pow_2(NSamples));
+  AndDar_Asqrd = (-Rates.size()-AndDar_S)*(1+4.0/Rates.size()+25.0/gsl_pow_2(Rates.size()));
 
   if(NanADCount > 0){
     logfile << "\tWARNING: Anderson-Darling test cannot \n\t\tbe calculated for " << NanADCount <<
@@ -930,7 +951,7 @@ bool isZero(double x){
 // Setup the random sampler
 void setupRandom(){
   
-   // set-up the GSL random sampler
+	// set-up the GSL random sampler
   const gsl_rng_type * T;
   /* create a generator chosen by the
      environment variable GSL_RNG_TYPE */
@@ -975,6 +996,6 @@ unsigned long int random_seed()
 //----------------------------------------------------------------------
 // Error handler
 void RatesMC_Error_Handler(const char * reason,
-			   const char * file,
-			   int line,
-			   int gsl_errno){};
+													 const char * file,
+													 int line,
+													 int gsl_errno){};

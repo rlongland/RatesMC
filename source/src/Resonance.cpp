@@ -429,8 +429,10 @@ double Resonance::calcBroad(double T){
 			    E_sample[s], G_sample[0][s], G_sample[1][s], G_sample[2][s],
 			    erFrac[0][s], erFrac[1][s], erFrac[2][s],
 				   false);
-    // std::cout << "In Resonance, Rate_sample[s] = " << Rate_sample[s] << "\n";
-    
+
+		if(s % 5 == 0)Rate_sample[s] = std::nan("");
+				//std::cout << "In Resonance, Rate_sample[s] = " << Rate_sample[s] << "\n";
+
   }
   //  std::cout << "\n";
   
@@ -748,16 +750,17 @@ double Resonance::NumericalRate(double T,
 					E_min,     // Where known singularity is
 					E_max,       // number of singularities
 					1e-50,       // absolute error
-					1e-3,    // relative error
+					1e-5,    // relative error
 					w,       // workspace
 					&result, // The result
 					&error,
 					&nevals);
     gsl_integration_cquad_workspace_free(w);
     
-    //if(status != 0){
-    //  std::cout << "Integration error = " << gsl_strerror(status) << "\n";
-    //}
+    if(status != 0){
+			//      std::cout << "Integration error = " << gsl_strerror(status) << "\n";
+			result = std::nan("");
+    }
     
     //    if(gammaT > 1e-6){
     /*
@@ -859,13 +862,14 @@ double Resonance::NumericalRate(double T,
   
   // If G0 or G1 were zero, sum is NAN, catch this!
   if(isnan(ARate)){
-    ARate = 0.0;
+    //ARate = 0.0;
     ErrorFlag = 1;
     NANCount++;
   }
   if(isinf(ARate)){
-    ARate = 0.0;
-    ErrorFlag = 1;
+    //Arate = 0.0;
+		ARate = std::nan("");
+		ErrorFlag = 1;
     InfCount++;
   }
 
