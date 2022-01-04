@@ -57,7 +57,6 @@ Resonance::Resonance(Reaction & R,
   this->Exf = Exf;
   this->isBroad = isBroad;
   this->isUpperLimit = isUpperLimit;
-
   this->M0 = R.M0;
   this->M1 = R.M1;
   this->M2 = R.M2;
@@ -72,7 +71,7 @@ Resonance::Resonance(Reaction & R,
   
   //  this->R = 5;
   //  std::cout << "The Gamma_index is " << Reac.getGamma_index() << "\n";
-
+	
   //  ResonancePtr=this;
 
   //cout << "made a resonance" << endl;
@@ -863,13 +862,13 @@ double Resonance::NumericalRate(double T,
   // If G0 or G1 were zero, sum is NAN, catch this!
   if(isnan(ARate)){
     //ARate = 0.0;
-    ErrorFlag = 1;
+    ErrorFlag = true;
     NANCount++;
   }
   if(isinf(ARate)){
     //Arate = 0.0;
 		ARate = std::nan("");
-		ErrorFlag = 1;
+		ErrorFlag = true;
     InfCount++;
   }
 
