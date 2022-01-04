@@ -13,5 +13,10 @@ cmake_install.cmake
 Makefile
 
 ## Extras
-oldcode
 tests
+GPATH
+GRTAGS
+GTAGS
+RatesMC-*.in
+/compile_commands.json
+/RatesMC.in
