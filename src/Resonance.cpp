@@ -429,7 +429,7 @@ double Resonance::calcBroad(double T){
 			    erFrac[0][s], erFrac[1][s], erFrac[2][s],
 				   false);
 
-		if(s % 5 == 0)Rate_sample[s] = std::nan("");
+		//		if(s % 5 == 0)Rate_sample[s] = std::nan("");
 				//std::cout << "In Resonance, Rate_sample[s] = " << Rate_sample[s] << "\n";
 
   }
