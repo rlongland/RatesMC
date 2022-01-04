@@ -4,9 +4,9 @@
 ## Date:   Dec. 2021
 ########################################
 
-outputfile <- "../RatesMC.out"
-litfilename <- "RatesMC-comparison.out"
-sampfile <- "../RatesMC.samp"
+outputfile <- "RatesMC.out"
+litfilename <- ""#RatesMC-comparison.out"
+sampfile <- "RatesMC.samp"
 
 ## Is literature a RatesMC.out file?
 litisRatesMC <- TRUE
@@ -196,6 +196,7 @@ for(i in (1:ntemps)[MyRate[,1]<TMatch & MyRate[,3]>0]){
                           abort=function(){ })
   tmp <- sort(tmp)
   tmp[tmp==0] <- NA
+  length(tmp) <- Samples
   
   csum[,,i] <- cbind(tmp/MyRate[i,3],seq(from=0,to=2,length.out=Samples))
   

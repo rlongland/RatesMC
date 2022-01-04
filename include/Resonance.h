@@ -14,7 +14,7 @@ class Resonance {
   // Constructor
   Resonance(Reaction & R,
 	    int index=0, double E_cm=0.0, double dE_cm=0.0, double wg=0.0, double dwg=0.0, double Jr=0.0,
-	    double G[3]={}, double dG[3]={}, int L[3]={0}, double PT[3]={}, double dPT[3]={},
+	    double G[3]={}, double dG[3]={}, int L[3]={}, double PT[3]={}, double dPT[3]={},
 	    double Exf=0, bool bInt=false, bool bUpperLimit=false); 
   // Destructor
   ~Resonance();

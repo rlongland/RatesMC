@@ -23,5 +23,5 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/deploy
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 ## Copy the R analysis scripts over if needed
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/analysis
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/analysis/
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
