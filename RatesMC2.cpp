@@ -118,13 +118,14 @@ int main(int argc, char** argv){
 
   // Now do the big loop over temperatures in parallel!!
   // Do all of the calculations first, then collect everything together
+	std::vector<double>::iterator it;
   omp_set_num_threads(1);
-#pragma omp parallel for ordered
-  for(double T : Temp){
+	//#pragma omp parallel for ordered
+	for(it = Temp.begin(); it < Temp.end(); ++it){
     // ------------------------
     // FOR EACH TEMPERATURE
     // ------------------------
-
+		double T = *it;
     
     int ID = omp_get_thread_num();
     std::cout << std::endl;

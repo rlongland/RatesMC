@@ -147,7 +147,7 @@ void Reaction::setupContribHeader(){
     contribfile << "A-Rate-1   ";
   for(int i=0;i<3;i++)
     contribfile << "A-Rate-2   ";
-  for(Resonance Res : Resonances){
+  for(Resonance &Res : Resonances){
     for(int i=0; i<3; i++){
       contribfile << "Res" << Res.getIndex()+1 << "       ";
     }
@@ -205,7 +205,7 @@ std::vector<double> Reaction::getResonantRateSample(int s){
 
   std::vector<double> Rate_s;
   
-  for(Resonance R : Resonances){
+  for(Resonance &R : Resonances){
     //R.printRate();
 
     Rate_s.push_back(R.getRateSample(s));
@@ -477,14 +477,14 @@ void Reaction::writeSamples(){
   // Each column corresponds to a parameter, rows are samples
   // Write the header
   samplefile <<    "                                           ";
-  for(Resonance Res : Resonances){
+  for(Resonance &Res : Resonances){
     samplefile << " |         Resonance " << std::setw(3) << Res.getIndex()
 	       << " at E_cm = " << std::setw(7) << Res.getE_cm() << " MeV          ";
   }
   samplefile << "\n";
   //               "1234567890x1234567890x1234567890x123456789012"
   samplefile <<    " Standard1  Standard2  Standard3  Standard4";
-  for(Resonance Res : Resonances){
+  for(Resonance &Res : Resonances){
     samplefile << " |         E         wg         G1         G2         G3";
   }
   samplefile << "\n";
@@ -498,7 +498,7 @@ void Reaction::writeSamples(){
     }
     samplefile << " ";
     // Now the resonances
-    for(Resonance Res: Resonances){
+    for(Resonance &Res: Resonances){
       Res.writeSamples(samplefile, s);
     }
     
