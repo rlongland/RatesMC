@@ -730,7 +730,7 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
   std::cout << "\n";
   std::cout << "For T9 = " << Temperature << " the median rate = ";
   std::cout.precision(3);
-  std::cout << std::scientific << MedianRate << "\n"  << std::endl;
+  std::cout << std::scientific << MedianRate << std::endl;
   std::cout.unsetf(std::ios_base::scientific);
 
 
@@ -893,7 +893,7 @@ double CalcAD(std::vector<double> Rates,double Mu,double Sigma){
 
   CumLognorm[0]=0.0;
   for(int i=1;i<(Rates.size()+1);i++){
-    X = Rates[i];
+    X = Rates[i-1];
     // if X=0, can't take log, so check
     if(X==0.0){
       CumLognorm[i] = CumLognorm[i-1];
@@ -907,7 +907,7 @@ double CalcAD(std::vector<double> Rates,double Mu,double Sigma){
   double AndDar_S_tmp;
 
   for(int i=1;i<(Rates.size()+1);i++){
-    X = Rates[i];
+    X = Rates[i-1];
 
     // check to make sure X isn't zero
     if(X==0.0){
@@ -937,15 +937,13 @@ double CalcAD(std::vector<double> Rates,double Mu,double Sigma){
     KS = gsl_stats_max(maxarray,1,3);
   }
 
-
-  AndDar_Asqrd = (-Rates.size()-AndDar_S)*(1+4.0/Rates.size()+25.0/gsl_pow_2(Rates.size()));
+  AndDar_Asqrd = (-(double)Rates.size()-AndDar_S)*(1+4.0/(double)Rates.size()+25.0/(double)gsl_pow_2(Rates.size()));
 
   if(NanADCount > 0){
     logfile << "\tWARNING: Anderson-Darling test cannot \n\t\tbe calculated for " << NanADCount <<
       " sample(s).\n" << std::endl;
     ErrorFlag=true;
   }
-  //  cout << KS << "\t" << AndDar_Asqrd << endl;
 
   return AndDar_Asqrd;
 }

@@ -11,7 +11,6 @@
 	 - nan accounting
 	 - AD calculation broken
 	 - Output S-factor for any broad resonances + non-resonant terms
-	 - Output broad resonance integrand? All resonances at all temperatures?
 	 - Output Porter-Thomas samples
 	 - R codes for analysis
 	   - Check for nans? Are they in output files?
