@@ -7,19 +7,12 @@
    public release!
 
    TO DO:
+	 - Interfering resonances
 	 - Error accounting output
 	 - nan accounting
-	 - Output S-factor for any broad resonances + non-resonant terms
-	 - Output Porter-Thomas samples
+	 - Output non-resonant s-factor?
 	 - R codes for analysis
-	   - Check for nans? Are they in output files?
-	   - PlotUncertainty.R (like PlotCompare/PlotContour)
-	   - PlotPanel6.R
-	   - PlotPanelall.R
-	   - PlotSFactor.R (plots the S-factor for broad and non-resonant parts)
-		 - PlotIntegrand.R (plots the rate integrand at a given temperature)
-		 - PlotPT.R (plots the Porter-Thomas samples for a given resonance)
-		 - PlotCorrelations.R (plots some set of Rate vs. input parameter at a given T)
+	   - Double-check for nans handling? 
    ======================================================================
 */
 
