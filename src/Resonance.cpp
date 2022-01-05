@@ -447,9 +447,7 @@ double Resonance::calcBroad(double T) {
   //  std::cout << "\n";
 
   // And the central value, which is the classical rate
-  // std::cout << "Classical calculated with " <<
-  //  T << " " << E_cm << " " << G[0] << " " << G[1] << " " << G[2] << "\n";
-	
+	// Write the integrand to a file
   classicalRate = NumericalRate(T, E_cm, G[0], G[1], G[2], 1.0, 1.0, 1.0, true);
 	integrandfile << std::endl;
 
@@ -741,8 +739,8 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   int status = gsl_integration_cquad(&F,      // Function to be integrated
                                      E_min,   // Where known singularity is
                                      E_max,   // number of singularities
-                                     1e-50,   // absolute error
-                                     1e-5,    // relative error
+                                     1e-100,   // absolute error
+                                     1e-6,    // relative error
                                      w,       // workspace
                                      &result, // The result
                                      &error, &nevals);
@@ -943,6 +941,8 @@ double Resonance::Integrand(double x, void *params) {
 
   double integrand = S1 * S3 / S2; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
 
+	double sfactor = x*(S1/S2)*exp(0.989534*Z0*Z1*sqrt(mue/x)); 
+
   //  if(integrand < 1.e-99)integrand=0.0;
 
   //  std::cout << x << " " << integrand << "\n";
@@ -960,7 +960,7 @@ double Resonance::Integrand(double x, void *params) {
 	//	std::cout << writeIntegrand << " ";
 	if (writeIntegrand){
 		integrandfile << std::scientific << std::setprecision(9) << x << " " << integrand
-									<< std::endl;
+									<< " " << sfactor << std::endl;
 	}
 	
   // astrohpysical s-factor

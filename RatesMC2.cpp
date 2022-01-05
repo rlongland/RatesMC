@@ -9,7 +9,6 @@
    TO DO:
 	 - Error accounting output
 	 - nan accounting
-	 - AD calculation broken
 	 - Output S-factor for any broad resonances + non-resonant terms
 	 - Output Porter-Thomas samples
 	 - R codes for analysis
