@@ -30,7 +30,7 @@ extern bool ErrorFlag;
 // Histogram and output
 extern double HistT, HistMin, HistMax;
 extern std::ofstream logfile;
-extern std::ofstream testfile;
+extern std::ofstream integrandfile;
 extern std::ofstream ptfile;
 extern std::ofstream sampfile;
 extern std::ofstream contribfile;

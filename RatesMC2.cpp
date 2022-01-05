@@ -70,9 +70,9 @@ int main(int argc, char** argv){
   // Open log file
   logfile.open("RatesMC.log");
   // Open the test file for writing samples, etc.
-  testfile.open("test.dat");
+  integrandfile.open("RatesMC.integ");
   // Open the file that stores Porter Thomas values
-  ptfile.open("PT.dat");
+  ptfile.open("RatesMC.PT");
   // LaTeX output file
   latexfile.open("RatesMC.latex");
   // Reaction rate sample
@@ -137,7 +137,8 @@ int main(int argc, char** argv){
     
     //logfile << "--------------------\n";
     logfile << "Temperature = " << T << " GK" << std::endl;
-    
+		integrandfile << "Temperature = " << T << " GK" << std::endl;
+		
     // ------------------------
     // CALCULATE RATE
     // ------------------------
@@ -218,7 +219,7 @@ int main(int argc, char** argv){
 
     // Summarize any errors that may have occurred
     summarizeErrors(T);
-
+		integrandfile << std::endl;
   }
 
   
@@ -230,7 +231,7 @@ int main(int argc, char** argv){
   
   // Close the logfile
   logfile.close();
-  testfile.close();
+  integrandfile.close();
   ptfile.close();
   outfile.close();
   outfullfile.close();

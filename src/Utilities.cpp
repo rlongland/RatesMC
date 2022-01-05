@@ -21,7 +21,7 @@ double EMin;
 gsl_rng * r;
 
 std::ofstream logfile;
-std::ofstream testfile;
+std::ofstream integrandfile;
 std::ofstream ptfile;
 std::ofstream sampfile;
 std::ofstream contribfile;
@@ -854,6 +854,16 @@ void summarizeErrors(double Temp){
       logfile << " A positive narrow resonance had a negative energy "
 							<< IntegratedCount << " times" << std::endl;
       IntegratedCount = 0;
+    }
+    if(NANCount>0){
+      logfile << " An integration error occured "
+							<< NANCount << " times" << std::endl;
+      NANCount = 0;
+    }
+    if(InfCount>0){
+      logfile << " An integration reached infinity "
+							<< InfCount << " times" << std::endl;
+      InfCount = 0;
     }
     ErrorFlag = false;
   }

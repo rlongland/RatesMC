@@ -98,7 +98,7 @@ T <- data[rangeBool,1]
 resCont <- data[rangeBool,MedSeq]
 
 ## toplot is the list of resonances to plot
-toplot <- resCont[rangeBool,]
+toplot <- resCont##[rangeBool,]
 
 ## Plot tempteratures on a log scale
 logT <- log10(T)
