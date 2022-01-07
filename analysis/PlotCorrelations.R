@@ -3,12 +3,13 @@
 ## Plot correlation between rate and input parameters
 ##
 ######################################################################
+library(grid)
 
 RatesMCFile   <- "RatesMC.in"
 SampleFile    <- "RatesMC.samp"
 ParameterFile <- "ParameterSamples.dat"
 
-Temp <- 0.1  ## The temperature to look at
+Temp <- 0.04  ## The temperature to look at
 
 ## Set limits to NA for auto plotting
 xlim <- NA ##c(0,1)
@@ -50,23 +51,49 @@ names.cut <- names[cut]
 
 ## Combine rates and parameters
 dd <- cbind(log10(data),pars.cut)
-dd.names <- c("Rate",names.cut)
 ##--------------------------------------------------
 ## Analyzing and Plotting
 ##--------------------------------------------------
 ## Close any open windows
 ##while(dev.cur()>1)dev.off()
 ##myX11()
-mypdf("GraphCorrelation.pdf")
+mypdf("GraphCorrelation.pdf",onefile=TRUE)
 
 ## Cut the data to only include 100 samples
 NSamples <- 100
 samp <- sample(1:dim(dd)[1],NSamples)
 
-##library("PerformanceAnalytics")
-##chart.Correlation(dd[samp,], histogram=FALSE,
-##		  pch=18, col=add.alpha("red",0.4),
-##		  labels=dd.names,yaxt='n')
+## Modify the names with the resonance
+## nE <- length(names.cut[names.cut=="E"])
+names.cut[names.cut=="E"] <- "E["
+## nwg <- length(names.cut[names.cut=="wg"])
+names.cut[names.cut=="wg"] <- "omega*gamma["
+## nG1 <- length(names.cut[names.cut=="G1"])
+names.cut[names.cut=="G1"] <- "Gamma[a"
+## nG2 <- length(names.cut[names.cut=="G2"])
+names.cut[names.cut=="G2"] <- "Gamma[b"
+## nG3 <- length(names.cut[names.cut=="G3"])
+names.cut[names.cut=="G3"] <- "Gamma[c"
+ires <- 0
+for(i in 5:dim(dd)[2]){
+    if(length(grep("E",names.cut[i]))>0)ires  <- ires + 1
+    names.cut[i] <- sprintf("%s%d]",names.cut[i],ires)
+}
+dd.names <- c("Rate",names.cut)
+
+## First just plot 3x3 matrix of Rate vs. variable
+layout(matrix(c(1:9), 3, 3, byrow = TRUE))
+for(i in 2:dim(dd)[2]){
+
+    lab <- names.cut[i-1]
+    plot(x=dd[samp,i], y=dd[samp,1], xlab=parse(text=lab), ylab="log10(Rate)")
+
+    c <- cor(dd[,1], dd[,i])
+    col <- ifelse(abs(c)>0.2, "red", "black")
+    mtext(side=3,paste("Corr:",format(c,digits=3)), line=0,
+	  col=col)
+}
+
 
 # panel.cor puts correlation in upper panels, size proportional to correlation
 panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...)
@@ -80,8 +107,20 @@ panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...)
     text(0.5, 0.5, txt, cex = cex.cor * r, col="red")
 }
 
-pairs(dd[samp,],labels=dd.names, upper.panel=panel.cor, pch=21,
-      col=NA, bg=add.alpha("red",0.4),gap=0,
-      yaxt='n',xaxt='n')
+if(dim(dd)[2] < 10){
+    pairs(dd[samp,],labels=dd.names, upper.panel=panel.cor, pch=21,
+	  col=NA, bg=add.alpha("red",0.4),gap=0,
+	  yaxt='n',xaxt='n')
+} else {
+    seq <- seq(from=2,to=dim(dd)[2],by=9)
+    for(i in 1:length(seq)){
+	end <- min(seq[i]+8,dim(dd)[2])
+	
+	sub <- c(1,seq[i]:end)
+	pairs(dd[samp,sub],labels=parse(text=dd.names[sub]), upper.panel=panel.cor, pch=21,
+	  col=NA, bg=add.alpha("red",0.4),gap=0,
+	  yaxt='n',xaxt='n')
+    }
+}
 
 dev.off()

@@ -25,9 +25,9 @@ names.cut <- names[cut]
 ## Analyzing and Plotting
 ##--------------------------------------------------
 ## Close any open windows
-while(dev.cur()>1)dev.off()
-myX11()
-##mypdf("GraphCorrelation.pdf")
+##while(dev.cur()>1)dev.off()
+##myX11()
+pdf("GraphParameters.pdf",width=8.25,height=10.75)
 
 layout(matrix(c(1:9), 3, 3, byrow = TRUE))
 
@@ -50,4 +50,4 @@ for(i in 1:length(names.cut)){
     }
 }
 
-##dev.off()
+dev.off()

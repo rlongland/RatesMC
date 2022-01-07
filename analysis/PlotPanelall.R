@@ -1,5 +1,5 @@
-name="../RatesMC.full"
-samplename = "../RatesMC.samp"
+name="RatesMC.full"
+samplename = "RatesMC.samp"
 ntemps = 51
 
 lognorm_norm <- function(){

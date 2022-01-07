@@ -1,5 +1,5 @@
-name="../RatesMC.full"
-samplename = "../RatesMC.samp"
+name="RatesMC.full"
+samplename = "RatesMC.samp"
 ntemps = 6
 templist = c(11,14,18,28,33,37)
 

@@ -30,6 +30,10 @@ goodTLine <- TLines[Tentry]
 ## The next temperature entry is
 nextTLine <- TLines[Tentry+1]
 
+if(nextTLine - goodTLine == 2){
+    stop("There is no broad resonances!!")
+}
+
 ## The list of lines with integrand data
 ilines <- (goodTLine+1):(nextTLine-2)
 

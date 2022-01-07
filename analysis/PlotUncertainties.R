@@ -5,7 +5,7 @@
 ########################################
 
 outputfile <- "RatesMC.out"
-litfilename <- ""#RatesMC-comparison.out"
+litfilename <- "../RatesMC/RatesMC.out"#RatesMC-comparison.out"
 sampfile <- "RatesMC.samp"
 
 ## Is literature a RatesMC.out file?
