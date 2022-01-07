@@ -37,6 +37,7 @@ extern std::ofstream contribfile;
 extern std::ofstream outfile;
 extern std::ofstream outfullfile;
 extern std::ofstream latexfile;
+extern std::ofstream testfile;
 
 // Other program-wide variables
 extern std::vector<double> Temp;

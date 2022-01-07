@@ -314,7 +314,7 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
       // Now do energy shift effect vector (keep separate for debugging)
 
       // Is this the Gamma channel?
-      if (channel == Reac.getGamma_index()) {
+			if (channel == Reac.getGamma_index()) {
         if (channel == 1) {
           for (int s = 0; s < NSamples; s++) {
             erFrac_temp[s] =
@@ -329,16 +329,14 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
         }
         // if it's not the gamma channel
       } else {
-        //	std::cout << "Not gamma channel\n";
-        // std::cout << Reac.getGamma_index() << "\n";
         if (channel == 0) {
           meanPen = PenFactor(E_cm, L[channel], M0, M1, Z0, Z1, R);
+					
           for (int s = 0; s < NSamples; s++) {
             if (E_sample[s] > 0.0 && E_cm > 0.0) {
               erFrac_temp[s] =
                   PenFactor(E_sample[s], L[channel], M0, M1, Z0, Z1, R) /
                   meanPen;
-
             } else {
               erFrac_temp[s] = 1.0;
             }
@@ -369,6 +367,16 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
     } // end for(int channel=0; channel<3; channel++)
   }   // end if(wg > 0) else
 
+	/*
+	for(int s=0; s<NSamples ; s++){
+		testfile << E_sample[s];
+		for(int i = 0; i < 3; i++){
+			testfile << " " << erFrac[i][s];
+		}
+		testfile << "\n";
+	}
+	*/		
+	
   /*
       if(index==0 && isUpperLimit==false){
       for(int s=0; s<NSamples; s++)
@@ -430,29 +438,17 @@ double Resonance::calcBroad(double T) {
                 << index + 1 << std::flush;
     }
 
-    /*
-    std::cout << "MC calculated with " <<
-      T << " " << E_sample[s] << " " << G_sample[0][s] << " " << G_sample[1][s]
-    << " "
-              << G_sample[2][s] << " " << erFrac[0][s] << " " <<  erFrac[1][s]
-    << " " << erFrac[2][s] << "\n";
-    */
+		// Calculate the single integrated rate sample
     Rate_sample[s] = NumericalRate(T, E_sample[s], G_sample[0][s],
                                    G_sample[1][s], G_sample[2][s], erFrac[0][s],
                                    erFrac[1][s], erFrac[2][s], false);
 
-    //		if(s % 5 == 0)Rate_sample[s] = std::nan("");
-    // std::cout << "In Resonance, Rate_sample[s] = " << Rate_sample[s] << "\n";
   }
-  //  std::cout << "\n";
 
   // And the central value, which is the classical rate
 	// Write the integrand to a file
   classicalRate = NumericalRate(T, E_cm, G[0], G[1], G[2], 1.0, 1.0, 1.0, true);
 	integrandfile << std::endl;
-
-  // std::cout << "classicalRate = " << classicalRate << "\n";
-  // classicalRate /= (1.5399e11/pow(mue*T,1.5));
 
   return classicalRate;
 }
@@ -565,17 +561,11 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
                                 double G2, double erFrac0, double erFrac1,
                                 double erFrac2, bool writeIntegrand) {
 
-  // std::cout << "\n" <<  T << " " << E << " " << G0 << " " << G1 << " " << G2
-  // << " " << erFrac0
-  //	    << " " << erFrac1 << " " << erFrac2 << "\n";
-
   double ARate = 0.0;
 
   double Pr(0.0), Pr_exit(0.0);
 
   ResonancePtr = this;
-  // auto ptr = [=](double x, void * params)->double{return ptr2->Integrand(x,
-  // params);};
 
   // if reaction is endothermic, need to make minimum energy
   // enough to ensure no integration over negative energies
@@ -592,6 +582,11 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   //  ofstream testhist;
   //  testhist.open("integrands.dat");
 
+	// Scale the partial widths by the energy effect
+	G0 *= erFrac0;
+	G1 *= erFrac1;
+	G2 *= erFrac2;
+	
   // IF we input E>0, but the sample is <0, we need to treat it as a
   // subthreshold resonance. To do this, we need to convert
   // G into C2S*Theta_sp
@@ -638,10 +633,6 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
     // cout << "Exit energy = " << E+Reac.Q-Reac.Qexit << endl;
   }
 
-  //  std::cout << index << "\t" << Pr << "\t" << Pr_exit << "\t" << E << "\t"
-  //  << T << "\t"
-  //	    << G0 << "\t" << G1 << "\t" << G2 << std::endl;
-
   //--------------------------------------------------
   // GSL Integration functions
   double result, error;
@@ -673,13 +664,9 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   //  F.function = &Integrand;
   F.params = &alpha;
 
-  //  gsl_function_pp<decltype(ptr)> Fp(ptr);
-  //  gsl_function *F = static_cast<gsl_function*>(&Fp);
-  //  F->params = &alpha;
-  // std::cout << "Integrating!\n";
-
   /*
-  int status = gsl_integration_qags (&F,      // Function to be integrated
+		// Some integration methods that I had trouble with....
+   int status = gsl_integration_qags (&F,      // Function to be integrated
                         E_min,       // start
                         E,      // end
                         0,       // absolute error
@@ -696,17 +683,6 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   result;
   */
 
-  double Delta = 200.0;
-
-  //  if(E > E_min){
-
-  int npts = 3;
-  double pts[npts];
-  pts[0] = E_min;
-  //  pts[1] = std::max(E_min,E-Delta*gammaT);
-  pts[1] = E;
-  //  pts[3] = E+Delta*gammaT;
-  pts[2] = E_max;
 
   /*
   double pts[3];
@@ -730,6 +706,7 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
 
   //        std::cout << E << "\n";
 
+	// Finally settles on cquad integration routine
   // Turn off the error handler
   gsl_error_handler_t *temp_handler;
   temp_handler = gsl_set_error_handler_off();
@@ -751,8 +728,9 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
     //      std::cout << "Integration error = " << gsl_strerror(status) << "\n";
     result = std::nan("");
   }
+  gsl_set_error_handler(temp_handler);
 
-  //    if(gammaT > 1e-6){
+  // Some other attemps that I had trouble with...
   /*
   gsl_integration_workspace * w = gsl_integration_workspace_alloc(10000);
   int status = gsl_integration_qagp (&F,      // Function to be integrated
@@ -779,7 +757,6 @@ exceed size of workspace w,       // workspace &result, // The result &error);
   //  if (status) {
   //  fprintf (stderr, "failed, gsl_errno=%d\n", status);
   //}
-  gsl_set_error_handler(temp_handler);
 
   /*
 } else if (E<0.0) {
@@ -813,30 +790,9 @@ exceed size of workspace w,       // workspace &result, // The result &error);
   result = 0.0;
 }
   */
-  // testfile.flush();
-  // testfile.clear();
-  // testfile.seekp(0,testfile.beg);
-  // testfile.close();
-  // testfile.open("test.dat");
 
-  /*
-  gsl_integration_cquad_workspace * w =
-  gsl_integration_cquad_workspace_alloc(1000); size_t nevals; int status =
-  gsl_integration_cquad(&F, x, x1, 0, 1e-7, w, &result, &error, &nevals);
-  */
-  // std::cout << "Status = " << status << "\n";
-  // std::cout << "Error = " << error << "\n";
-  // std::cout << "Evals = " << nevals << "\n";
-  // std::cout << "Result = " << ARate << "\n";
-
-  // Turn the error handler back on
-  // gsl_set_error_handler(NULL);
-
+	// The integration result
   ARate = result;
-  // std::cout << ARate << "\n";
-  //  ARate = y[0];
-
-  //  gsl_integration_cquad_workspace_free(w);
 
   // If G0 or G1 were zero, sum is NAN, catch this!
   if (isnan(ARate)) {
@@ -850,13 +806,6 @@ exceed size of workspace w,       // workspace &result, // The result &error);
     ErrorFlag = true;
     InfCount++;
   }
-
-  // Print evsr file if NHists = -1
-  /*
-    if(NTemps == 1){
-    evsr << E << "\t" << ARate << endl;
-    }
-  */
 
   return ARate;
 }
@@ -1061,7 +1010,8 @@ void Resonance::write() {
           << " MeV (L = " << L[2] << ")\n";
   if (isUpperLimit)
     logfile << "                 PT   = " << PT[2] << " +/- " << dPT[2] << "\n";
-  logfile << "                 Exf  = " << Exf << "\n";
+	logfile << "            NChannels = " << NChannels << "\n";
+  logfile << "                  Exf = " << Exf << "\n";
   logfile << "           Integrated = " << isBroad << "\n";
   logfile << "          Upper Limit = " << isUpperLimit << "\n";
 

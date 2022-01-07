@@ -28,6 +28,7 @@ std::ofstream contribfile;
 std::ofstream outfile;
 std::ofstream outfullfile;
 std::ofstream latexfile;
+std::ofstream testfile;
 int NSamples;
 int NTemps;
 bool ErrorFlag = false;

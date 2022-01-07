@@ -7,6 +7,7 @@
    public release!
 
    TO DO:
+	 - Check that parameter widths are what they should be
 	 - Interfering resonances
 	 - Error accounting output
 	 - nan accounting
@@ -70,7 +71,9 @@ int main(int argc, char** argv){
   sampfile.open("RatesMC.samp");
   // Contribution file
   contribfile.open("RatesMC.cont");
-
+	// Test file for storing debugging
+	testfile.open("test.dat");
+	
   // Make a reaction. This is where everything is held
   Reaction *Reac = new Reaction();
   
@@ -226,7 +229,8 @@ int main(int argc, char** argv){
   ptfile.close();
   outfile.close();
   outfullfile.close();
-  
+	testfile.close();
+	
   return 1;
 }
 
