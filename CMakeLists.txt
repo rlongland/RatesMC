@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 2.4)
-project(RatesMC2)
+cmake_minimum_required(VERSION 3.0)
+project(RatesMC)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -12,7 +12,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
 link_libraries(gsl)
 
 
-add_executable(RatesMC2 RatesMC2.cpp ${SOURCE_FILES}) # be sure there's exactly one main() function in the source files
+add_executable(RatesMC RatesMC.cpp ${SOURCE_FILES}) # be sure there's exactly one main() function in the source files
 
 ## Copy the RatesMC.in file over if needed
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/RatesMC.in

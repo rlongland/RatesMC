@@ -2,5 +2,5 @@
 
 HEAD=`pwd`
 
-cp RatesMC2 ../tests/
+cp RatesMC ../tests/RatesMC2
 cp PlotUncertainties.R ../tests/

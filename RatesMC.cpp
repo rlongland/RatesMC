@@ -1,5 +1,5 @@
 /* ======================================================================
-   RatesMC2
+   RatesMC
    Author: R. Longland
    Start Date: 2018-11-13
 
@@ -7,13 +7,10 @@
    public release!
 
    TO DO:
-	 - Check that parameter widths are what they should be
 	 - Interfering resonances
 	 - Error accounting output
 	 - nan accounting
 	 - Output non-resonant s-factor?
-	 - R codes for analysis
-	   - Double-check for nans handling? 
    ======================================================================
 */
 
@@ -27,7 +24,7 @@
 
 #include "gsl/gsl_sf_log.h"
 
-#include "RatesMC2.h"
+#include "RatesMC.h"
 #include "Utilities.h"
 #include "Reaction.h"
 #include "Resonance.h"
