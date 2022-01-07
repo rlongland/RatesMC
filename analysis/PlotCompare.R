@@ -3,8 +3,12 @@
 ########################################
 
 outputfile <- "RatesMC.out"
-litfilename <- "RatesMC-old.out"
-headerskip <- 3  # or 3 for RatesMC type files
+fullfile    <- "RatesMC.full"
+litfilename <- "../RatesMC/RatesMC.out"
+headerskip <- 4  ## 3 for RatesMC type files
+                 ## 4 for RatesMC2 type files
+headerskip.lit <- 3  ## 3 for RatesMC type files
+                     ## 4 for RatesMC2 type files
 
 RateColor <- "gray"  # colour for the error region shade
 RateTrans <- 0.8     # transparancy of error region (1 is fully opaque)
@@ -35,9 +39,10 @@ ReacName <- sub("\\)","\\)*",ReacName)
 ReacName <- gsub("([[:digit:]]+)", "phantom()^{\\1}*", ReacName)
 
 
-data <- read.table(outputfile,skip=3,header=FALSE,stringsAsFactors=FALSE)
+data <- read.table(outputfile,skip=headerskip,header=FALSE,stringsAsFactors=FALSE)
+fulldata <- read.table(fullfile,skip=headerskip,header=FALSE,stringsAsFactors=FALSE)
 # CompData is the data to compare with
-LitData <- read.table(litfilename,header=FALSE,skip=headerskip,
+LitData <- read.table(litfilename,header=FALSE,skip=headerskip.lit,
                       stringsAsFactors=FALSE)
 
 # If the file is Tmatch.out, we expect 7 columns, if it's RatesMC.out,
@@ -47,7 +52,7 @@ if(length(data[1,])==7){outisTMatch=TRUE}else{outisTMatch=FALSE}
 
 # get rid of brackets in Tmatch file
 for(i in 1:length(data[,1])){
-  for(j in 2:6){
+  for(j in 2:4){
     data[i,j] <- gsub("([()])","",data[i,j])
   }
 }
@@ -71,8 +76,8 @@ if(outisTMatch){
                   as.double(data$V4),as.double(data$V5),as.double(data$V6))
 } else {
   cat("The data file is in RatesMC format\n")
-  MyRate <- cbind(as.double(data$V1),as.double(data$V2),as.double(data$V4),
-                  as.double(data$V6),as.double(data$V7),as.double(data$V8))
+  MyRate <- cbind(as.double(data$V1),as.double(data$V2),as.double(data$V3),
+                  as.double(data$V4))#,as.double(data$V7),as.double(data$V8))
 }
 # The MC uncertainty ratios
 CompRate <- cbind(data$V1,MyRate[,2]/MyRate[,3],MyRate[,4]/MyRate[,3])
@@ -89,8 +94,8 @@ maxper <- 0.99
 ## Calculate the full range to plot (lqnorm calculates the inverse
 ## lognormal error function, ie. the position corresponding to the
 ## desired percentile)
-FRange <- c(min(qlnorm(minper,MyRate[,5],MyRate[,6])/MyRate[,3]),
-            max(qlnorm(maxper,MyRate[,5],MyRate[,6])/MyRate[,3]))
+FRange <- c(min(qlnorm(minper,fulldata[,9],fulldata[,10])/MyRate[,3]),
+            max(qlnorm(maxper,fulldata[,9],fulldata[,10])/MyRate[,3]))
 ## Now make a vector (log10 spaced) to construct the lognormal matrix
 Ratios <- 10^seq(from=log10(FRange[1]),to=log10(FRange[2]),length.out=100)
 
@@ -98,8 +103,8 @@ Ratios <- 10^seq(from=log10(FRange[1]),to=log10(FRange[2]),length.out=100)
 ## distribution at each temperature.
 lnmat <- array(,dim=c(length(MyRate[,1]),100))
 for(i in 1:length(MyRate[,1])){
-  mu <- MyRate[i,5]
-  sigma <- MyRate[i,6]
+  mu <- fulldata[i,9]
+  sigma <- fulldata[i,10]
   scale <- lognorm(exp(mu),mu,sigma)  ## To make max=1
 
   lnmat[i,] <- abs(1-erfc(-(log(Ratios*MyRate[i,3]) - mu)/(sigma*sqrt(2))))
@@ -110,7 +115,7 @@ for(i in 1:length(MyRate[,1])){
 ##----------------------
 ## Now we can do the usual PlotCompare Plots
 mypdf(file="GraphCompare.pdf",width=6,height=5)
-##X11(width=8.25,height=10.75)
+#X11(width=6,height=5)
 #layout(matrix(c(0,0,0,1,0,2,0,0), 4, 2, byrow = TRUE),
 #  c(0.05,0.9),c(0.05,0.45,0.45,0.01))
 #layout.show(2)
@@ -156,7 +161,7 @@ RateComp <- cbind(MyRate[matchlist1,1],
                   LitData[matchlist2,2]/MyRate[matchlist1,3],
                   LitData[matchlist2,3]/MyRate[matchlist1,3],
                   LitData[matchlist2,4]/MyRate[matchlist1,3],
-                  MyRate[matchlist1,5],MyRate[matchlist1,6])
+                  fulldata[matchlist1,9],fulldata[matchlist1,10])
 cYAxisLims <- range(RateComp[,c(2:4)])
 YAxisLims <- range(c(cYAxisLims,YAxisLims))
 minBase10 <- floor(log10(YAxisLims[1]))
