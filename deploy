@@ -1,6 +1,0 @@
-#!/bin/bash
-
-HEAD=`pwd`
-
-cp RatesMC2 ../tests/
-cp PlotUncertainties.R ../tests/
