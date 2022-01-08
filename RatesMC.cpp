@@ -221,9 +221,9 @@ int main(int argc, char** argv){
 
   
   
-  std::cout << " ********************************************\n";
-  std::cout << " *             Farewell!                    *\n";
-  std::cout << " ********************************************\n";
+  std::cout << " **************************************************\n";
+  std::cout << " *                 Farewell!                      *\n";
+  std::cout << " **************************************************\n";
   
   
   // Close the logfile
@@ -241,13 +241,14 @@ int main(int argc, char** argv){
 
 void WelcomeScreen(){
   std::cout << std::endl;
-  std::cout << " ********************************************" << std::endl;
-  std::cout << " *                 RatesMC                  *" << std::endl;
-	std::cout << " *      Copyright (C) 2022  R. Longland     *" << std::endl;
-  std::cout << " *         V. " << VersionNumber << "  " << VersionDate 
-						<< "        *" << std::endl;
-  std::cout << " *                                          *" << std::endl;
-  std::cout << " ********************************************" << std::endl;
+  std::cout << " **************************************************" << std::endl;
+  std::cout << " *                   RatesMC                      *" << std::endl;
+	std::cout << " *        Copyright (C) 2022  R. Longland         *" << std::endl;
+  std::cout << " *            V. " << VersionNumber << "  " << VersionDate 
+						<< "                *" << std::endl;
+	std::cout << " * This program comes with ABSOLUTELY NO WARRANTY *" << std::endl;
+  std::cout << " *                                                *" << std::endl;
+  std::cout << " **************************************************" << std::endl;
   std::cout << "\n" << std::endl;
 
   return;
