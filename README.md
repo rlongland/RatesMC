@@ -1,7 +1,7 @@
 # RatesMC
 
 This code is the new, improved version of the Monte Carlo reaction
-rate code first presented in:
+rate code first presented in 2010:
 
   * Charged-particle thermonuclear reaction rates: I. Monte Carlo
     method and statistical distributions, Longland, R.; Iliadis,
@@ -39,11 +39,11 @@ Subsequent updates to the method are documented in:
 1. Download the code:  
     `git clone https://github.com/rlongland/RatesMC.git`
 2. Creat a build directory:  
-   `cd RatesMC`
-   `mkdir build`
+   `cd RatesMC`  
+   `mkdir build`  
    `cd build`
 3. Compile the code  
-   `cmake ..`
+   `cmake ..`  
    `make`
    
 The code should now be ready to run with  
@@ -131,5 +131,5 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-Author: R. Longland
+Author: R. Longland  
 Email: rllongla@ncsu.edu
