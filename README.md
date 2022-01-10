@@ -4,34 +4,34 @@ This code is the new, improved version of the Monte Carlo reaction
 rate code first presented in:
 
   * Charged-particle thermonuclear reaction rates: I. Monte Carlo
-    method and statistical distributions, Longland, R. ￼ ; Iliadis,
-    C. ; Champagne, A. E. ; Newton, J. R. ; Ugalde, C. ; Coc, A. ;
+    method and statistical distributions, Longland, R.; Iliadis,
+    C.; Champagne, A. E.; Newton, J. R.; Ugalde, C.; Coc, A.;
     Fitzgerald, R.,
     [link](https://ui.adsabs.harvard.edu/abs/2010NuPhA.841....1L/abstract)
   * Charged-particle thermonuclear reaction rates: II. Tables and
     graphs of reaction rates and probability density functions,
-    Iliadis, C. ; Longland, R. ￼ ; Champagne, A. E. ; Coc, A. ;
+    Iliadis, C.; Longland, R.; Champagne, A. E.; Coc, A.;
     Fitzgerald, R.,
     [link](https://ui.adsabs.harvard.edu/abs/2010NuPhA.841...31I/abstract)
   * Charged-particle thermonuclear reaction rates: III. Nuclear
-    physics input, Iliadis, C. ; Longland, R. ￼ ; Champagne, A. E. ;
+    physics input, Iliadis, C.; Longland, R.; Champagne, A. E.;
     Coc, A.,
     [link](https://ui.adsabs.harvard.edu/abs/2010NuPhA.841..251I/abstract)
   * Charged-particle thermonuclear reaction rates: IV. Comparison to
-    previous work, Iliadis, C. ; Longland, R. ￼ ; Champagne, A. E. ;
+    previous work, Iliadis, C.; Longland, R.; Champagne, A. E.;
     Coc, A.,
     [link](https://ui.adsabs.harvard.edu/abs/2010NuPhA.841..323I/abstract)
     
 Subsequent updates to the method are documented in:
 
   * Thermonuclear reaction rate of 18Ne(α ,p ) 21Na from Monte Carlo
-    calculations, Mohr, P. ; Longland, R. ￼ ; Iliadis, C.,
+    calculations, Mohr, P.; Longland, R.; Iliadis, C.,
     [link](https://ui.adsabs.harvard.edu/abs/2014PhRvC..90f5806M/abstract)
   * Correlated uncertainties in Monte Carlo reaction rate
     calculations, Longland, Richard,
     [link](https://ui.adsabs.harvard.edu/abs/2017A%26A...604A..34L/abstract)
-  * ￼Correlated energy uncertainties in reaction rate calculations,
-    Longland, Richard ￼ ; de Séréville, Nicolas, 
+  * Correlated energy uncertainties in reaction rate calculations,
+    Longland, Richard; de Séréville, Nicolas, 
     [link](https://ui.adsabs.harvard.edu/abs/2020A%26A...642A..41L/abstract)
 
 # Installation Instructions
@@ -114,3 +114,22 @@ are being analysed.
 * **PlotPT.R**  
   Diagnostics. Plot the Porter-Thomas samples
   
+# Licence
+
+Copyright (C) 2022  Richard Longland
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+Author: R. Longland
+Email: rllongla@ncsu.edu
