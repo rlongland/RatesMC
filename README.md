@@ -38,7 +38,7 @@ Subsequent updates to the method are documented in:
 
 1. Download the code:  
     `git clone https://github.com/rlongland/RatesMC.git`
-2. Creat a build directory:  
+2. Create a build directory:  
    `cd RatesMC`  
    `mkdir build`  
    `cd build`

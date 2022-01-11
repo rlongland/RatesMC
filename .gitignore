@@ -5,6 +5,7 @@
 # Executables
 RatesMC2
 build
+project
 
 # CMake stuff
 CMakeFiles
