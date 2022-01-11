@@ -125,7 +125,7 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
   // Calculate correlated energies
   for (int s = 0; s < NSamples; s++) {
     double x2 = gsl_ran_gaussian(r, 1.0);
-    x2 = corr * Ref_sample[s][0] + x2 * sqrt(1. - gsl_pow_2(corr));
+    x2 = corr * Ref_sample[s][0] + x2 * sqrt(std::max(0.0,1. - gsl_pow_2(corr)));
     E_sample[s] = E_cm + x2 * dE_cm;
   }
 
@@ -165,7 +165,7 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
       double x2 = gsl_ran_gaussian(r, 1.0);
       // Correlate everything with the first known resonance strength, wg_0
       // using: wg_i = p*wg_0 + wg_i*sqrt(1-p^2)
-      x2 = corr * Ref_sample[s][1] + x2 * sqrt(1. - gsl_pow_2(corr));
+      x2 = corr * Ref_sample[s][1] + x2 * sqrt(std::max(0.0,1. - gsl_pow_2(corr)));
       // Convert normally distributed sample into lognormal for this resonance
       wg_sample[s] = gsl_sf_exp(mu + sigma * x2);
     }
@@ -225,17 +225,16 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
 
         // Find the lognormal parameters to generate the random partial width
         logNormalize(G[channel], dG[channel], mu, sigma);
-        //	std::cout << G[channel] << " " << dG[channel] << " " <<  mu << "
-        //" <<  sigma << std::endl;
-        // Calculate the correlated partial widths for this channel
+
+				// Calculate the correlated partial widths for this channel
         corr = smallestdG[channel] * G[channel] / dG[channel];
-        for (int s = 0; s < NSamples; s++) {
+				for (int s = 0; s < NSamples; s++) {
           double x2 = gsl_ran_gaussian(r, 1.0);
           x2 = corr * Ref_sample[s][channel + 1] +
-               x2 * sqrt(1. - gsl_pow_2(corr));
-          G_temp[s] = gsl_sf_exp(mu + x2 * sigma);
+               x2 * sqrt(std::max(0.0,1. - gsl_pow_2(corr)));
+					G_temp[s] = gsl_sf_exp(mu + x2 * sigma);
         }
-
+				
         // Or if it is an upper limit
       } else {
 
