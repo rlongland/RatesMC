@@ -67,6 +67,8 @@ extern std::vector<double> Temp;
 // Read input file
 int ReadInputFile(std::string inputfilename, Reaction *R);
 
+// Is a read thing a number?
+bool isNumber(const std::string& str);
 // Read integer and double from single line
 int readInt(std::ifstream &in);
 double readDouble(std::ifstream &in);

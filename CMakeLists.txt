@@ -21,3 +21,7 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/RatesMC.in
 ## Copy the R analysis scripts over if needed
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/analysis/
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+## Copy the AME Mass file over if needed
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/mass_1.mas20
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

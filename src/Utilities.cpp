@@ -37,6 +37,7 @@
 #include <gsl/gsl_vector.h>
 
 #include "Utilities.h"
+#include "AMEReader.h"
 
 double EPS=1.0e-5;
 double EMin;
@@ -62,6 +63,11 @@ bool bEnergyCorrelations=false, bPartialWidthCorrelations=false;
 int PenZeroCount=0, IntegratedCount=0, SubSampledPosCount=0, SampledNegCount=0,
   NANCount=0, InfCount=0, BelowIntLimit=0, IntfNANCount=0, LogZeroCount=0,
   WeirdMuSigmaCount=0;
+
+// Is a string numeric?
+bool isNumber(const std::string& str){
+	return str.find_first_not_of("0123456789.") == std::string::npos;
+}
 
 // Read an integer from a single line
 int readInt(std::ifstream &infile){
@@ -321,6 +327,9 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 
 int ReadInputFile(std::string inputfilename, Reaction *R){
 
+	// Load in the AME Reader
+	AMEReader *ame = new AMEReader("mass_1.mas20");
+	
   std::cout << "The input file name is: " << inputfilename << std::endl;
 
   int ne;  // for counting entries
@@ -361,8 +370,14 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
   R -> setCharges(z0,z1,z2);
 
-  infile >> m0;
+  infile >> dummy;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	if(isNumber(dummy)){
+		m0 = std::stod(dummy);
+	} else {
+		std::cout << "Reading mass from AME\n";
+		m0 = ame -> readMass(dummy);
+	}
   infile >> m1;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
   infile >> m2;
