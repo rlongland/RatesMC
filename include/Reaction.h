@@ -78,16 +78,17 @@ class Reaction{
 
   double M0,M1,M2,J0,J1,J2,Q,dQ,Qexit,dQexit,R0;
   int Z0,Z1,Z2;
-  
+
+	double smallestdE;
+  double smallestdwg;
+  double smallestdG[3];
+
  private:
 
   std::string Name;
   double S[2],Sp[2],Spp[2],dS[2],CutoffE[2];
   int NRes,ULNRes,Gamma_index;
   int *NChannels;
-  double smallestdE;
-  double smallestdwg;
-  double smallestdG[3];
   std::vector<Resonance> Resonances;
 
   // Reaction-wide Monte Carlo

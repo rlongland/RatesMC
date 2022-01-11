@@ -154,7 +154,8 @@ void Reaction::writeReaction(){
     res->write();
   }
   //std::cout << "Done!\n";
-
+	logfile << " The smallest dE value = " << smallestdE << "\n";
+	
 }
 
 //----------------------------------------------------------------------

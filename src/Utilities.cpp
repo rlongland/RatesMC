@@ -56,6 +56,8 @@ int NTemps;
 bool ErrorFlag = false;
 std::vector<double> Temp;
 
+bool bEnergyCorrelations=false, bPartialWidthCorrelations=false;
+
 // counters
 int PenZeroCount=0, IntegratedCount=0, SubSampledPosCount=0, SampledNegCount=0,
   NANCount=0, InfCount=0, BelowIntLimit=0, IntfNANCount=0, LogZeroCount=0,
@@ -269,6 +271,14 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 
     infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
+		// If we care about energy correlations
+		if(bEnergyCorrelations){
+			//std::cout << "Energy correlations are enabled!" << std::endl;
+			//std::cout << dE_cm << " " << R.smallestdE << " " <<  isZero(R.smallestdE) << "\n";
+			if(dE_cm < R.smallestdE || isZero(R.smallestdE))R.smallestdE = dE_cm;
+			//			std::cout << R.smallestdE << "\n";
+		}
+		
     // Add this resonance to the list of resonances stored in the
     // reaction
     R.addResonance(i++, E_cm, dE_cm, wg, dwg, Jr,
@@ -376,9 +386,9 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
     infile.seekg(place);
     int itmp;
     infile >> itmp;
-    bool bPartialWidthCorrelations = (bool)itmp;
+    bPartialWidthCorrelations = (bool)itmp;
     infile >> itmp;
-    bool bEnergyCorrelations = (bool)itmp;
+    bEnergyCorrelations = (bool)itmp;
     infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
     skipLines(infile, 1);
   }
