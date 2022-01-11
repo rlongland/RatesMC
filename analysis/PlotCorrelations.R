@@ -88,7 +88,7 @@ for(i in 2:dim(dd)[2]){
     lab <- names.cut[i-1]
     plot(x=dd[samp,i], y=dd[samp,1], xlab=parse(text=lab), ylab="log10(Rate)")
 
-    c <- cor(dd[,1], dd[,i])
+    c <- cor(dd[,1], dd[,i],use="complete.obs")
     col <- ifelse(abs(c)>0.2, "red", "black")
     mtext(side=3,paste("Corr:",format(c,digits=3)), line=0,
 	  col=col)
@@ -107,17 +107,17 @@ panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...)
     text(0.5, 0.5, txt, cex = cex.cor * r, col="red")
 }
 
-if(dim(dd)[2] < 10){
-    pairs(dd[samp,],labels=dd.names, upper.panel=panel.cor, pch=21,
+if(dim(dd)[2] < 9){
+    pairs(dd[samp,],labels=dd.names, lower.panel=panel.cor, pch=21,
 	  col=NA, bg=add.alpha("red",0.4),gap=0,
 	  yaxt='n',xaxt='n')
 } else {
-    seq <- seq(from=2,to=dim(dd)[2],by=9)
+    seq <- seq(from=6,to=dim(dd)[2],by=7)
     for(i in 1:length(seq)){
-	end <- min(seq[i]+8,dim(dd)[2])
+	end <- min(seq[i]+6,dim(dd)[2])
 	
-	sub <- c(1,seq[i]:end)
-	pairs(dd[samp,sub],labels=parse(text=dd.names[sub]), upper.panel=panel.cor, pch=21,
+	sub <- c(1:5,seq[i]:end)
+	pairs(dd[samp,sub],labels=parse(text=dd.names[sub]), lower.panel=panel.cor, pch=21,
 	  col=NA, bg=add.alpha("red",0.4),gap=0,
 	  yaxt='n',xaxt='n')
     }

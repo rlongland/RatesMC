@@ -51,7 +51,7 @@ Reaction::Reaction(){
   smallestdE = 0.0;
   smallestdwg = 0.0;
   for(int i=0; i<3; i++)
-    smallestdG[i] = 0.0;
+		smallestdG[i] = 0.0;
 
 }
 
@@ -156,6 +156,10 @@ void Reaction::writeReaction(){
   }
   //std::cout << "Done!\n";
 	logfile << " The smallest dE value = " << smallestdE << "\n";
+	logfile << " The smallest dwg/wg value = " << smallestdwg << "\n";
+	logfile << " The smallest dG1/G1 value = " << smallestdG[0] << "\n";
+	logfile << " The smallest dG2/G2 value = " << smallestdG[1] << "\n";
+	logfile << " The smallest dG3/G3 value = " << smallestdG[2] << "\n";
 	
 }
 

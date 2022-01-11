@@ -290,6 +290,18 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 			if(dE_cm < R.smallestdE || isZero(R.smallestdE))R.smallestdE = dE_cm;
 			//			std::cout << R.smallestdE << "\n";
 		}
+		if(bPartialWidthCorrelations){
+			if(dwg/wg < R.smallestdwg || isZero(R.smallestdwg))
+				R.smallestdwg = dwg/wg;
+			
+			if(dG1/G1 < R.smallestdG[0] || isZero(R.smallestdG[0]))
+				R.smallestdG[0] = dG1/G1;
+			if(dG2/G2 < R.smallestdG[1] || isZero(R.smallestdG[1]))
+				R.smallestdG[1] = dG2/G2;
+			if(dG3/G3 < R.smallestdG[2] || isZero(R.smallestdG[2]))
+				R.smallestdG[2] = dG3/G3;
+		}
+		
 		
     // Add this resonance to the list of resonances stored in the
     // reaction
