@@ -411,25 +411,26 @@ void Resonance::writeSamples(std::ofstream &samplefile, int s) {
   std::stringstream buffer;
   //  std::cout << s << "\n";
   //  std::cout << G[0] << " " << G[1] << "\n";
-  buffer << std::setw(10) << std::setprecision(5) << E_sample[s] << " ";
+	buffer << std::scientific;
+  buffer << std::setw(12) << std::setprecision(5) << E_sample[s] << " ";
   if (wg_sample.size() > 0) {
-    buffer << std::setw(10) << std::setprecision(5) << wg_sample[s] << " ";
-    buffer << std::setw(10) << std::setprecision(5) << 0 << " " << std::setw(10)
-           << std::setprecision(5) << 0 << " " << std::setw(10)
-           << std::setprecision(5) << 0 << " ";
+    buffer << std::setw(10) << std::setprecision(3) << wg_sample[s] << " ";
+    buffer << std::setw(10) << std::setprecision(3) << 0 << " " << std::setw(10)
+           << std::setprecision(3) << 0 << " " << std::setw(10)
+           << std::setprecision(3) << 0 << " ";
     // buffer <<  wg_sample[s] << " ";
     // buffer <<  0 << " "
     //	       <<  0 << " "
     //	       <<  0 << " ";
   } else {
-    buffer << std::setw(10) << std::setprecision(5) << 0 << " ";
+    buffer << std::setw(10) << std::setprecision(3) << 0 << " ";
     for (int channel = 0; channel < NChannels; channel++) {
-      buffer << std::setw(10) << std::setprecision(5) << G_sample[channel][s]
+      buffer << std::setw(10) << std::setprecision(3) << G_sample[channel][s]
              << " ";
       // buffer << G_sample[channel][s] << " ";
     }
     for (int channel = NChannels; channel < 3; channel++) {
-      buffer << std::setw(10) << std::setprecision(5) << 0 << " ";
+      buffer << std::setw(10) << std::setprecision(3) << 0 << " ";
       // buffer <<  0 << " ";
     }
     //	       << std::setw(10) << std::setprecision(5) << G_sample[1][s] << "

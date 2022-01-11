@@ -504,15 +504,15 @@ void Reaction::writeSamples(){
   samplefile <<    "                                           ";
   for(Resonance &Res : Resonances){
     samplefile << " |         Resonance " << std::setw(3) << Res.getIndex()
-	       << " at E_cm = " << std::setw(7) << Res.getE_cm() << " MeV          ";
+	       << " at E_cm = " << std::setw(7) << Res.getE_cm() << " MeV            ";
   }
   samplefile << "\n";
   //               "1234567890x1234567890x1234567890x123456789012"
   samplefile <<    " Standard1  Standard2  Standard3  Standard4";
   for(Resonance &Res : Resonances){
-    samplefile << " |         E         wg         G1         G2         G3";
+    samplefile << " |           E         wg         G1         G2         G3";
   }
-  samplefile << "\n";
+  samplefile << std::endl;
   
   // Now the samples
   for(int s=0; s<NSamples; s++){
