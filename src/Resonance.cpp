@@ -56,7 +56,7 @@ double ResonanceIntegrandWrapper(double x, void *params) {
 Resonance::Resonance(Reaction &R, int index, double E_cm, double dE_cm,
                      double wg, double dwg, double Jr, double G[3],
                      double dG[3], int L[3], double PT[3], double dPT[3],
-                     double Exf, bool isBroad, bool isUpperLimit)
+                     double Exf, bool isBroad, bool isUpperLimit, bool isECorrelated)
     : Reac(R) {
   // 'this' is a special pointer to the "current instance"
   this->index = index;
@@ -75,6 +75,7 @@ Resonance::Resonance(Reaction &R, int index, double E_cm, double dE_cm,
   this->Exf = Exf;
   this->isBroad = isBroad;
   this->isUpperLimit = isUpperLimit;
+	this->isECorrelated = isECorrelated;
   this->M0 = R.M0;
   this->M1 = R.M1;
   this->M2 = R.M2;
@@ -117,8 +118,9 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
   double meanPen, meanPex;
 
   // First get the energy samples
-  double corr =
-      smallestdE / dE_cm; // The correlation factor for this resonance energy
+  double corr = 0.0;
+	if(isECorrelated)
+      corr = smallestdE / dE_cm; // The correlation factor for this resonance energy
   E_sample.resize(NSamples);
   // Calculate correlated energies
   for (int s = 0; s < NSamples; s++) {

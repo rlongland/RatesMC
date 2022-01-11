@@ -69,10 +69,11 @@ void Reaction::setNonResonant(double s, double sp, double spp, double ds, double
 }
 
 void Reaction::addResonance(int i, double E_cm, double dE_cm, double wg, double dwg, double Jr,
-			    double G1, double dG1, int L1, double PT1, double dPT1,
-			    double G2, double dG2, int L2, double PT2, double dPT2,
-			    double G3, double dG3, int L3, double PT3, double dPT3,
-			    double Exf, bool bInt, bool bUpperLimit){
+														double G1, double dG1, int L1, double PT1, double dPT1,
+														double G2, double dG2, int L2, double PT2, double dPT2,
+														double G3, double dG3, int L3, double PT3, double dPT3,
+														double Exf, bool bInt, bool bUpperLimit,
+														bool isECorrelated){
 
   double G[3] = {G1, G2, G3};
   double dG[3] = {dG1, dG2, dG3};
@@ -82,7 +83,7 @@ void Reaction::addResonance(int i, double E_cm, double dE_cm, double wg, double 
   
   // Make a resonance
   Resonance Res(*this, i, E_cm, dE_cm, wg, dwg, Jr,
-		G, dG, L, PT, dPT, Exf, bInt, bUpperLimit);
+								G, dG, L, PT, dPT, Exf, bInt, bUpperLimit, isECorrelated);
   //Res.print();
   // Add that resonance to the list of resonances
   Resonances.push_back(Res);

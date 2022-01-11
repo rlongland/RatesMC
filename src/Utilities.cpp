@@ -169,6 +169,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     G1, dG1, PT1=0.0, DPT1=0.0, G2, dG2, PT2=0.0, DPT2=0.0,
     G3, dG3, PT3=0.0, DPT3=0.0, Exf;
   int i,L1, L2, L3, isBroad;
+	bool isECorrelated;
 
   i=0;
   // Read the number of entries on the first resonance line. This
@@ -228,14 +229,22 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     E_cm = std::stod(data);
     //    logfile << E_cm << std::endl;;
     if(!isUpperLimit){
-      infile >> dE_cm >> wg >> dwg >> Jr 
+			// First check whether the energy uncertainty has a correlation tag
+			infile >> data;
+			isECorrelated = (data.find("c")!=std::string::npos);
+			dE_cm = std::stod(data);
+			infile >> wg >> dwg >> Jr 
 						 >> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
 						 >> Exf >> isBroad;
     } else {
       // Upper limit resonances.
       // Old style with no DPT
       if(nEnt == 17){
-				infile >> dE_cm >> Jr 
+				// First check whether the energy uncertainty has a correlation tag
+				infile >> data;
+				isECorrelated = (data.find("c")!=std::string::npos);
+				dE_cm = std::stod(data);
+				infile >> Jr 
 							 >> G1 >> dG1 >> L1 >> PT1 >> G2 >> dG2 >> L2 >> PT2
 							 >> G3 >> dG3 >> L3 >> PT3
 							 >> Exf >> isBroad;
@@ -243,8 +252,11 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
       }
       // New style with DPT
       else if(nEnt == 20){
-				logfile << "Reading resonance\n";
-				infile >> dE_cm >> Jr 
+				// First check whether the energy uncertainty has a correlation tag
+				infile >> data;
+				isECorrelated = (data.find("c")!=std::string::npos);
+				dE_cm = std::stod(data);
+				infile >> Jr 
 							 >> G1 >> dG1 >> L1 >> PT1 >> DPT1 >> G2 >> dG2 >> L2 >> PT2 >> DPT2
 							 >> G3 >> dG3 >> L3 >> PT3 >> DPT3
 							 >> Exf >> isBroad;
@@ -272,7 +284,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
 		// If we care about energy correlations
-		if(bEnergyCorrelations){
+		if(bEnergyCorrelations && isECorrelated){
 			//std::cout << "Energy correlations are enabled!" << std::endl;
 			//std::cout << dE_cm << " " << R.smallestdE << " " <<  isZero(R.smallestdE) << "\n";
 			if(dE_cm < R.smallestdE || isZero(R.smallestdE))R.smallestdE = dE_cm;
@@ -285,7 +297,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 									 G1, dG1, L1, PT1, DPT1,
 									 G2, dG2, L2, PT2, DPT2,
 									 G3, dG3, L3, PT3, DPT3,
-									 Exf, isBroad, isUpperLimit);
+									 Exf, isBroad, isUpperLimit,isECorrelated);
     
   }
   
