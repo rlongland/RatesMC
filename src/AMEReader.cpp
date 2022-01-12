@@ -50,32 +50,56 @@ AMEReader::~AMEReader() {}
 
 double AMEReader::readMass(std::string nucname) {
 
-	std::cout << "The name is '" << nucname << "'\n";
+	std::cout << "Reading AME mass for '" << nucname << "'\n";
 
 	// Go through the file and look for where the name is the same as nucname
-	std::string dummy;
-	char name[2];
-	char massfine[13];
-	int massname;
-	int masscourse;
-	//	float massfine;
-	int count=0;
 
-	double mass=0.0;
+	std::string dummy;   // The AME line
+	bool found = false;  // Was the nuclide found?
 	
-	// Skip first lines
+	double mass=0.0;     // The final mass
+
+	int count = 0;
+	// Seek back to the beginning
+	amefile.seekg(0, amefile.beg);
+	// Skip first 36 lines
 	for(int i=0; i<36; i++)
 		std::getline(amefile,dummy);
+	// Now read line-by-line
 	while(std::getline(amefile, dummy)){
 		count++;
-		sscanf(dummy.c_str(),"%*15c%3d %2s%*84c%3d %13c",&massname,name,&masscourse,massfine);
+
+		std::string name;    // Element name
+		int massname;        // Nuclide mass number (e.g. = 23 for 23Na)
+		int masscourse;      // The integer part of the mass
+		double massfine;     // The decimal part (in 10^-6 amu)
+
+		// Use a stringstream to read the input
+		std::stringstream ss(dummy);
+		ss.ignore(16);// >> std::setw(16) >> dummy2;
+		ss >> std::setw(3) >> massname;
+		ss >> std::setw(3) >> name;
+		ss.ignore(84);// >> std::setw(84) >> dummy2;
+		ss >> std::setw(3) >> masscourse;
+		ss >> std::setw(13) >> massfine;
+
+		// Paste the mass number and element together. This is the nuclide's name
 		std::stringstream readname;
 		readname << massname << name;
-		//		std::cout << "'" << readname.str() << "' " << masscourse << " " << massfine << std::endl;
-		if(nucname.compare(readname.str()) == 0) break;
+		// Is this the nucleus we're looking for?
+		if(nucname.compare(0,nucname.size(),readname.str()) == 0) {
+			mass = masscourse + massfine/1.0e6;
+			found = true;
+			break;
+		}
+//		if(count > 300)break;
 	}
 
-	//	std::cout << std::scientific << std::setw(15) << std::setprecision(10) << masscourse << " " << massfine
-	//						<< " " << masscourse + strtod(massfine,NULL)/1.0e6 << "\n";
-	return masscourse + strtod(massfine,NULL)/1.0e6;
+	// Quit with an error if the nuclide was not found!
+	if(found){
+		return mass;
+	} else {
+		std::cout << "ERROR: Could not find AME mass for " << nucname << std::endl;
+		exit(EXIT_FAILURE);
+	}
 }

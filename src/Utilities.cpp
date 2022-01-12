@@ -370,18 +370,31 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
   R -> setCharges(z0,z1,z2);
 
+	// M0 (Projectile mass)
   infile >> dummy;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-	if(isNumber(dummy)){
+	// Use AME if the input isn't a number
+  if(isNumber(dummy)){
 		m0 = std::stod(dummy);
 	} else {
-		std::cout << "Reading mass from AME\n";
 		m0 = ame -> readMass(dummy);
 	}
-  infile >> m1;
+	// M1 (Target mass)
+	infile >> dummy;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-  infile >> m2;
+	if(isNumber(dummy)){
+		m1 = std::stod(dummy);
+	} else {
+		m1 = ame -> readMass(dummy);
+	}
+	// M2 (Ejectile mass)
+	infile >> dummy;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	if(isNumber(dummy)){
+		m2 = std::stod(dummy);
+	} else {
+		m2 = ame -> readMass(dummy);
+	}
   R -> setMasses(m0,m1,m2);
 
   infile >> j0;
