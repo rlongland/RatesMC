@@ -78,6 +78,23 @@ scripts below:
 * **RatesMC.PT**  
   Porter-Thomas samples. Use for diagnostics only
 
+# New features
+* **AME masses**  
+  Do you want to just read the AME 2020 mass table? Me too! Now,
+  insead of entering the particle mass in lines 6-8, you can just type
+  the nuclide's name. For example:
+
+  ```
+  35Ar(p,g)36K
+  ****************************************************************************************************************
+  1               ! Zproj
+  18              ! Ztarget
+  0               ! Zexitparticle (=0 when only 2 channels open)
+  1H              ! Aproj   (input either mass in amu, or the nuclide's name, e.g. 23Na)
+  35Ar            ! Atarget (input either mass in amu, or the nuclide's name, e.g. 23Na)
+  0               ! Aexitparticle (=0 when only 2 channels open)
+  ```
+  
 # Analysis scripts
 Most of these will need to be edited to make sure the correct files
 are being analysed.
