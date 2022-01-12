@@ -80,6 +80,7 @@ scripts below:
 
 # New features
 * **AME masses**  
+  **Note: This still uses atomic masses. Beware!**  
   Do you want to just read the AME 2020 mass table? Me too! Now,
   insead of entering the particle mass in lines 6-8, you can just type
   the nuclide's name. For example:
