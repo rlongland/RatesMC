@@ -34,6 +34,13 @@ Subsequent updates to the method are documented in:
     Longland, Richard; de Séréville, Nicolas, 
     [link](https://ui.adsabs.harvard.edu/abs/2020A%26A...642A..41L/abstract)
 
+# Prerequisites
+
+  * GSL - Gnu Scientific Library
+  * c++ compiler
+  * cmake
+  * (openmp - not used at present)
+
 # Installation Instructions
 
 1. Download the code:  
@@ -48,6 +55,12 @@ Subsequent updates to the method are documented in:
    
 The code should now be ready to run with  
 `./RatesMC`
+
+Update at any time with  
+    `git pull`  
+    `cd build`  
+    `cmake ..`  
+    `make`
 
 # Running the code
 
