@@ -93,7 +93,6 @@ scripts below:
 
 # New features
 * **AME masses**  
-  **Note: This still uses atomic masses. Beware!**  
   Do you want to just read the AME 2020 mass table? Me too! Now,
   insead of entering the particle mass in lines 6-8, you can just type
   the nuclide's name. For example:
@@ -107,6 +106,40 @@ scripts below:
   1H              ! Aproj   (input either mass in amu, or the nuclide's name, e.g. 23Na)
   35Ar            ! Atarget (input either mass in amu, or the nuclide's name, e.g. 23Na)
   0               ! Aexitparticle (=0 when only 2 channels open)
+  ```
+  
+* **AME atomic number**  
+  Keep forgetting the atomic number of your nuclei? Enter the
+  nuclide's name in the charge section. Yes I know the isotope is
+  irrelevent.
+
+  ```
+  35Ar(p,g)36K
+  ****************************************************************************************************************
+  1H              ! Zproj
+  35Ar            ! Ztarget
+  0               ! Zexitparticle (=0 when only 2 channels open)
+  1H              ! Aproj   (input either mass in amu, or the nuclide's name, e.g. 23Na)
+  35Ar            ! Atarget (input either mass in amu, or the nuclide's name, e.g. 23Na)
+  0               ! Aexitparticle (=0 when only 2 channels open)
+  ```
+
+* **Nubase ground-state spin**
+  Tired of looking up the ground state spin of your reacting nuclides?
+  Guess what, you can enter their names to use the NuBase 2020
+  evaluation. This *ignores parentheses* so use with caution!
+  
+  ```
+  35Ar(p,g)36K
+  ****************************************************************************************************************
+  1               ! Zproj     (or nuclide's name to use AME 2020)
+  18              ! Ztarget
+  0               ! Zexitparticle (=0 when only 2 channels open)
+  1.00728         ! Aproj     (input either nuclear mass in amu, or the nuclide's name, e.g. 23Na)
+  34.9654         ! Atarget
+  0               ! Aexitparticle (=0 when only 2 channels open)
+  1H              ! Jproj     (or nuclide's name to use NuBase 2020)
+  35Ar            ! Jtarget
   ```
   
 # Analysis scripts
