@@ -26,7 +26,7 @@
 #include <limits>
 #include <cmath>
 
-#include "omp.h"
+//#include "omp.h"
 
 #include "gsl/gsl_sf_log.h"
 
@@ -116,7 +116,7 @@ int main(int argc, char** argv){
   // Now do the big loop over temperatures in parallel!!
   // Do all of the calculations first, then collect everything together
 	std::vector<double>::iterator it;
-  omp_set_num_threads(1);
+  //omp_set_num_threads(1);
 	//#pragma omp parallel for ordered
 	for(it = Temp.begin(); it < Temp.end(); ++it){
     // ------------------------
@@ -124,7 +124,7 @@ int main(int argc, char** argv){
     // ------------------------
 		double T = *it;
     
-    int ID = omp_get_thread_num();
+    int ID = 0;//omp_get_thread_num();
     std::cout << std::endl;
     std::cout << "--------------------------------------------------\n";
     std::cout << "Proc(" << ID << ") T = " << T; // << "\n";
