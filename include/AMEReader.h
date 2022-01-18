@@ -30,17 +30,18 @@ class AMEReader {
  public:
 
   // Constructor
-  AMEReader(std::string filename);
+  AMEReader(std::string massfilename, std::string nubasefilename);
   // Destructor
   ~AMEReader();
 
   double readMass(std::string nucname);
   int readCharge(std::string nucname);
+  double readSpin(std::string nucname);
 
  private:
 
   std::ifstream amefile;
-
+	std::ifstream nubasefile;
 };
 
 #endif

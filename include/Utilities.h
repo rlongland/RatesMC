@@ -119,6 +119,9 @@ bool isZero(double x);
 // Convert atomic to nuclear mass
 double atomicToNuclear(double A, double Z);
 
+// Check whether a file exists
+inline bool fileExists (const std::string& name);
+
 // Setup the random number generator
 void setupRandom();
 unsigned long int random_seed();

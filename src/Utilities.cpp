@@ -329,7 +329,9 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 int ReadInputFile(std::string inputfilename, Reaction *R){
 
 	// Load in the AME Reader
-	AMEReader *ame = new AMEReader("mass_1.mas20");
+	std::string amefilename = "mass_1.mas20";
+	std::string nubasefilename = "nubase_3.mas20";
+	AMEReader *ame = new AMEReader(amefilename,nubasefilename);
 	
   std::cout << "The input file name is: " << inputfilename << std::endl;
 
@@ -422,13 +424,31 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 	}
   R -> setMasses(m0,m1,m2);
 
-  infile >> j0;
+  infile >> dummy;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-  infile >> j1;
+	if(isNumber(dummy)){
+		j0 = std::stod(dummy);
+	} else {
+		j0 = ame -> readSpin(dummy);
+	}
+
+	infile >> dummy;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-  infile >> j2;
+	if(isNumber(dummy)){
+		j1 = std::stod(dummy);
+	} else {
+		j1 = ame -> readSpin(dummy);
+	}
+
+  infile >> dummy;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-  R -> setSpins(j0,j1,j2);
+	if(isNumber(dummy)){
+		j2 = std::stod(dummy);
+	} else {
+		j2 = ame -> readSpin(dummy);
+	}
+
+	R -> setSpins(j0,j1,j2);
   logfile << j0 << " " << j1 << " " << j2 << "\n";
 
   // Entrance and exit particle separation energies
@@ -1075,6 +1095,12 @@ double atomicToNuclear(double A, double Z) {
 	return A - Z*ElectronMass;
 }
 
+//----------------------------------------------------------------------
+// Check if a file exists
+inline bool fileExists (const std::string& name) {
+	std::ifstream f(name.c_str());
+	return f.good();
+}
 
 //----------------------------------------------------------------------
 // Setup the random sampler

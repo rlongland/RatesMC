@@ -34,16 +34,24 @@
 #include "Utilities.h"
 
 
-AMEReader::AMEReader(std::string filename) {
+AMEReader::AMEReader(std::string massfilename, std::string nubasefilename) {
 
-	// Open the file
-	amefile.open(filename);
+	// Open the mass file
+	amefile.open(massfilename);
 
 	if(!amefile.is_open()){
 		std::cout << "ERROR: AME Mass file does not exist\n";
 		exit(EXIT_FAILURE);			
 	}
-	
+
+	// Open the nubase file
+	nubasefile.open(nubasefilename);
+
+	if(!nubasefile.is_open()){
+		std::cout << "ERROR: NuBase file does not exist\n";
+		exit(EXIT_FAILURE);			
+	}
+
 }
 
 AMEReader::~AMEReader() {}
@@ -157,6 +165,76 @@ int AMEReader::readCharge(std::string nucname) {
 		return Z;
 	} else {
 		std::cout << "ERROR: Could not find AME charge for " << nucname << std::endl;
+		exit(EXIT_FAILURE);
+	}
+}
+
+//----------------------------------------------------------------------
+// Read the spin 
+double AMEReader::readSpin(std::string nucname) {
+
+	std::cout << "Reading NuBase for '" << nucname << "': J = ";
+
+	// Go through the file and look for where the name is the same as nucname
+
+	std::string dummy;   // The AME line
+	bool found = false;  // Was the nuclide found?
+	
+	double spin=0.0;     // The final mass
+
+	int count = 0;
+	// Seek back to the beginning
+	nubasefile.seekg(0, nubasefile.beg);
+	// Skip first 25 lines
+	for(int i=0; i<25; i++)
+		std::getline(nubasefile,dummy);
+	// Now read line-by-line
+	while(std::getline(nubasefile, dummy)){
+		count++;
+
+		std::string name;    // Element name
+		int massname;        // Nuclide mass number (e.g. = 23 for 23Na)
+		std::string spinstring;
+		double nucspin;     // The decimal part (in 10^-6 amu)
+
+		// Use a stringstream to read the input
+		std::stringstream ss(dummy);
+		ss.ignore(11);// >> std::setw(16) >> dummy2;
+		ss >> std::setw(5) >> name;
+		ss.ignore(72);// >> std::setw(84) >> dummy2;
+		ss >> std::setw(6) >> spinstring;
+
+		// Get rid of any parentheses
+		replace (spinstring.begin(), spinstring.end(), '(' , ' ');
+		replace (spinstring.begin(), spinstring.end(), ')' , ' ');
+		
+
+		std::stringstream sj(spinstring);
+		double numerator, denominator=1;
+		char c;
+		sj >> numerator;
+		sj >> c;
+		if(c == '/'){
+			sj >> denominator;
+		}
+		nucspin = numerator/denominator;
+		//std::cout << "'" << nucname << "' =? '" << name << "' J = '" << spinstring << "'\n";
+		//std::cout << "Num = " << numerator << " den = " << denominator << "\n";
+		// Is this the nucleus we're looking for?
+		if(nucname.compare(0,nucname.size(),name) == 0) {
+			spin = nucspin;
+			found = true;
+			break;
+		}
+		//if(count > 10)break;
+	}
+
+	// Quit with an error if the nuclide was not found!
+	if(found){
+		std::cout << spin << "\n";
+		return spin;
+	} else {
+		std::cout << "ERROR: Could not find Nubase for " << nucname << std::endl;
 		exit(EXIT_FAILURE);
 	}
 }
