@@ -38,6 +38,8 @@ extern int NTemps;
 extern double EMin,R0;
 extern double EPS;
 
+extern double ElectronMass;
+
 // Include correlations
 extern bool bPartialWidthCorrelations;
 extern bool bEnergyCorrelations;
@@ -113,6 +115,9 @@ double CalcAD(std::vector<double> Rates,double Mu,double Sigma);
 
 // Check for zero
 bool isZero(double x);
+
+// Convert atomic to nuclear mass
+double atomicToNuclear(double A, double Z);
 
 // Setup the random number generator
 void setupRandom();

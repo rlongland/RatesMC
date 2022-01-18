@@ -40,6 +40,7 @@
 #include "AMEReader.h"
 
 double EPS=1.0e-5;
+double ElectronMass=0.0005485799;   // in AMU
 double EMin;
 gsl_rng * r;
 
@@ -362,13 +363,34 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   double Qin,Qout;
   int gindex;
   
-  infile >> z0;
+  infile >> dummy;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-  infile >> z1;
+	// Use AME if the input isn't a number
+  if(isNumber(dummy)){
+		z0 = std::stoi(dummy);
+	} else {
+		z0 = ame -> readCharge(dummy);
+	}
+
+  infile >> dummy;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-  infile >> z2;
+	// Use AME if the input isn't a number
+  if(isNumber(dummy)){
+		z1 = std::stoi(dummy);
+	} else {
+		z1 = ame -> readCharge(dummy);
+	}
+
+	infile >> dummy;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-  R -> setCharges(z0,z1,z2);
+	// Use AME if the input isn't a number
+  if(isNumber(dummy)){
+		z2 = std::stoi(dummy);
+	} else {
+		z2 = ame -> readCharge(dummy);
+	}
+
+	R -> setCharges(z0,z1,z2);
 
 	// M0 (Projectile mass)
   infile >> dummy;
@@ -378,6 +400,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 		m0 = std::stod(dummy);
 	} else {
 		m0 = ame -> readMass(dummy);
+		m0 = atomicToNuclear(m0, z0);
 	}
 	// M1 (Target mass)
 	infile >> dummy;
@@ -386,6 +409,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 		m1 = std::stod(dummy);
 	} else {
 		m1 = ame -> readMass(dummy);
+		m1 = atomicToNuclear(m1, z1);
 	}
 	// M2 (Ejectile mass)
 	infile >> dummy;
@@ -394,6 +418,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 		m2 = std::stod(dummy);
 	} else {
 		m2 = ame -> readMass(dummy);
+		m2 = atomicToNuclear(m2, z2);
 	}
   R -> setMasses(m0,m1,m2);
 
@@ -1043,6 +1068,13 @@ bool isZero(double x){
   const double epsilon = 1e-5;
   return std::abs(x-0.) <= epsilon*std::abs(x);
 }
+
+//----------------------------------------------------------------------
+// Convert atomic to nuclear mass
+double atomicToNuclear(double A, double Z) {
+	return A - Z*ElectronMass;
+}
+
 
 //----------------------------------------------------------------------
 // Setup the random sampler

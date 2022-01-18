@@ -35,6 +35,7 @@ class AMEReader {
   ~AMEReader();
 
   double readMass(std::string nucname);
+  int readCharge(std::string nucname);
 
  private:
 
