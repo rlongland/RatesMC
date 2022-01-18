@@ -1,12 +1,12 @@
 35Ar(p,g)36K
 ****************************************************************************************************************
-1               ! Zproj
+1               ! Zproj     (or nuclide's name to use AME 2020)
 18              ! Ztarget
 0               ! Zexitparticle (=0 when only 2 channels open)
-1.0078          ! Aproj         
-34.975          ! Atarget
+1H              ! Aproj     (input either nuclear mass in amu, or the nuclide's name, e.g. 23Na)
+35Ar            ! Atarget
 0               ! Aexitparticle (=0 when only 2 channels open)
-0.5             ! Jproj
+0.5             ! Jproj     (or nuclide's name to use NuBase 2020)
 1.5             ! Jtarget
 0.0             ! Jexitparticle (=0 when only 2 channels open)
 1668.0          ! projectile separation energy (keV)
