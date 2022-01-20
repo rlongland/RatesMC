@@ -747,7 +747,7 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   // If the integration errored, make the rate sample a nan
   if (status != 0) {
     //      std::cout << "Integration error = " << gsl_strerror(status) << "\n";
-    result = std::nan("");
+    result = nan("");
   }
   gsl_set_error_handler(temp_handler);
 
@@ -823,7 +823,7 @@ exceed size of workspace w,       // workspace &result, // The result &error);
   }
   if (isinf(ARate)) {
     // Arate = 0.0;
-    ARate = std::nan("");
+    ARate = nan("");
     ErrorFlag = true;
     InfCount++;
   }
