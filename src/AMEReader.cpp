@@ -106,10 +106,67 @@ double AMEReader::readMass(std::string nucname) {
 
 	// Quit with an error if the nuclide was not found!
 	if(found){
-		std::cout << mass << "\n";
+		std::cout << std::setprecision(8) <<  mass << "\n";
 		return mass;
 	} else {
 		std::cout << "ERROR: Could not find AME mass for " << nucname << std::endl;
+		exit(EXIT_FAILURE);
+	}
+}
+
+//----------------------------------------------------------------------
+double AMEReader::readMassFromAandZ(int A, int Z) {
+
+	// Go through the file and look for where the name is the same as nucname
+	std::cout << "Reading AME mass for A=" << A << " and Z=" << Z << " = ";
+	
+	std::string dummy;   // The AME line
+	bool found = false;  // Was the nuclide found?
+	
+	double mass=0.0;     // The final mass
+
+	int count = 0;
+	// Seek back to the beginning
+	amefile.seekg(0, amefile.beg);
+	// Skip first 36 lines
+	for(int i=0; i<36; i++)
+		std::getline(amefile,dummy);
+	// Now read line-by-line
+	while(std::getline(amefile, dummy)){
+		count++;
+
+		std::string name;    // Element name
+		int massname;        // Nuclide mass number (e.g. = 23 for 23Na)
+		int chargename;      // Atomic number Z (e.g. = 11 for 23Na)
+		int masscourse;      // The integer part of the mass
+		double massfine;     // The decimal part (in 10^-6 amu)
+
+		// Use a stringstream to read the input
+		std::stringstream ss(dummy);
+		ss.ignore(11);// >> std::setw(16) >> dummy2;
+		ss >> std::setw(3) >> chargename;
+		ss.ignore(2);
+		ss >> std::setw(3) >> massname;
+		ss >> std::setw(3) >> name;
+		ss.ignore(84);// >> std::setw(84) >> dummy2;
+		ss >> std::setw(3) >> masscourse;
+		ss >> std::setw(13) >> massfine;
+
+		// Is this the nucleus we're looking for?
+		if(chargename == Z && massname == A) {
+			mass = masscourse + massfine/1.0e6;
+			found = true;
+			break;
+		}
+//		if(count > 300)break;
+	}
+
+	// Quit with an error if the nuclide was not found!
+	if(found){
+		std::cout << std::setprecision(8) << mass << "\n";
+		return mass;
+	} else {
+		std::cout << "ERROR: Could not find AME mass!" << std::endl;
 		exit(EXIT_FAILURE);
 	}
 }

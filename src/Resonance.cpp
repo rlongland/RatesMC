@@ -930,7 +930,7 @@ double Resonance::Integrand(double x, void *params) {
 	//	std::cout << writeIntegrand << " ";
 	if (writeIntegrand){
 		integrandfile << std::scientific << std::setprecision(9) << x << " " << integrand
-									<< " " << sfactor << std::endl;
+									<< " " << sfactor << " " << P << std::endl;
 	}
 	
   // astrohpysical s-factor

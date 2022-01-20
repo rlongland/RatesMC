@@ -35,7 +35,8 @@ class AMEReader {
   ~AMEReader();
 
   double readMass(std::string nucname);
-  int readCharge(std::string nucname);
+  double readMassFromAandZ(int A, int Z);
+	int readCharge(std::string nucname);
   double readSpin(std::string nucname);
 
  private:

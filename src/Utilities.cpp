@@ -457,11 +457,16 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 	infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 	if(isNumber(dummy)){
 		Qin = std::stod(dummy);
-	} else {
-		double mcompound = ame -> readMass(dummy);
-		int zcompound = ame -> readCharge(dummy);
+	} else if (dummy == "ame" || dummy == "AME"){
+		int acompound = (int)round(m0+m1);
+		int zcompound = z0+z1;
+		double mcompound = ame -> readMassFromAandZ(acompound, zcompound);
 		mcompound = atomicToNuclear(mcompound, zcompound);
 		Qin = ((m0 + m1) - mcompound)*AMU*1000.0;   // To get into keV
+	} else {
+		std::cout << "ERROR: Enter a number, 'ame', or 'AME'"
+							<< " for the entrance particle separation energy\n";
+		exit(EXIT_FAILURE);
 	}
 	//	std::cout << "Qin = " << Qin << "\n";
 	
@@ -469,11 +474,28 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 	infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 	if(isNumber(dummy)){
 		Qout = std::stod(dummy);
+	} else if (dummy == "ame" || dummy == "AME"){
+		// First find the compund nucleus
+		int acompound = (int)round(m0+m1);
+		int zcompound = z0+z1;
+		double mcompound = ame -> readMassFromAandZ(acompound, zcompound);
+		mcompound = atomicToNuclear(mcompound, zcompound);
+
+		// Then find the residual nucleus
+		int aresidual = (int)round(m0+m1-m2);
+		int zresidual = z0+z1-z2;
+		double mresidual = ame -> readMassFromAandZ(aresidual, zresidual);
+		mresidual = atomicToNuclear(mresidual, zresidual);
+			
+		Qout = ((m2 + mresidual) - mcompound)*AMU*1000.0;   // To get into keV
 	} else {
-		std::cout << "ERROR: Exit particle separation energy not implemented!\n";
+		std::cout << "ERROR: Enter a number, 'ame', or 'AME'"
+							<< " for the exit particle separation energy\n";
 		exit(EXIT_FAILURE);
 	}
+	//	std::cout << "Qout = " << Qout << "\n";
 
+	
 	//  Qout = readDouble(infile);
   R -> setSeparationEnergies(Qin/1000.0, Qout/1000.0);
 
