@@ -713,7 +713,7 @@ void writeContributions(std::vector<std::vector<double> > Contributions, double 
 		// Remove all nan values
 		Contributions[j].erase(std::remove_if(std::begin(Contributions[j]),
 																					std::end(Contributions[j]),
-																					[](const auto& value) { return std::isnan(value); }),
+																					[](const auto& value) { return isnan(value); }),
 													 std::end(Contributions[j]));
 			
 		// Sort the Contributions for each resonance
@@ -781,7 +781,7 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
       if(status){
 				ErrorFlag = true;
 				LogZeroCount++;
-				logRates.push_back(std::nan(""));
+				logRates.push_back(nan(""));
       } else {
 				logRates.push_back(LogResult.val);
 				//				std::cout << lograte[s] << "\n";
@@ -801,11 +801,11 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
 	// Remove all nan rates
 	Rates.erase(std::remove_if(std::begin(Rates),
 														 std::end(Rates),
-														 [](const auto& value) { return std::isnan(value); }),
+														 [](const auto& value) { return isnan(value); }),
 							std::end(Rates));
 	logRates.erase(std::remove_if(std::begin(logRates),
 														 std::end(logRates),
-														 [](const auto& value) { return std::isnan(value); }),
+														 [](const auto& value) { return isnan(value); }),
 							std::end(logRates));
 	
 	
@@ -931,7 +931,7 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate, double H
   latexfile.precision(3);
   latexfile.setf(std::ios::fixed,std::ios::floatfield);
   latexfile << std::setfill('0');
-  latexfile << setiosflags(std::ios::internal);
+  latexfile << std::setiosflags(std::ios::internal);
   //  for(int i=0;i<NTemps;i++){
 
   // Calculate all of the exponent stuff
@@ -954,19 +954,19 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate, double H
     
   latexfile << Temperature << " & " << std::setprecision(2) << low_x <<"$\\times$10$^{"
 						<< std::setprecision(0) << std::setw(3)
-						<< setiosflags(std::ios::showpos)
+						<< std::setiosflags(std::ios::showpos)
 						<< low_f << "}$ & " << std::setprecision(2)
-						<< resetiosflags(std::ios::showpos)
+						<< std::resetiosflags(std::ios::showpos)
 						<< median_x << "$\\times$10$^{" << std::setw(3)
-						<< setiosflags(std::ios::showpos)
+						<< std::setiosflags(std::ios::showpos)
 						<< std::setprecision(0) << median_f << "}$ &\n" << std::setprecision(2)
-						<< resetiosflags(std::ios::showpos)
+						<< std::resetiosflags(std::ios::showpos)
 						<< "      " << high_x << "$\\times$10$^{" << std::setw(3)
-						<< setiosflags(std::ios::showpos)
+						<< std::setiosflags(std::ios::showpos)
 						<< std::setprecision(0) << high_f << "}$ & " << std::setprecision(prec)
-						<< resetiosflags(std::ios::showpos)
+						<< std::resetiosflags(std::ios::showpos)
 						<< fu << " \\\\ " << std::setprecision(3)
-						<< resetiosflags(std::ios::showpos) << std::endl;
+						<< std::resetiosflags(std::ios::showpos) << std::endl;
   
   //  latexfile << "\n";
   //latexfile.close();
