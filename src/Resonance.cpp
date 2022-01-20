@@ -29,6 +29,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_integration.h>
