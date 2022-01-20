@@ -3,6 +3,8 @@ project(RatesMC)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+set(CMAKE_CXX_STANDARD 11)
+
 file(GLOB CPP_FILES src/*.cpp)
 file(GLOB H_FILES include/*.h)
 set(SOURCE_FILES ${CPP_FILES} ${H_FILES})
