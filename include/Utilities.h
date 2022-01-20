@@ -39,6 +39,7 @@ extern double EMin,R0;
 extern double EPS;
 
 extern double ElectronMass;
+extern double AMU;
 
 // Include correlations
 extern bool bPartialWidthCorrelations;

@@ -100,7 +100,7 @@ void Reaction::printReaction(){
   cout << "   Z0        Z1       Z2" << "\n";
   printf( "   %2d        %2d       %2d\n",Z0,Z1,Z2);
   cout << "   M0        M1       M2" << "\n";
-  printf( "%5.2f     %5.2f    %5.2f\n",M0,M1,M2);
+  printf( " %5.2f     %5.2f    %5.2f\n",M0,M1,M2);
   cout << "   S_entrance = " << Q << "\n";
   cout << "   S_exit     = " << Qexit << "\n";
   cout << "   The gamma ray channel is channel " << Gamma_index << "\n";
@@ -131,9 +131,9 @@ void Reaction::writeReaction(){
   logfile << "   Z0        Z1       Z2" << "\n";
   logfile << std::setw(5) << Z0 << "     " << std::setw(5) << Z1 << "    " << std::setw(5) << Z2 << "\n";
   logfile << "   M0        M1       M2" << "\n";
-  logfile << M0 << "   " << M1 << "   " << M2 << "\n";
+  logfile << "  " <<  M0 << "  " << M1 << "  " << M2 << "\n";
   logfile << "   J0        J1       J2" << "\n";
-  logfile << J0 << "   " << J1 << "   " << J2 << "\n";
+  logfile << "   " << J0 << "   " << J1 << "   " << J2 << "\n";
   logfile << "   S_entrance = " << Q << "\n";
   logfile << "   S_exit     = " << Qexit << "\n";
   logfile << "   The gamma ray channel is channel " << Gamma_index << "\n";

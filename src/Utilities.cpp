@@ -41,6 +41,7 @@
 
 double EPS=1.0e-5;
 double ElectronMass=0.0005485799;   // in AMU
+double AMU = 931.494102;            // AMU -> MeV
 double EMin;
 gsl_rng * r;
 
@@ -449,11 +450,31 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 	}
 
 	R -> setSpins(j0,j1,j2);
-  logfile << j0 << " " << j1 << " " << j2 << "\n";
+	//  logfile << "   " << j0 << "    " << j1 << "    " << j2 << "\n";
 
   // Entrance and exit particle separation energies
-  Qin = readDouble(infile);
-  Qout = readDouble(infile);
+	infile >> dummy;
+	infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	if(isNumber(dummy)){
+		Qin = std::stod(dummy);
+	} else {
+		double mcompound = ame -> readMass(dummy);
+		int zcompound = ame -> readCharge(dummy);
+		mcompound = atomicToNuclear(mcompound, zcompound);
+		Qin = ((m0 + m1) - mcompound)*AMU*1000.0;   // To get into keV
+	}
+	//	std::cout << "Qin = " << Qin << "\n";
+	
+	infile >> dummy;
+	infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+	if(isNumber(dummy)){
+		Qout = std::stod(dummy);
+	} else {
+		std::cout << "ERROR: Exit particle separation energy not implemented!\n";
+		exit(EXIT_FAILURE);
+	}
+
+	//  Qout = readDouble(infile);
   R -> setSeparationEnergies(Qin/1000.0, Qout/1000.0);
 
   // The R0 radius
