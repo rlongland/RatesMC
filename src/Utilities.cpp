@@ -486,7 +486,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 		int zresidual = z0+z1-z2;
 		double mresidual = ame -> readMassFromAandZ(aresidual, zresidual);
 		mresidual = atomicToNuclear(mresidual, zresidual);
-			
+
 		Qout = ((m2 + mresidual) - mcompound)*AMU*1000.0;   // To get into keV
 	} else {
 		std::cout << "ERROR: Enter a number, 'ame', or 'AME'"

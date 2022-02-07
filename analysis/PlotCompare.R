@@ -4,10 +4,10 @@
 
 outputfile <- "RatesMC.out"
 fullfile    <- "RatesMC.full"
-litfilename <- "../RatesMC/RatesMC.out"
+litfilename <- "../RatesMC.out"
 headerskip <- 4  ## 3 for RatesMC type files
                  ## 4 for RatesMC2 type files
-headerskip.lit <- 3  ## 3 for RatesMC type files
+headerskip.lit <- 4  ## 3 for RatesMC type files
                      ## 4 for RatesMC2 type files
 
 RateColor <- "gray"  # colour for the error region shade
@@ -51,21 +51,22 @@ if(length(data[1,])==7){outisTMatch=TRUE}else{outisTMatch=FALSE}
 #print(outisTMatch)
 
 # get rid of brackets in Tmatch file
-for(i in 1:length(data[,1])){
-  for(j in 2:4){
-    data[i,j] <- gsub("([()])","",data[i,j])
-  }
+if(length(LitData[1,])>5){
+    for(i in 1:length(data[,1])){
+	for(j in 2:4){
+	    data[i,j] <- gsub("([()])","",data[i,j])
+	}
+    }
+    for(i in 1:length(LitData[,1])){
+	for(j in 2:4){
+	    LitData[i,j] <- gsub("([()])","",LitData[i,j])
+	}
+    }
+    LitData$V1 <- as.double(LitData$V1)
+    LitData$V2 <- as.double(LitData$V2)
+    LitData$V3 <- as.double(LitData$V4)
+    LitData$V4 <- as.double(LitData$V6)
 }
-for(i in 1:length(LitData[,1])){
-  for(j in 2:4){
-    LitData[i,j] <- gsub("([()])","",LitData[i,j])
-  }
-}
-LitData$V1 <- as.double(LitData$V1)
-LitData$V2 <- as.double(LitData$V2)
-LitData$V3 <- as.double(LitData$V4)
-LitData$V4 <- as.double(LitData$V6)
-
 # Temp is data$V1
 # Low rate is data$V2
 # Median rate is data$V4
@@ -79,9 +80,14 @@ if(outisTMatch){
   MyRate <- cbind(as.double(data$V1),as.double(data$V2),as.double(data$V3),
                   as.double(data$V4))#,as.double(data$V7),as.double(data$V8))
 }
-# The MC uncertainty ratios
-CompRate <- cbind(data$V1,MyRate[,2]/MyRate[,3],MyRate[,4]/MyRate[,3])
+					# The MC uncertainty ratios
+cut <- MyRate[,3]>0
+MyRate <- MyRate[cut,]
+fulldata <- fulldata[cut,]
+CompRate <- cbind(MyRate[,1],MyRate[,2]/MyRate[,3],MyRate[,4]/MyRate[,3])
 
+cut <- LitData[,3]>0
+LitData <- LitData[cut,]
 # sometimes, the literature has no uncertainty bands. Check for this:
 if(length(LitData[1,]) > 2){
   # The Literature uncertainty bands
@@ -94,6 +100,10 @@ maxper <- 0.99
 ## Calculate the full range to plot (lqnorm calculates the inverse
 ## lognormal error function, ie. the position corresponding to the
 ## desired percentile)
+cut <- MyRate[,3]>0
+fulldata <- fulldata[cut,]
+MyRate <- MyRate[cut,]
+CompRate <- CompRate[cut,]
 FRange <- c(min(qlnorm(minper,fulldata[,9],fulldata[,10])/MyRate[,3]),
             max(qlnorm(maxper,fulldata[,9],fulldata[,10])/MyRate[,3]))
 ## Now make a vector (log10 spaced) to construct the lognormal matrix
@@ -136,7 +146,7 @@ if(length(LitData[1,]) > 2){
   YAxisLims <- c(min(CompRate[,2:3]),#,LitCompRate[,2:3]),
                max(CompRate[,2:3])) #,LitCompRate[,2:3]))
 } else {
-  YAxisLims <- c(min(CompRate[,2:3]), max(CompRate[,2:3]))
+  YAxisLims <- c(min(CompRate[,2:3],na.rm=TRUE), max(CompRate[,2:3],na.rm=TRUE))
 }                
 
 ## #############
