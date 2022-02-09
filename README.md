@@ -142,6 +142,27 @@ scripts below:
   35Ar            ! Jtarget
   ```
   
+* **Separation energies** 
+  Sick of calculating separation energies from
+  nuclide masses? Yep, you guessed it, RatesMC can finally do that for
+  you! 
+  ```
+  35Ar(p,g)36K
+  ****************************************************************************************************************
+  1H              ! Zproj     (or nuclide's name to use AME 2020)
+  35Ar            ! Ztarget
+  0               ! Zexitparticle (=0 when only 2 channels open)
+  1H              ! Aproj     (input either nuclear mass in amu, or the nuclide's name, e.g. 23Na)
+  35Ar            ! Atarget
+  0               ! Aexitparticle (=0 when only 2 channels open)
+  1H              ! Jproj     (or nuclide's name to use NuBase 2020)
+  35Ar            ! Jtarget
+  0.0             ! Jexitparticle (=0 when only 2 channels open)
+  AME             ! projectile separation energy (keV) - Enter 'AME' for auto calculation
+  AME             ! exit particle separation energy (=0 when only 2 channels open)
+
+  ```
+  
 # Analysis scripts
 Most of these will need to be edited to make sure the correct files
 are being analysed.
