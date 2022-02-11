@@ -911,7 +911,7 @@ double Resonance::Integrand(double x, void *params) {
 
   double integrand = S1 * S3 / S2; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
 
-	double sfactor = x*(S1/S2)*exp(0.989534*Z0*Z1*sqrt(mue/x)); 
+	double sfactor = (S1/S2)*exp(0.989534*Z0*Z1*sqrt(mue/x)); 
 
   //  if(integrand < 1.e-99)integrand=0.0;
 
@@ -1026,14 +1026,15 @@ double Resonance::getSFactor(double E){
     }
   }
 
-  double S1 = PEK * omega * Scale[0] * G[0] * Scale[1] * G[1];
-  double S2 = gsl_pow_2(E_cm - E) +
+	double Consts = 0.6566/mue;   // pi*hbar^2/(2*mu) in MeV.b
+	double S1 = exp(eta);
+  double S2 = omega * Scale[0] * G[0] * Scale[1] * G[1];
+  double S3 = gsl_pow_2(E_cm - E) +
               0.25 * gsl_pow_2(G[0] * Scale[0] + G[1] * Scale[1] + G[2] * Scale[2]);
-	double S3 = exp(eta);
 
 	//	std::cout << S1 << " " << S2 << " " << S3 << "\n";
 	
-  double SFactor = S1 * S3 / S2; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
+  double SFactor = Consts * S1 * S2 / S3; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
 
 	return SFactor;
 	
