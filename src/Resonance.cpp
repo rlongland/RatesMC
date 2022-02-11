@@ -959,7 +959,83 @@ double Resonance::Integrand(double x, void *params) {
 //----------------------------------------------------------------------
 double Resonance::getSFactor(double E){
 
-	return 0.0;
+	if(!isBroad)return 0.0;
+	
+  double PEK = 6.56618216E-1 / mue; // a correction factor
+  double P = PenFactor(E, L[0], M0, M1, Z0, Z1, R);
+	double Pr, Pr_exit;
+  double P_exit, E_exit = 0.;
+  double omega = (2. * Jr + 1.) / ((2. * J0 + 1.) * (2. * J1 + 1.));
+
+	double Scale[3];
+
+  double eta = 0.989510*Z0*Z1*sqrt(mue/E);
+
+	
+  //  The penetration factor at the resonance energy (the "true" PF)
+  if (E_cm > 0.0) {
+    Pr = PenFactor(E_cm, L[0], M0, M1, Z0, Z1, R);
+  } else {
+    Pr = 0.0;
+  }
+
+  // Calculate the exit particle energy, depends on if it is spectator
+  if (Reac.getGamma_index() == 2) {
+    // if exit particle is observed decay, take final excitation into account
+    Pr_exit = PenFactor(E_cm + Reac.Q - Reac.Qexit - Exf, L[1], M0 + M1 - M2, M2,
+                        Z0 + Z1 - Z2, Z2, R);
+  } else if (Reac.getGamma_index() == 1 && NChannels == 3) {
+    // ignore spectator final excitation if it is spectator
+    Pr_exit = PenFactor(E_cm + Reac.Q - Reac.Qexit, L[2], M0 + M1 - M2, M2,
+                        Z0 + Z1 - Z2, Z2, R);
+  }
+
+	// Entrance particle scale
+  if (E_cm > 0.0) {
+    Scale[0] = P / Pr;
+  } else {
+    Scale[0] = 2.0 * P * 41.80161396 / (mue * gsl_pow_2(R));
+		//Scale[0] = 1.0;
+    //		G0 = 2.0 * P * G0 * 41.80161396 / (mue * gsl_pow_2(R));
+  }
+
+	// Exit and spectator scales
+  for (int i = 1; i < 3; i++) {
+    if (G[i] > 0.0) {
+      if (i == Reac.getGamma_index()) {
+        if (i == 1)
+          Scale[i] =
+              pow((Reac.Q + E - Exf) / (Reac.Q + E_cm - Exf), (2. * L[i] + 1.0));
+        if (i == 2)
+          Scale[i] = pow((Reac.Q + E) / (Reac.Q + E_cm), (2. * L[i] + 1.0));
+      } else {
+        if (i == 1)
+          E_exit = Reac.Q + E - Reac.Qexit - Exf;
+        if (i == 2)
+          E_exit = Reac.Q + E - Reac.Qexit;
+        if (E_exit > 0.0) {
+          P_exit =
+              PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
+          Scale[i] = P_exit / Pr_exit;
+        } else {
+          Scale[i] = 0.0;
+        }
+      }
+    } else {
+      Scale[i] = 1;
+    }
+  }
+
+  double S1 = PEK * omega * Scale[0] * G[0] * Scale[1] * G[1];
+  double S2 = gsl_pow_2(E_cm - E) +
+              0.25 * gsl_pow_2(G[0] * Scale[0] + G[1] * Scale[1] + G[2] * Scale[2]);
+	double S3 = exp(eta);
+
+	//	std::cout << S1 << " " << S2 << " " << S3 << "\n";
+	
+  double SFactor = S1 * S3 / S2; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
+
+	return SFactor;
 	
 }
 

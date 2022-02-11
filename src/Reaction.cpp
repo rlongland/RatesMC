@@ -566,7 +566,6 @@ void Reaction::writeSFactor(){
 			sfactorfile << Res.getSFactor(E) << "  ";
 		}
 		
-		
 		sfactorfile << std::endl;
 	}
 
