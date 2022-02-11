@@ -69,7 +69,9 @@ class Resonance {
   void printRate();
 
   double getRateSample(int s){return Rate_sample[s];}
-  
+
+	double getSFactor(double E);
+	
   // Rate for a single narrow resonance
   double singleNarrow(double wg, double E, double T);
   // Function to integrate a broad resonance

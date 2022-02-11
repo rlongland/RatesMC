@@ -534,3 +534,56 @@ void Reaction::writeSamples(){
   
   std::cout << "Done!\n\n";
 }
+
+//----------------------------------------------------------------------
+void Reaction::writeSFactor(){
+
+	// First open the S-Factor file
+	std::ofstream sfactorfile;
+	sfactorfile.open("RatesMC.sfact");
+
+	setupSFactorHeader(sfactorfile);
+	
+	// Loop through energies on a defined grid. At each energy, find the
+	// S-factor of each resonance and analytical contribution
+	for(double E=EMin; E<10.0; E+=0.001){
+
+		// Write the energy
+		sfactorfile << std::scientific << std::setprecision(3) << E << "   ";
+
+		// Analytical parts
+		for(int i=0; i<2; i++){
+			double Si = S[i]/1000.0;
+			double Spi = Sp[i];
+			double Sppi = Spp[i]*1000.0;
+			double Ssum = Si + Spi*E + Sppi*E*E;
+			if(E > (CutoffE[i]/1000.0))Ssum=0.0;
+			sfactorfile << Ssum << "   ";
+		}
+
+		// Collect S-factor for each resonance
+		for(Resonance &Res : Resonances){
+			sfactorfile << Res.getSFactor(E) << "  ";
+		}
+		
+		
+		sfactorfile << std::endl;
+	}
+
+	sfactorfile.close();
+
+}
+
+//----------------------------------------------------------------------
+// Set up the s-factor file header
+void Reaction::setupSFactorHeader(std::ofstream &sfactorfile){
+
+	sfactorfile << "E(MeV)      ";
+  sfactorfile << "A-Rate-1    ";
+	sfactorfile << "A-Rate-2    ";
+  for(Resonance &Res : Resonances){
+		sfactorfile << "Res" << std::setw(3) << std::setfill('0') << (Res.getIndex()+1) << "     ";
+	}
+  sfactorfile << std::endl;
+
+}

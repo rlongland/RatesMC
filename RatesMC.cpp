@@ -99,8 +99,12 @@ int main(int argc, char** argv){
   // Write the reaction information to log file for diagnostics
   Reac -> writeReaction();
 
+	// Before we write anything long, write the astrophysical S-factor
+	Reac -> writeSFactor();
+
   // Write all samples to a file for later analysis
-  Reac -> writeSamples();         
+  Reac -> writeSamples();
+
 
   // Loop through temperatures (this is parallelization happens)
   // At each temperature

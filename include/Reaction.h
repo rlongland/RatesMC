@@ -57,6 +57,8 @@ class Reaction{
   double NonResonantIntegrand(double x, void * params);
   void prepareSamples();
   void writeSamples();
+  void writeSFactor();
+  void setupSFactorHeader(std::ofstream &sfactorfile);
   
   // Getters
   std::string getName(){return Name;}
@@ -92,8 +94,7 @@ class Reaction{
   std::vector<Resonance> Resonances;
 
   // Reaction-wide Monte Carlo
-  std::vector<std::vector<double> > Ref_sample;
-  std::vector<std::vector<double> > ARate;
+  std::vector<std::vector<double> > Ref_sample;  std::vector<std::vector<double> > ARate;
   
   
 };

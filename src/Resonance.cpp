@@ -956,6 +956,15 @@ double Resonance::Integrand(double x, void *params) {
 }
 //}
 
+//----------------------------------------------------------------------
+double Resonance::getSFactor(double E){
+
+	return 0.0;
+	
+}
+
+
+
 void Resonance::print() {
 
   //  cout << "--------------------------------------------------" << "\n";
