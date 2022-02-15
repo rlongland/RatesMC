@@ -182,9 +182,8 @@ are being analysed.
   Plots the integrands for broad resonances. Be sure to adjust the
   temperature you're looking for at the top of the code
 * **PlotSFactor.R**  
-  Plots the astrophysical s-factor for all resonances. This is a
-  by-product of the integration routines and therefore depends on what
-  temperature you set. Will be updated one day
+  Plots the astrophysical s-factor for all resonances. This has now
+  been updated from the previous version to work well! 
 * **PlotPanel6.R**  
   Plots the reaction rate probability density distribution for 6
   useful temperatures
