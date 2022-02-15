@@ -84,6 +84,8 @@ scripts below:
   Contributions of each resonance to the reaction rate at each temperature
 * **RatesMC.integ**  
   Integrals for broad resonances
+* **RatesMC.sfact**  
+  Astrophysical S-factor for broad resonances and analytical rate
 * **RatesMC.samp**  
   Reaction rate samples
 * **ParameterSamples.dat**  
