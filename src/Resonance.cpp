@@ -30,6 +30,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <cstdlib>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_integration.h>
@@ -920,7 +921,7 @@ double Resonance::Integrand(double x, void *params) {
   // cout << x << "\t" << dydx[0] << endl;
 
   //  integrand = gsl_max(integrand,1e-300);
-  double diff = std::abs(x - Er);
+  double diff = std::fabs(x - Er);
   bool singular_point = (diff <= (std::numeric_limits<double>::epsilon() * Er));
 
   if (singular_point)

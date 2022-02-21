@@ -27,6 +27,7 @@
 #include <vector>
 #include <sstream>
 #include <algorithm>    // std::sort
+#include <cstdlib>
 
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_math.h>
@@ -1129,7 +1130,7 @@ double CalcAD(std::vector<double> Rates,double Mu,double Sigma){
 // Check for zero
 bool isZero(double x){
   const double epsilon = 1e-5;
-  return std::abs(x-0.) <= epsilon*std::abs(x);
+  return std:fabs(x-0.) <= epsilon*std::fabs(x);
 }
 
 //----------------------------------------------------------------------
