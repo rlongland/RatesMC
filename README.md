@@ -164,7 +164,17 @@ scripts below:
   AME             ! exit particle separation energy (=0 when only 2 channels open)
 
   ```
-  
+* **Factor uncertainties**  
+  Factor uncertainties on parameters can finally be input directly
+  into the code! **Beware: this only works for partial widths and
+  Porter Thomas mean values, not energies**.  
+  For example, if you want to enter a factor of two uncertainty for
+  the first partial width of a resonance, you would enter the
+  following:
+  ```
+  Ecm     DEcm    wg      Dwg     J     G1        DG1        L1    G2      DG2      L2   G3  DG3  L3  Exf   Int
+  200     2       0       0       2     0.0372    -2.0       1     2.7e-4  1.35e-4  1    0   0    0   0.0   1
+  ```
 # Analysis scripts
 Most of these will need to be edited to make sure the correct files
 are being analysed.
