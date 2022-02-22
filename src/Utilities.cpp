@@ -804,7 +804,7 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
       if(status){
 				ErrorFlag = true;
 				LogZeroCount++;
-				logRates.push_back(nan(""));
+				logRates.push_back(std::numeric_limits<double>::quiet_NaN());
       } else {
 				logRates.push_back(LogResult.val);
 				//				std::cout << lograte[s] << "\n";
@@ -1130,7 +1130,7 @@ double CalcAD(std::vector<double> Rates,double Mu,double Sigma){
 // Check for zero
 bool isZero(double x){
   const double epsilon = 1e-5;
-  return std:fabs(x-0.) <= epsilon*std::fabs(x);
+  return std::fabs(x-0.) <= epsilon*std::fabs(x);
 }
 
 //----------------------------------------------------------------------
