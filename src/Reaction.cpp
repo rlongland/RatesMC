@@ -312,7 +312,7 @@ double Reaction::calcNonResonant(double Temp, int j){
   }
 
 
-  ADRate = ADRate;///(1.5399e11/pow(mue*Temp,1.5));
+  //ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
   
   return ADRate;
 }
@@ -343,7 +343,7 @@ double Reaction::calcNonResonantIntegrated(double Temp, int j){
   double result, error;
   
   // Define integration limits
-  double x = E_min, x1 = E_max;
+  //double x = E_min, x1 = E_max;
 
   // The array that needs to be passed to the integration function
   double alpha[7];
@@ -378,7 +378,11 @@ double Reaction::calcNonResonantIntegrated(double Temp, int j){
 				   &result, // The result
 				   &error);
 
-
+	if(status != 0){
+		std::cout << "ERROR: Problem integrating non-resonant input\n";
+		exit(EXIT_FAILURE);
+	}
+	
   gsl_set_error_handler(NULL);
 
   ADRate = result*(3.7318e10/(sqrt(mue)*pow(Temp,1.5)));
@@ -418,7 +422,7 @@ double Reaction::calcNonResonantIntegrated(double Temp, int j){
   }
 
 
-  ADRate = ADRate;///(1.5399e11/pow(mue*Temp,1.5));
+  //ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
   
   return ADRate;
 }

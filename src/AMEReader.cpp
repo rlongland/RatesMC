@@ -251,7 +251,6 @@ double AMEReader::readSpin(std::string nucname) {
 		count++;
 
 		std::string name;    // Element name
-		int massname;        // Nuclide mass number (e.g. = 23 for 23Na)
 		std::string spinstring;
 		double nucspin;     // The decimal part (in 10^-6 amu)
 

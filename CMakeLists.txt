@@ -3,6 +3,8 @@ project(RatesMC)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall")
+
 set(CMAKE_CXX_STANDARD 14)
 
 file(GLOB CPP_FILES src/*.cpp)

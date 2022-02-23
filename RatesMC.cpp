@@ -34,7 +34,6 @@
 #include "Utilities.h"
 #include "Reaction.h"
 #include "Resonance.h"
-#include "DirectCapture.h"
 
 
 int main(int argc, char** argv){
@@ -83,6 +82,11 @@ int main(int argc, char** argv){
   // Open the input file
   int ret = ReadInputFile(ifilename, Reac);
 
+	if(ret != 0){
+		std::cout << "ERROR: You should never see this message!\n";
+		exit(EXIT_FAILURE);
+	}
+	
   // Make output file headers
   writeOutputFileHeaders(Reac);
   Reac -> setupContribHeader();
