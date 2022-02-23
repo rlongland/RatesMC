@@ -513,7 +513,7 @@ void Reaction::writeSamples(){
   samplefile << "\n";
   //               "1234567890x1234567890x1234567890x123456789012"
   samplefile <<    " Standard1  Standard2  Standard3  Standard4";
-  for(int i=0; i<Resonances.size(); i++){// &Res : Resonances){
+  for(std::size_t i=0; i < Resonances.size(); i++){// &Res : Resonances){
     samplefile << " |           E         wg         G1         G2         G3";
   }
   samplefile << std::endl;

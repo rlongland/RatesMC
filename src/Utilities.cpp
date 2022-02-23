@@ -609,7 +609,7 @@ void defineTemperatures(){
 
   logfile << "--------------------------------------------------\n";
   logfile << "There are " << Temp.size() << " temperatures:\n";
-  for(int iT=0; iT<Temp.size(); iT++){
+  for(std::size_t iT=0; iT<Temp.size(); iT++){
     logfile << std::setw(5) << Temp[iT] << "  ";
     if((iT+1)%7 == 0 && iT>0)logfile << "\n";
   }
@@ -707,8 +707,8 @@ void transpose(std::vector<std::vector<double> > &b){
 
   std::vector<std::vector<double> > trans_vec(b[0].size(), std::vector<double>());
 
-  for (int i = 0; i < b.size(); i++){
-    for (int j = 0; j < b[i].size(); j++) {
+  for (std::size_t i = 0; i < b.size(); i++){
+    for (size_t j = 0; j < b[i].size(); j++) {
       trans_vec[j].push_back(b[i][j]);
     }
   }
@@ -757,7 +757,7 @@ void writeContributions(std::vector<std::vector<double> > Contributions, double 
 	std::vector<double> LowCont;
 	std::vector<double> HighCont;
 	std::vector<double> MedianCont;
-	for(int j=0;j<Contributions.size();j++){
+	for(std::size_t j=0;j<Contributions.size();j++){
 
 		// Remove all nan values
 		Contributions[j].erase(std::remove_if(std::begin(Contributions[j]),
@@ -788,7 +788,7 @@ void writeContributions(std::vector<std::vector<double> > Contributions, double 
 	contribfile.precision(3);
 	contribfile.width(5);
 	contribfile << Temperature << std::scientific << "   " ;
-	for(int i=0; i<MedianCont.size(); i++){
+	for(std::size_t i=0; i<MedianCont.size(); i++){
 		if(LowCont[i] < 1.0e-99)LowCont[i]=0.0;
 		if(MedianCont[i] < 1.0e-99)MedianCont[i]=0.0;
 		if(HighCont[i] < 1.0e-99)HighCont[i]=0.0;
@@ -1096,7 +1096,7 @@ double CalcAD(std::vector<double> Rates,double Mu,double Sigma){
   //		      gsl_sf_exp(2.0*Mu + gsl_pow_2(Sigma)));
 
   CumLognorm[0]=0.0;
-  for(int i=1;i<(Rates.size()+1);i++){
+  for(std::size_t i=1;i<(Rates.size()+1);i++){
     X = Rates[i-1];
     // if X=0, can't take log, so check
     if(X==0.0){
@@ -1110,7 +1110,7 @@ double CalcAD(std::vector<double> Rates,double Mu,double Sigma){
   double norm = 1/CumLognorm[Rates.size()];
   double AndDar_S_tmp;
 
-  for(int i=1;i<(Rates.size()+1);i++){
+  for(std::size_t i=1;i<(Rates.size()+1);i++){
     X = Rates[i-1];
 
     // check to make sure X isn't zero
