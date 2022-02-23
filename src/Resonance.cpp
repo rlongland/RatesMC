@@ -926,7 +926,7 @@ double Resonance::Integrand(double x, void *params) {
   // cout << x << "\t" << dydx[0] << endl;
 
   //  integrand = gsl_max(integrand,1e-300);
-  double diff = std::fabs(x - Er);
+  double diff = fabs(x - Er);
   bool singular_point = (diff <= (std::numeric_limits<double>::epsilon() * Er));
 
   if (singular_point)

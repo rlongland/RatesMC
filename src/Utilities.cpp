@@ -300,19 +300,45 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 			//			std::cout << R.smallestdE << "\n";
 		}
 		if(bPartialWidthCorrelations && !isUpperLimit){
-			if(!isZero(wg))
-				if(dwg/wg < R.smallestdwg || isZero(R.smallestdwg))
-					R.smallestdwg = dwg/wg;
+			if(!isZero(wg)){
+				if(dwg > 0.0){
+					if(dwg/wg < R.smallestdwg || isZero(R.smallestdwg))
+						R.smallestdwg = dwg/wg;
+				} else {
+					if( ((-dwg)-1.0) < R.smalledstdwg || isZero(R.smallestdwg))
+						R.smallestdwg = (-dwg)-1.0;
+				}
+			}
+			
+			if(!isZero(G1)){
+				if(dG1 > 0.0){
+					if(dG1/G1 < R.smallestdG[0] || isZero(R.smallestdG[0]))
+						R.smallestdG[0] = dG1/G1;
+				} else {
+					if( ((-dG1)-1.0) < R.smallestdG[0] || isZero(R.smallestdG[0]))
+						R.smallestdG[0] = (-dG1)-1.0;
+				}
+			}
 
-			if(!isZero(G1))
-				if(dG1/G1 < R.smallestdG[0] || isZero(R.smallestdG[0]))
-					R.smallestdG[0] = dG1/G1;
-			if(!isZero(G2))
-				if(dG2/G2 < R.smallestdG[1] || isZero(R.smallestdG[1]))
-					R.smallestdG[1] = dG2/G2;
-			if(!isZero(G3))
-				if(dG3/G3 < R.smallestdG[2] || isZero(R.smallestdG[2]))
-					R.smallestdG[2] = dG3/G3;
+			if(!isZero(G2)){
+				if(dG2 > 0.0){
+					if(dG2/G2 < R.smallestdG[1] || isZero(R.smallestdG[1]))
+						R.smallestdG[1] = dG2/G2;
+				} else {
+					if( ((-dG2)-1.0) < R.smallestdG[1] || isZero(R.smallestdG[1]))
+						R.smallestdG[1] = (-dG2)-1.0;
+				}
+			}
+
+			if(!isZero(G3)){
+				if(dG3 > 0.0){
+					if(dG3/G3 < R.smallestdG[2] || isZero(R.smallestdG[2]))
+						R.smallestdG[2] = dG3/G3;
+				} else {
+					if( ((-dG3)-1.0) < R.smallestdG[2] || isZero(R.smallestdG[2]))
+						R.smallestdG[2] = (-dG3)-1.0;
+				}
+			}
 		}
 		
 		
@@ -1130,7 +1156,7 @@ double CalcAD(std::vector<double> Rates,double Mu,double Sigma){
 // Check for zero
 bool isZero(double x){
   const double epsilon = 1e-5;
-  return std::fabs(x-0.) <= epsilon*std::fabs(x);
+  return fabs(x-0.) <= epsilon*fabs(x);
 }
 
 //----------------------------------------------------------------------
