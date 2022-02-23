@@ -21,3 +21,4 @@ GTAGS
 RatesMC-*.in
 compile_commands.json
 deploy
+/.clangd/

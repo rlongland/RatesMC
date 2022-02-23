@@ -666,8 +666,8 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   size_t nevals;
 
   // Define integration limits
-  double x = E_min, x1 = E_max;
-  double pole = E;
+  //double x = E_min, x1 = E_max;
+  //double pole = E;
 
   // The array that needs to be passed to the integration function
   double alpha[8];
@@ -680,7 +680,7 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   alpha[6] = G1;
   alpha[7] = G2;
 
-  double gammaT = G0 + G1 + G2;
+  //double gammaT = G0 + G1 + G2;
 
   //  std::cout << "making integration workspace\n";
   // alpha[0] = 1;
@@ -967,7 +967,7 @@ double Resonance::getSFactor(double E){
 
 	if(!isBroad)return 0.0;
 	
-  double PEK = 6.56618216E-1 / mue; // a correction factor
+  //double PEK = 6.56618216E-1 / mue; // a correction factor
   double P = PenFactor(E, L[0], M0, M1, Z0, Z1, R);
 	double Pr, Pr_exit;
   double P_exit, E_exit = 0.;

@@ -89,8 +89,8 @@ class Reaction{
 
   std::string Name;
   double S[2],Sp[2],Spp[2],dS[2],CutoffE[2];
-  int NRes,ULNRes,Gamma_index;
-  int *NChannels;
+  int Gamma_index;
+
   std::vector<Resonance> Resonances;
 
   // Reaction-wide Monte Carlo

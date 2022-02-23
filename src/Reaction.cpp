@@ -431,7 +431,7 @@ double Reaction::NonResonantIntegrand(double x, void * params){
 
   //  std::cout << "inside " << x << std::endl; 
   double* par = (double*)params;
-  int index = (int)par[0];
+  //int index = (int)par[0];
   double mue = (double)par[1];
   double T = (double)par[2];
   double S = (double)par[3];
@@ -513,7 +513,7 @@ void Reaction::writeSamples(){
   samplefile << "\n";
   //               "1234567890x1234567890x1234567890x123456789012"
   samplefile <<    " Standard1  Standard2  Standard3  Standard4";
-  for(Resonance &Res : Resonances){
+  for(int i=0; i<Resonances.size(); i++){// &Res : Resonances){
     samplefile << " |           E         wg         G1         G2         G3";
   }
   samplefile << std::endl;

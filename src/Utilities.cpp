@@ -305,7 +305,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 					if(dwg/wg < R.smallestdwg || isZero(R.smallestdwg))
 						R.smallestdwg = dwg/wg;
 				} else {
-					if( ((-dwg)-1.0) < R.smalledstdwg || isZero(R.smallestdwg))
+					if( ((-dwg)-1.0) < R.smallestdwg || isZero(R.smallestdwg))
 						R.smallestdwg = (-dwg)-1.0;
 				}
 			}
@@ -363,7 +363,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 	
   std::cout << "The input file name is: " << inputfilename << std::endl;
 
-  int ne;  // for counting entries
+  //int ne;  // for counting entries
   
   // Start by opening input file (reactions.dat)
   std::ifstream infile;
@@ -550,8 +550,8 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   if(found!=std::string::npos){
     std::cout << "WARNING: It looks like you are using an old RatesMC.in.\n" <<
       "         I'll assume you don't care about correlations!\n" << std::endl;
-    bool bPartialWidthCorrelations = false;
-    bool bEnergyCorrelations = false;
+    bPartialWidthCorrelations = false;
+    bEnergyCorrelations = false;
 
   } else {
     infile.seekg(place);

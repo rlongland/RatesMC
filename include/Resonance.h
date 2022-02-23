@@ -108,7 +108,7 @@ class Resonance {
   double R, mue;
   
   //  bool bwg_known;
-  bool bUseInrate;
+  //bool bUseInrate;
 
   // Sampled parameters
   std::vector<double> E_sample;               // Energies
@@ -116,11 +116,6 @@ class Resonance {
   std::vector<std::vector<double> > G_sample; // Partial widths
   std::vector<std::vector<double> > erFrac;   // Energy shift effect on widths
   
-  // Correlations
-  int CorresRes;
-  double Ref_sample[3], ERef_sample, Frac;
-  double correlation, Gcorrelations, Ecorrelation;
-
   // The rate from this resonance
   double classicalRate;
   std::vector<double> Rate_sample;   // length is number of samples
