@@ -270,7 +270,7 @@ double Reaction::calcNonResonant(double Temp, int j){
   // Turn off the error handler in case exp returns zero
   gsl_set_error_handler_off();
   ADRate = 1.0e-3*(C1e/pow(Temp,2./3.))*gsl_sf_exp(-C2e/pow(Temp,1./3.)-
-					    pow(Temp/cutoff_T,2.))*
+																									 pow(Temp/cutoff_T,2.))*
     (1 + C3e*pow(Temp,1./3.) + C4e*pow(Temp,2./3.) + C5e*Temp +
      C6e*pow(Temp,4./3.) + C7e*pow(Temp,5./3.));
 
@@ -301,12 +301,12 @@ double Reaction::calcNonResonant(double Temp, int j){
     if((mu==0. && sigma==0.)){
       ADRate=0.0;
       for(int i=0;i<NSamples;i++){
-	ARate[j][i]=0.0;
+				ARate[j][i]=0.0;
       }
     } else {
       for(int i=0;i<NSamples;i++){
-	ARate[j][i] = gsl_ran_lognormal(r,mu,sigma);///(1.5399e11/pow(mue*Temp,1.5));
-	//	std::cout << ARate[j][i] << "\n";
+				ARate[j][i] = gsl_ran_lognormal(r,mu,sigma);///(1.5399e11/pow(mue*Temp,1.5));
+				//	std::cout << ARate[j][i] << "\n";
       }
     }
   }
@@ -339,7 +339,7 @@ double Reaction::calcNonResonantIntegrated(double Temp, int j){
   double E_min = 0.0;
   double E_max = CutoffE[j]/1000.0;
   //  std::cout << E_max << std::endl;
-    // GSL Integration functions
+	// GSL Integration functions
   double result, error;
   
   // Define integration limits
@@ -368,15 +368,15 @@ double Reaction::calcNonResonantIntegrated(double Temp, int j){
   F.params = &alpha;
 
   int status = gsl_integration_qag(&F,      // Function to be integrated
-				   E_min,   // Start of integration
-				   E_max,   // End of integration
-				   0,       // absolute error
-				   1e-3,    // relative error
-				   1000,    // max number of steps (cannot exceed size of workspace
-				   6,       // key - (6=61 point Gauss-Kronrod rules)
-				   w,       // workspace
-				   &result, // The result
-				   &error);
+																	 E_min,   // Start of integration
+																	 E_max,   // End of integration
+																	 0,       // absolute error
+																	 1e-3,    // relative error
+																	 1000,    // max number of steps (cannot exceed size of workspace
+																	 6,       // key - (6=61 point Gauss-Kronrod rules)
+																	 w,       // workspace
+																	 &result, // The result
+																	 &error);
 
 	if(status != 0){
 		std::cout << "ERROR: Problem integrating non-resonant input\n";
@@ -411,17 +411,17 @@ double Reaction::calcNonResonantIntegrated(double Temp, int j){
     if((mu==0. && sigma==0.)){
       ADRate=0.0;
       for(int i=0;i<NSamples;i++){
-	ARate[j][i]=0.0;
+				ARate[j][i]=0.0;
       }
     } else {
       for(int i=0;i<NSamples;i++){
-	ARate[j][i] = gsl_ran_lognormal(r,mu,sigma);///(1.5399e11/pow(mue*Temp,1.5));
-	//	std::cout << ARate[j][i] << "\n";
+				ARate[j][i] = gsl_ran_lognormal(r,mu,sigma);///(1.5399e11/pow(mue*Temp,1.5));
+				//	std::cout << ARate[j][i] << "\n";
       }
     }
   }
 
-
+	gsl_integration_workspace_free(w);
   //ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
   
   return ADRate;
@@ -476,12 +476,12 @@ void Reaction::prepareSamples(){
     Ref_sample.push_back(row);
   }
   /*
-  for(int s=0; s<NSamples; s++){
+		for(int s=0; s<NSamples; s++){
     for(int j=0; j<3; j++){
-      cout << Ref_sample[s][j] << "  ";
+		cout << Ref_sample[s][j] << "  ";
     }
     cout << "\n";
-  }
+		}
   */
   // For each resonance, go through and calculate all random samples
   for(Resonance &Res : Resonances){
@@ -508,7 +508,7 @@ void Reaction::writeSamples(){
   samplefile <<    "                                           ";
   for(Resonance &Res : Resonances){
     samplefile << " |         Resonance " << std::setw(3) << Res.getIndex()
-	       << " at E_cm = " << std::setw(7) << Res.getE_cm() << " MeV            ";
+							 << " at E_cm = " << std::setw(7) << Res.getE_cm() << " MeV            ";
   }
   samplefile << "\n";
   //               "1234567890x1234567890x1234567890x123456789012"

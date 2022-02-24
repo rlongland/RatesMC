@@ -586,6 +586,9 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 
   logfile << std::endl;
 
+
+	delete(ame);
+	
   return 0;
 }
 
