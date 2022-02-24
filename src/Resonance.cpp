@@ -646,6 +646,8 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   }
   // std::cout << "Pr = " << Pr << "\n";
 
+	if(isZero(Pr))return 0.0;
+	
   // Calculate the exit particle energy, depends on if it is spectator
   // if(NChannels[j]==3){
   if (Reac.getGamma_index() == 2) {
