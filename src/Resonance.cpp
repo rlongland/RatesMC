@@ -315,6 +315,7 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
             double PTi = 0.0;
             // Either as a factor uncertainty
             if (dPT[channel] < 0.0) {
+							//							std::cout << PT[channel] << " " << dPT[channel] << "\n";
               double mu = gsl_sf_log(PT[channel]);
               double sigma = gsl_sf_log(-dPT[channel]);
               PTi = gsl_ran_lognormal(r, mu, sigma);
@@ -330,10 +331,9 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
             // less than it.
             do {
               G_temp[s] = A * PTi * gsl_ran_chisq(r, 1.0);
-
-              ptfile << s << "  " << index << "  " << P << "  " << PTi << "  "
-                     << G_temp[s] << endl;
             } while (G_temp[s] > G[channel]);
+						ptfile << s << "  " << index << "  " << P << "  " << PTi << "  "
+									 << G_temp[s] << endl;
           } // for(int s=0; s<NSamples; s++)
         }   // if(Gamma_gamma) else {
       }     // End else if it's an upper limit
