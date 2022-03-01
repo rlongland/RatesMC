@@ -82,6 +82,7 @@ class Resonance {
   // The resonance integrand to be integrated in the function above
   //extern "C" {
   double Integrand(double x, void * params);
+	int rhs(double x, const double y[], double dydx[], void * params);
   //}
   
   // print a summary of the resonance

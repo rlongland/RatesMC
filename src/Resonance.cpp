@@ -40,6 +40,7 @@
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_log.h>
 #include <gsl/gsl_statistics.h>
+#include <gsl/gsl_odeiv2.h>
 #include <math.h>
 
 #include "Resonance.h"
@@ -54,6 +55,12 @@ double ResonanceIntegrandWrapper(double x, void *params) {
   return ResonancePtr->Integrand(x, params);
 }
 // end ugly-ass hack
+// another ugly-ass hack
+int rhsWrapper(double x, const double y[], double dydt[], void *params_ptr){
+	ResonancePtr->rhs(x, y, dydt, params_ptr);
+	return GSL_SUCCESS;
+}
+// end
 
 Resonance::Resonance(Reaction &R, int index, double E_cm, double dE_cm,
                      double wg, double dwg, double Jr, double G[3],
@@ -752,11 +759,74 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
                                      &error, &nevals);
   gsl_integration_cquad_workspace_free(w);
 
-  // If the integration errored, make the rate sample a nan
+	//status = -1;
+  // If the integration errored, use the slower ODE method
   if (status != 0) {
-		std::cout << "Integration error = " << gsl_strerror(status) << "\n";
-    result = std::numeric_limits<double>::quiet_NaN();
-  }
+	//	std::cout << "Integration error = " << gsl_strerror(status) << "\n";
+    //result = std::numeric_limits<double>::quiet_NaN();
+	
+		// OK so the fast integration failed. Go back to the old method
+		const gsl_odeiv2_step_type * T
+			= gsl_odeiv2_step_rkck;
+
+		// Set up the ODE solver
+		gsl_odeiv2_step * s
+			= gsl_odeiv2_step_alloc (T, 1);
+		gsl_odeiv2_control * c
+			= gsl_odeiv2_control_y_new (1e-100, 1.0e-6);
+		gsl_odeiv2_evolve * e
+			= gsl_odeiv2_evolve_alloc (1);
+
+		// Function, Jacobian, Number of Dimensions, Parameters
+		gsl_odeiv2_system sys = {rhsWrapper, NULL, 1, &alpha};
+
+		// Integration limits
+		double x = E_min, x1 = E_max;
+		// stepsize
+		double h=1.0e-10;
+		double hmin = 1.0e-12;   // The minimum step size
+		// Value of the integrand. Starts at zero
+		double y[2] = {0.0, 0.0};
+		// Flag to take small steps
+		bool smallstep = false;
+
+		while(x < x1){
+
+      // 2007-12-27
+      // If the step will bring it close to the Er, take small steps
+      if(x < E && (x + h) > (E-(3.0*(G0+G1+G2))))smallstep=true;
+			
+      // Now make step small if it isn't already, can be fairly large because
+      // it starts on the resonance wing
+      if(smallstep && h>(G0+G1+G2)){
+				h = (G0+G1+G2);
+      }
+
+      // Make the step...
+      // Note, the step size is determined by the error in the
+      //  cross section, so spectroscopic factors may look jumpy
+      int status = gsl_odeiv2_evolve_apply(e, c, s,
+					  &sys,
+					  &x, x1,
+					  &h, y);
+
+      // quit if there was an error
+      if(status != GSL_SUCCESS)break;
+
+      // don't let h get too small
+      if(h<hmin)h=hmin;
+
+      // reset small step flag
+      smallstep=false;
+      //     if(E < 0.05)testhist << x << "\t" << y[0] << endl;
+      //cout << h << "\t" << y[0] << endl;
+      //testhist << x << "\t" << y[0] << endl;
+
+    }
+
+		result = y[0];
+
+	}
   gsl_set_error_handler(temp_handler);
 
   // Some other attemps that I had trouble with...
@@ -961,6 +1031,86 @@ double Resonance::Integrand(double x, void *params) {
   // std::cout << integrand << "\n";
 
   return integrand;
+}
+
+int Resonance::rhs (double x, const double y[], double dydx[], void *params){
+
+	double *par = (double *)params;
+  int writeIntegrand = (int)par[0];
+  double Pr = (double)par[1];
+  double Pr_exit = (double)par[2];
+  double Er = (double)par[3];
+  double Temp = (double)par[4];
+  double G0 = (double)par[5];
+  double G1 = (double)par[6];
+  double G2 = (double)par[7];
+
+  //  this->print();
+
+  // std::cout << Pr << " " << Pr_exit << " " << Er << " "
+  //	    << Temp << " " << G0 << " " << G1 << " " << G2 << " " << "\n";
+
+  // std::cout << "R = " << R << "\n";
+
+  double Scale[3];
+
+  //double mue = M0*M1/(M0+M1);
+  // double R = R0*(pow(M0,1./3.) + pow(M1,1./3.));
+  double PEK = 6.56618216E-1 / mue; // a correction factor
+  double P = PenFactor(x, L[0], M0, M1, Z0, Z1, R);
+  double P_exit, E_exit = 0.;
+  double omega = (2. * Jr + 1.) / ((2. * J0 + 1.) * (2. * J1 + 1.));
+
+  // cout << Jr << " " << J0 << " " << J1 << " " << mue << " " << R << " " <<
+  // PEK << " " << omega << "\n";
+
+  // std::cout << P << " " << omega << "\n";
+
+  if (Er > 0.0) {
+    Scale[0] = P / Pr;
+  } else {
+    Scale[0] = 1.0;
+    G0 = 2.0 * P * G0 * 41.80161396 / (mue * gsl_pow_2(R));
+  }
+  // std::cout << "Scale[0] = " << Scale[0] << " E = " << x << " G0(E) = " << G0
+  // << "\n";
+
+  for (int i = 1; i < 3; i++) {
+    if (G[i] > 0.0) {
+      if (i == Reac.getGamma_index()) {
+        if (i == 1)
+          Scale[i] =
+              pow((Reac.Q + x - Exf) / (Reac.Q + Er - Exf), (2. * L[i] + 1.0));
+        if (i == 2)
+          Scale[i] = pow((Reac.Q + x) / (Reac.Q + Er), (2. * L[i] + 1.0));
+      } else {
+        if (i == 1)
+          E_exit = Reac.Q + x - Reac.Qexit - Exf;
+        if (i == 2)
+          E_exit = Reac.Q + x - Reac.Qexit;
+        if (E_exit > 0.0) {
+          P_exit =
+              PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
+          Scale[i] = P_exit / Pr_exit;
+        } else {
+          Scale[i] = 0.0;
+        }
+      }
+    } else {
+      Scale[i] = 1;
+    }
+  }
+
+  double S1 = PEK * omega * Scale[0] * G0 * Scale[1] * G1;
+  double S2 = gsl_pow_2(Er - x) +
+              0.25 * gsl_pow_2(G0 * Scale[0] + G1 * Scale[1] + G2 * Scale[2]);
+  double S3 = exp(-11.605 * x / Temp);
+
+  double integrand = S1 * S3 / S2; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
+
+	dydx[0] = integrand;
+	
+	return GSL_SUCCESS;
 }
 //}
 

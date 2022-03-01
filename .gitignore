@@ -22,3 +22,4 @@ RatesMC-*.in
 compile_commands.json
 deploy
 /.clangd/
+/RatesMC_template.in
