@@ -1004,7 +1004,18 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate, double H
 
   //int prec = 3 - floor(log10(fu));
     
-  latexfile << Temperature << " & " << std::setprecision(3) << low_x <<"E"
+  latexfile << Temperature << " & ";
+	if(isnan(median_x)){
+		low_x = 0.0;
+		low_f = 0.0;
+		median_x = 0.0;
+		median_f = 0.0;
+		high_x = 0.0;
+		high_f = 0.0;
+		fu = 1.0;
+	}
+		
+	latexfile << std::setprecision(3) << low_x <<"E"
 						<< std::setprecision(0) << std::setw(3)
 						<< std::setiosflags(std::ios::showpos)
 						<< low_f << " & " << std::setprecision(3)
@@ -1019,6 +1030,7 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate, double H
 						<< std::resetiosflags(std::ios::showpos)
 						<< fu << " \\\\ " << std::setprecision(3)
 						<< std::resetiosflags(std::ios::showpos) << std::endl;
+	
   
   //  latexfile << "\n";
   //latexfile.close();
