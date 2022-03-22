@@ -28,7 +28,7 @@ add.alpha <- function(col, alpha=1){
 }
 mypdf <- function(file="output.pdf",...)
   {
-    grDevices::cairo_pdf(file=file,...)
+    grDevices::pdf(file=file,...)
     par(cex.axis=1.3, cex.lab=1.5,   # Font sizes
         las=1,                       # Always horisontal text
         lwd=2,                       # Line width
@@ -54,16 +54,17 @@ if(file.exists(TMatchFile)){
 ## Read in the contribution file
 data <- read.table(ContributionFile,skip=1,header=FALSE)
 
-ReacName = as.character(read.table(RatesMCFile,skip=0,header=FALSE,nrows=1)$V1)
+## Read and format the reaction name
+ReacName = as.character(read.table(outputfile,skip=0,header=FALSE,nrows=1)$V1)
 # Make superscripts, subscripts etc
 ReacName <- sub(",g\\)",",gamma\\)",ReacName)
 ReacName <- sub("\\(g,","\\(gamma,",ReacName)
 ReacName <- sub(",a\\)",",alpha\\)",ReacName)
 ReacName <- sub("\\(a,","\\(alpha,",ReacName)
+ReacName <- sub(",","*','*",ReacName)
+##ReacName <- sub("\\(a*","\\(alpha",ReacName)
 ReacName <- sub("\\)","\\)*",ReacName)
 ReacName <- gsub("([[:digit:]]+)", "phantom()^{\\1}*", ReacName)
-# specifically for 26Alg
-#ReacName<-"phantom()^{26}*{Al^{g}}(p,gamma)*phantom()^{27}*Si"
 
 ## Read in the resonance energies.
 ## This procedure should read in all resonance energies without erroring!
@@ -125,7 +126,7 @@ resNames <- sapply(contributors,
                   if(i>length(Energies)+2)
                     t <- paste("Intf ",i-(length(Energies)+2),sep="")
                   if(i<3)
-                    t <- paste("A-Rate ",i,sep="")
+                    t <- paste("DC ",i,sep="")
                   t
                 })
 
@@ -278,7 +279,7 @@ axis(3,at=aXm,labels=FALSE,tcl=0.3)
 ## Plot the title
 xpos <- grconvertX(0.5,from="npc",to="user")
 ypos <- grconvertY(1,from="ndc",to="user")
-text(xpos,ypos,parse(text=ReacName),cex=2,xpd=TRUE,pos=1,offset=0.7)
+text(xpos,ypos,parse(text=ReacName),cex=1.7,xpd=TRUE,pos=1,offset=0.7)
 
 
 ## Stick a box around the plot to clean up

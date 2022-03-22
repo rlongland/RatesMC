@@ -39,14 +39,15 @@ lognorm <- function(x,mu,sigma){
 }
 mypdf <- function(file="output.pdf",...)
   {
-    grDevices::cairo_pdf(file=file,...)
+    grDevices::pdf(file=file,...)
     par(cex.axis=1.3, cex.lab=1.5,   # Font sizes
         las=1,                       # Always horisontal text
         lwd=2,                       # Line width
         mar=c(5,5,3,2)+0.1,          # Margins
         pch=19,                      # Point type (solid circles)
         tcl=0.5,
-        mgp=c(3,0.5,0))     
+        mgp=c(3,0.5,0),
+	family="sans")     
   }
 axTexpr <- function(side, at = axTicks(side, axp=axp, usr=usr, log=log),
                     axp = NULL, usr = NULL, log = NULL, pad=FALSE,
@@ -86,6 +87,8 @@ ReacName <- sub(",g\\)",",gamma\\)",ReacName)
 ReacName <- sub("\\(g,","\\(gamma,",ReacName)
 ReacName <- sub(",a\\)",",alpha\\)",ReacName)
 ReacName <- sub("\\(a,","\\(alpha,",ReacName)
+ReacName <- sub(",","*','*",ReacName)
+##ReacName <- sub("\\(a*","\\(alpha",ReacName)
 ReacName <- sub("\\)","\\)*",ReacName)
 ReacName <- gsub("([[:digit:]]+)", "phantom()^{\\1}*", ReacName)
 

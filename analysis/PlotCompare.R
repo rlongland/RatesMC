@@ -4,10 +4,10 @@
 
 outputfile <- "RatesMC.out"
 fullfile    <- "RatesMC.full"
-litfilename <- "../RatesMC.out"
+litfilename <- "~/code/RatesMC-V1/datafiles/29Si-pg/2021/RatesMC.out"
 headerskip <- 4  ## 3 for RatesMC type files
                  ## 4 for RatesMC2 type files
-headerskip.lit <- 4  ## 3 for RatesMC type files
+headerskip.lit <- 3  ## 3 for RatesMC type files
                      ## 4 for RatesMC2 type files
 
 RateColor <- "gray"  # colour for the error region shade
@@ -20,6 +20,18 @@ CompTrans <- 0.3     # transparancy of comparison
 lognorm <- function(x,mu,sigma){
   (1/(x*sigma*sqrt(2*3.142))) * exp(-((log(x)-mu)^2)/(2*sigma^2))
 }
+mypdf <- function(file="output.pdf",...)
+  {
+    grDevices::pdf(file=file,...)
+    par(cex.axis=1.3, cex.lab=1.5,   # Font sizes
+        las=1,                       # Always horisontal text
+        lwd=2,                       # Line width
+        mar=c(5,5,3,2)+0.1,          # Margins
+        pch=19,                      # Point type (solid circles)
+        tcl=0.5,
+        mgp=c(3,0.5,0),
+	family="sans")     
+  }
 
 library("gsl")
 
@@ -29,12 +41,15 @@ library("gsl")
 TMax <- 10
 
 
+## Read and format the reaction name
 ReacName = as.character(read.table(outputfile,skip=0,header=FALSE,nrows=1)$V1)
 # Make superscripts, subscripts etc
 ReacName <- sub(",g\\)",",gamma\\)",ReacName)
 ReacName <- sub("\\(g,","\\(gamma,",ReacName)
 ReacName <- sub(",a\\)",",alpha\\)",ReacName)
 ReacName <- sub("\\(a,","\\(alpha,",ReacName)
+ReacName <- sub(",","*','*",ReacName)
+##ReacName <- sub("\\(a*","\\(alpha",ReacName)
 ReacName <- sub("\\)","\\)*",ReacName)
 ReacName <- gsub("([[:digit:]]+)", "phantom()^{\\1}*", ReacName)
 
@@ -259,7 +274,7 @@ ypos <- grconvertY(0.5,from="npc",to="user")
 text(xpos,ypos,"Reaction Rate Ratio",cex=1.7,srt=90,xpd=TRUE)
 xpos <- grconvertX(0.5,from="ndc",to="user")
 ypos <- grconvertY(0.95,from="ndc",to="user")
-text(xpos,ypos,parse(text=ReacName),cex=1.9,xpd=TRUE)
+text(xpos,ypos,parse(text=ReacName),cex=1.7,xpd=TRUE)
 
 box(which="plot")
 #output2D("Comparison.ps")
