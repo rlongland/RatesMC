@@ -1002,20 +1002,20 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate, double H
   //AD_x = AD*pow(10.0,-AD_f);
   fu = exp(RateSigma);
 
-  int prec = 3 - floor(log10(fu));
+  //int prec = 3 - floor(log10(fu));
     
-  latexfile << Temperature << " & " << std::setprecision(2) << low_x <<"$\\times$10$^{"
+  latexfile << Temperature << " & " << std::setprecision(3) << low_x <<"E"
 						<< std::setprecision(0) << std::setw(3)
 						<< std::setiosflags(std::ios::showpos)
-						<< low_f << "}$ & " << std::setprecision(2)
+						<< low_f << " & " << std::setprecision(3)
 						<< std::resetiosflags(std::ios::showpos)
-						<< median_x << "$\\times$10$^{" << std::setw(3)
+						<< median_x << "E" << std::setw(3)
 						<< std::setiosflags(std::ios::showpos)
-						<< std::setprecision(0) << median_f << "}$ &\n" << std::setprecision(2)
+						<< std::setprecision(0) << median_f << "\n" << std::setprecision(3)
 						<< std::resetiosflags(std::ios::showpos)
-						<< "      " << high_x << "$\\times$10$^{" << std::setw(3)
+						<< "      " << high_x << "E" << std::setw(3)
 						<< std::setiosflags(std::ios::showpos)
-						<< std::setprecision(0) << high_f << "}$ & " << std::setprecision(prec)
+						<< std::setprecision(0) << high_f << " & " << std::setprecision(3)
 						<< std::resetiosflags(std::ios::showpos)
 						<< fu << " \\\\ " << std::setprecision(3)
 						<< std::resetiosflags(std::ios::showpos) << std::endl;
