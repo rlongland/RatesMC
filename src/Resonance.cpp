@@ -1036,7 +1036,6 @@ double Resonance::Integrand(double x, void *params) {
 int Resonance::rhs (double x, const double y[], double dydx[], void *params){
 
 	double *par = (double *)params;
-  int writeIntegrand = (int)par[0];
   double Pr = (double)par[1];
   double Pr_exit = (double)par[2];
   double Er = (double)par[3];
