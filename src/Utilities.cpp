@@ -498,6 +498,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 		int zcompound = z0+z1;
 		double mcompound = ame -> readMassFromAandZ(acompound, zcompound);
 		mcompound = atomicToNuclear(mcompound, zcompound);
+		std::cout << "= " << mcompound << " (nuclear)\n";
 		Qin = ((m0 + m1) - mcompound)*AMU*1000.0;   // To get into keV
 	} else {
 		std::cout << "ERROR: Enter a number, 'ame', or 'AME'"
@@ -981,7 +982,7 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
 void WriteLatex2(double Temperature, double LowRate, double MedianRate, double HighRate,
 								 double RateSigma){
 
-  double low_x,low_f,median_x,median_f,high_x,high_f,fu;
+  double low_x,low_f,median_x,median_f,high_x,high_f,fu,fu_f,fu_x;
 
   // Write a test rate to file
   //   ofile << reactionname << endl;
@@ -1010,6 +1011,8 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate, double H
   //AD_f = floor(log(AD)/log(10.0));
   //AD_x = AD*pow(10.0,-AD_f);
   fu = exp(RateSigma);
+	fu_f = floor(log(fu)/log(10.0));
+	fu_x = fu*pow(10.0,-fu_f);
 
   //int prec = 3 - floor(log10(fu));
     
@@ -1031,13 +1034,15 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate, double H
 						<< std::resetiosflags(std::ios::showpos)
 						<< median_x << "E" << std::setw(3)
 						<< std::setiosflags(std::ios::showpos)
-						<< std::setprecision(0) << median_f << "& \n" << std::setprecision(3)
+						<< std::setprecision(0) << median_f << " & \n" << std::setprecision(3)
 						<< std::resetiosflags(std::ios::showpos)
 						<< "      " << high_x << "E" << std::setw(3)
 						<< std::setiosflags(std::ios::showpos)
 						<< std::setprecision(0) << high_f << " & " << std::setprecision(3)
 						<< std::resetiosflags(std::ios::showpos)
-						<< fu << " \\\\ " << std::setprecision(3)
+						<< fu_x << "E" << std::setw(3)
+						<< std::setiosflags(std::ios::showpos)
+						<< std::setprecision(0) << fu_f << " \\\\ " << std::setprecision(3)
 						<< std::resetiosflags(std::ios::showpos) << std::endl;
 	
   

@@ -106,7 +106,7 @@ double AMEReader::readMass(std::string nucname) {
 
 	// Quit with an error if the nuclide was not found!
 	if(found){
-		std::cout << std::setprecision(8) <<  mass << "(atomic) ";
+		std::cout << std::setprecision(8) <<  mass << " (atomic) ";
 		return mass;
 	} else {
 		std::cout << "ERROR: Could not find AME mass for " << nucname << std::endl;
@@ -163,7 +163,7 @@ double AMEReader::readMassFromAandZ(int A, int Z) {
 
 	// Quit with an error if the nuclide was not found!
 	if(found){
-		std::cout << std::setprecision(8) << mass << "\n";
+		std::cout << std::setprecision(8) << mass << " (atomic) ";
 		return mass;
 	} else {
 		std::cout << "ERROR: Could not find AME mass!" << std::endl;
