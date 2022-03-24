@@ -38,7 +38,11 @@ for(i in 1:length(names.cut)){
     var.par <-var(pars.cut[,i])
     mean.par <- mean(pars.cut[,i])
 
+    med.par <- median(pars.cut[,i])
+    fu <- sqrt(var(log(pars.cut[,i]))) - 1
+    
     cat("Par",names.cut[i],": Mean =",mean.par, " SD =",sqrt(var.par),"\n")
+    cat("          : Median =",med.par, " f.u. =",lnsig,"\n")
     xx <- grconvertX(0.9,from="npc",to="user")
     yy <- grconvertY(0.9,from="npc",to="user")
 

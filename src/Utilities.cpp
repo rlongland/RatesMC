@@ -286,9 +286,15 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 
     // if E_cm is negative, G1 is actually unitless, so undo the unit operation above
     if(E_cm < 0){
-      G1 /= 1.0e-6;
-      dG1 /= 1.0e-6;
+      G1 *= 1.0e6;
+      dG1 *= 1.0e6;
     }
+		// If factor uncertainties are input, don't scale 
+		if(dG1 < 0.0) dG1 *= 1.0e6;
+		if(dG2 < 0.0) dG2 *= 1.0e6;
+		if(dG3 < 0.0) dG3 *= 1.0e6;
+		if(dwg < 0.0) dwg *= 1.0e6;
+		
 
     infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 

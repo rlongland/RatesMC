@@ -235,7 +235,7 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
         // Find the lognormal parameters to generate the random partial width
 				if(dG[channel] < 0.0){
 					mu = gsl_sf_log(G[channel]);
-					sigma = gsl_sf_log(-dG[channel]);
+					sigma = gsl_sf_log(-1.0*dG[channel]);
 				} else {
 					logNormalize(G[channel], dG[channel], mu, sigma);
 				}
