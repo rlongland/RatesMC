@@ -55,7 +55,7 @@ if(file.exists(TMatchFile)){
 data <- read.table(ContributionFile,skip=1,header=FALSE)
 
 ## Read and format the reaction name
-ReacName = as.character(read.table(outputfile,skip=0,header=FALSE,nrows=1)$V1)
+ReacName = as.character(read.table(RatesMCFile,skip=0,header=FALSE,nrows=1)$V1)
 # Make superscripts, subscripts etc
 ReacName <- sub(",g\\)",",gamma\\)",ReacName)
 ReacName <- sub("\\(g,","\\(gamma,",ReacName)
@@ -125,7 +125,9 @@ resNames <- sapply(contributors,
                     t <- paste(Energies[i-2]," keV",sep="")
                   if(i>length(Energies)+2)
                     t <- paste("Intf ",i-(length(Energies)+2),sep="")
-                  if(i<3)
+                  if(i==1)
+                    t <- "DC"
+                  if(i==2)
                     t <- paste("DC ",i,sep="")
                   t
                 })

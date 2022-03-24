@@ -437,6 +437,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 	} else {
 		m0 = ame -> readMass(dummy);
 		m0 = atomicToNuclear(m0, z0);
+		std::cout << "= " << m0 << " (nuclear)\n";
 	}
 	// M1 (Target mass)
 	infile >> dummy;
@@ -446,6 +447,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 	} else {
 		m1 = ame -> readMass(dummy);
 		m1 = atomicToNuclear(m1, z1);
+		std::cout << "= " << m1 << " (nuclear)\n";
 	}
 	// M2 (Ejectile mass)
 	infile >> dummy;
@@ -455,6 +457,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 	} else {
 		m2 = ame -> readMass(dummy);
 		m2 = atomicToNuclear(m2, z2);
+		std::cout << "= " << m2 << " (nuclear)\n";
 	}
   R -> setMasses(m0,m1,m2);
 
