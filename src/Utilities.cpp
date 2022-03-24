@@ -1031,7 +1031,7 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate, double H
 						<< std::resetiosflags(std::ios::showpos)
 						<< median_x << "E" << std::setw(3)
 						<< std::setiosflags(std::ios::showpos)
-						<< std::setprecision(0) << median_f << "\n" << std::setprecision(3)
+						<< std::setprecision(0) << median_f << "& \n" << std::setprecision(3)
 						<< std::resetiosflags(std::ios::showpos)
 						<< "      " << high_x << "E" << std::setw(3)
 						<< std::setiosflags(std::ios::showpos)
