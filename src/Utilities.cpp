@@ -500,6 +500,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 		mcompound = atomicToNuclear(mcompound, zcompound);
 		std::cout << "= " << mcompound << " (nuclear)\n";
 		Qin = ((m0 + m1) - mcompound)*AMU*1000.0;   // To get into keV
+		std::cout << "Qin = " << Qin << "\n";
 	} else {
 		std::cout << "ERROR: Enter a number, 'ame', or 'AME'"
 							<< " for the entrance particle separation energy\n";
@@ -517,14 +518,17 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 		int zcompound = z0+z1;
 		double mcompound = ame -> readMassFromAandZ(acompound, zcompound);
 		mcompound = atomicToNuclear(mcompound, zcompound);
+		std::cout << "= " << mcompound << " (nuclear)\n";
 
 		// Then find the residual nucleus
 		int aresidual = (int)round(m0+m1-m2);
 		int zresidual = z0+z1-z2;
 		double mresidual = ame -> readMassFromAandZ(aresidual, zresidual);
 		mresidual = atomicToNuclear(mresidual, zresidual);
+		std::cout << "= " << mresidual << " (nuclear)\n";
 
 		Qout = ((m2 + mresidual) - mcompound)*AMU*1000.0;   // To get into keV
+		std::cout << "Qout = " << Qout << "\n";
 	} else {
 		std::cout << "ERROR: Enter a number, 'ame', or 'AME'"
 							<< " for the exit particle separation energy\n";
