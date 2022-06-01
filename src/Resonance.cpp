@@ -639,21 +639,21 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
     SubSampledPosCount++;
     G0 = G0 * 2.0 * 41.80161396 * PenFactor(E, L[0], M0, M1, Z0, Z1, R) /
          (mue * gsl_pow_2(R));
-    // std::cout << "Negative resonance went positive!\n";
-    // std::cout << "E_cm = " << E_cm << "E_sample = " << E << "G[0] = " << G[0]
-    //	      << " G_sample = " << G0 << std::endl;
+		//		std::cout << "Negative resonance went positive!\n";
+		//		std::cout << "E_cm = " << E_cm << "E_sample = " << E << "G[0] = " << G[0]
+		//							<< " G_sample = " << G0 << std::endl;
   }
 
   //  The penetration factor at the resonance energy (the "true" PF)
   if (E > 0.0) {
     Pr = PenFactor(E, L[0], M0, M1, Z0, Z1, R);
     //    std::cout << "Pr = " << Pr << "\n";
-  } else {
+		if(isZero(Pr))return 0.0;
+	} else {
     Pr = 0.0;
   }
-  // std::cout << "Pr = " << Pr << "\n";
+	//std::cout << "Pr = " << Pr << "\n";
 
-	if(isZero(Pr))return 0.0;
 	
   // Calculate the exit particle energy, depends on if it is spectator
   // if(NChannels[j]==3){

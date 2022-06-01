@@ -178,7 +178,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     G1, dG1, PT1=0.0, DPT1=0.0, G2, dG2, PT2=0.0, DPT2=0.0,
     G3, dG3, PT3=0.0, DPT3=0.0, Exf;
   int i,L1, L2, L3, isBroad;
-	bool isECorrelated;
+	bool isECorrelated, isWidthCorrelated;
 
   i=0;
   // Read the number of entries on the first resonance line. This
@@ -242,7 +242,12 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 			infile >> data;
 			isECorrelated = (data.find("c")!=std::string::npos);
 			dE_cm = std::stod(data);
-			infile >> wg >> dwg >> Jr 
+			// Then check if wg is correlated
+			infile >> wg;
+			infile >> data;
+			isWidthCorrelated = (data.find("c")!=std::string::npos);
+			dwg = std::stod(data);
+			infile >> Jr 
 						 >> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
 						 >> Exf >> isBroad;
     } else {
