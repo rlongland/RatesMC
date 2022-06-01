@@ -16,17 +16,6 @@ xlim <- NA ##c(0,1)
 ylim <- NA ##c(1e-50,1e-15)
 
 ######################################################################
-mypdf <- function(file="output.pdf",...)
-  {
-    grDevices::pdf(file=file,...)
-    par(cex.axis=1.3, cex.lab=1.5,   # Font sizes
-        las=1,                       # Always horisontal text
-        lwd=2,                       # Line width
-        mar=c(5,5,3,2)+0.1,          # Margins
-        pch=19,                      # Point type (solid circles)
-        tcl=0.5,
-        mgp=c(3,0.5,0))     
-  }
 
 ##--------------------------------------------------
 ## Section to read reaction rate samples

@@ -76,8 +76,11 @@ bool isNumber(const std::string& str){
 int readInt(std::ifstream &infile){
 
   
-  int input;
-  infile >> input;
+  int input = 1;
+  std::string test;
+  infile >> test;
+  std::cout<< "test: "<< test << std::endl;
+
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
   return input;
@@ -86,8 +89,11 @@ int readInt(std::ifstream &infile){
 // Read a double from a single line
 double readDouble(std::ifstream &infile){
 
-  double input;
-  infile >> input;
+  double input = 1;
+  std::string Dtest;
+
+  infile >> Dtest;
+  std::cout << "Dtest: "<< Dtest<< std::endl;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
   return input;
@@ -150,10 +156,10 @@ void readNonResonant(std::ifstream &infile, Reaction &R, int part){
   
   int ne = countEntries(infile);
   //std::cout << "There are " << ne << " entries\n";
-  if(ne != 5){
-    std::cout << "  ERROR: There should be 5 numbers in the non-resonant input lines\n";
-    exit(EXIT_FAILURE);
-  }
+  // if(ne != 5){
+  //   std::cout << "  ERROR: There should be 5 numbers in the non-resonant input lines\n";
+  //   exit(EXIT_FAILURE);
+  // }
 
   double s, sp, spp, ds, cutoffe;
   infile >> s >> sp >> spp >> ds >> cutoffe;
@@ -178,7 +184,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     G1, dG1, PT1=0.0, DPT1=0.0, G2, dG2, PT2=0.0, DPT2=0.0,
     G3, dG3, PT3=0.0, DPT3=0.0, Exf;
   int i,L1, L2, L3, isBroad;
-	bool isECorrelated, isWidthCorrelated;
+	bool isECorrelated;
 
   i=0;
   // Read the number of entries on the first resonance line. This
@@ -190,10 +196,10 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
   if(!isUpperLimit){
     isUpperLimit = false;
     //std::cout << "Normal resonances\n";
-    if(nEnt != 16){
-      std::cout << "ERROR! The number of columns in the resonance section is wrong\n";
-      std::cout << "       Expect N=16; Got N=" << nEnt << "\n";
-    }
+    // if(nEnt != 16){
+    //   std::cout << "ERROR! The number of columns in the resonance section is wrong\n";
+    //   std::cout << "       Expect N=16; Got N=" << nEnt << "\n";
+    // }
   } else {
     isUpperLimit = true;
     //std::cout << "Upper limit resonances\n";
@@ -242,12 +248,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 			infile >> data;
 			isECorrelated = (data.find("c")!=std::string::npos);
 			dE_cm = std::stod(data);
-			// Then check if wg is correlated
-			infile >> wg;
-			infile >> data;
-			isWidthCorrelated = (data.find("c")!=std::string::npos);
-			dwg = std::stod(data);
-			infile >> Jr 
+			infile >> wg >> dwg >> Jr 
 						 >> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
 						 >> Exf >> isBroad;
     } else {
@@ -291,15 +292,9 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 
     // if E_cm is negative, G1 is actually unitless, so undo the unit operation above
     if(E_cm < 0){
-      G1 *= 1.0e6;
-      dG1 *= 1.0e6;
+      G1 /= 1.0e-6;
+      dG1 /= 1.0e-6;
     }
-		// If factor uncertainties are input, don't scale 
-		if(dG1 < 0.0) dG1 *= 1.0e6;
-		if(dG2 < 0.0) dG2 *= 1.0e6;
-		if(dG3 < 0.0) dG3 *= 1.0e6;
-		if(dwg < 0.0) dwg *= 1.0e6;
-		
 
     infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
@@ -403,6 +398,8 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   double j0,j1,j2;
   double Qin,Qout;
   int gindex;
+  //random percent variable
+  double percent = 0;
   
   infile >> dummy;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
@@ -442,7 +439,6 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 	} else {
 		m0 = ame -> readMass(dummy);
 		m0 = atomicToNuclear(m0, z0);
-		std::cout << "= " << m0 << " (nuclear)\n";
 	}
 	// M1 (Target mass)
 	infile >> dummy;
@@ -452,7 +448,6 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 	} else {
 		m1 = ame -> readMass(dummy);
 		m1 = atomicToNuclear(m1, z1);
-		std::cout << "= " << m1 << " (nuclear)\n";
 	}
 	// M2 (Ejectile mass)
 	infile >> dummy;
@@ -462,7 +457,6 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 	} else {
 		m2 = ame -> readMass(dummy);
 		m2 = atomicToNuclear(m2, z2);
-		std::cout << "= " << m2 << " (nuclear)\n";
 	}
   R -> setMasses(m0,m1,m2);
 
@@ -503,9 +497,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 		int zcompound = z0+z1;
 		double mcompound = ame -> readMassFromAandZ(acompound, zcompound);
 		mcompound = atomicToNuclear(mcompound, zcompound);
-		std::cout << "= " << mcompound << " (nuclear)\n";
 		Qin = ((m0 + m1) - mcompound)*AMU*1000.0;   // To get into keV
-		std::cout << "Qin = " << Qin << "\n";
 	} else {
 		std::cout << "ERROR: Enter a number, 'ame', or 'AME'"
 							<< " for the entrance particle separation energy\n";
@@ -523,23 +515,20 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 		int zcompound = z0+z1;
 		double mcompound = ame -> readMassFromAandZ(acompound, zcompound);
 		mcompound = atomicToNuclear(mcompound, zcompound);
-		std::cout << "= " << mcompound << " (nuclear)\n";
 
 		// Then find the residual nucleus
 		int aresidual = (int)round(m0+m1-m2);
 		int zresidual = z0+z1-z2;
 		double mresidual = ame -> readMassFromAandZ(aresidual, zresidual);
 		mresidual = atomicToNuclear(mresidual, zresidual);
-		std::cout << "= " << mresidual << " (nuclear)\n";
 
 		Qout = ((m2 + mresidual) - mcompound)*AMU*1000.0;   // To get into keV
-		std::cout << "Qout = " << Qout << "\n";
 	} else {
 		std::cout << "ERROR: Enter a number, 'ame', or 'AME'"
 							<< " for the exit particle separation energy\n";
 		exit(EXIT_FAILURE);
 	}
-	//	std::cout << "Qout = " << Qout << "\n";
+	//std::cout << "Qout = " << Qout << "\n";
 
 	
 	//  Qout = readDouble(infile);
@@ -551,16 +540,60 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 
   // Index of the gamma-ray channel
   gindex = readInt(infile);
+  //Where is setGammaIndex and setR0 etc defined???????????????
   R -> setGammaIndex(gindex-1);
 
+
+
+
+  //Read random varible substr(start,length) string compare
+  //check to see if ** is missing first
+
+  std::string data1;
+  infile >> data1;
+  std::size_t found2;
+  found2 = data1.find("***");
+  if (found2!=std::string::npos){
+    percent = .2;
+    
+      
+  }
+  else
+  {
+    
+
+    //percent = std::stod(data1);
+
+    std::cout <<'\n'<<"Data: "<< data1<< std::endl;
+
+    
+    if(percent > 1 )
+    {
+      percent /= 100;
+    }
+     
+  }
   // Ignore a line
-  skipLines(infile, 1);
+  // skipLines(infile, 1);   
+
+
 
   // Computation control block
+
+  std::cout << "before emin"<<'\n';
   EMin = readDouble(infile)/1000.;
-  
+  std::cout << EMin << std::endl;
+  std::cout << "after emin \n";
+
+  std::cout << "before NSamples"<<'\n';
   NSamples = readInt(infile);
+  std::cout << "after NSamples: " << NSamples <<'\n';
+
+  std::cout << "before NTemps"<<'\n';
+  
   NTemps = readInt(infile);
+  std::cout << "after NTemps: " << NTemps <<'\n';
+
 
   // Only read correlations input if it exists
   int place=infile.tellg();
@@ -616,17 +649,17 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 void defineTemperatures(){
 
   
-   std::vector<double> defaultT{0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.009,
-	 														 0.01,0.011,0.012,0.013,0.014,0.015,
-	 														 0.016,0.018,0.020,0.025,0.03,0.04,
-	 														 0.05,0.06,0.07,0.08,0.09,0.1,0.11,
-	 														 0.12,0.13,0.14,0.15,0.16,0.18,0.20,
-	 														 0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,
-	 														 0.8,0.9,1.0,1.25,1.5,1.75,2,2.5,3,
-	 														 3.5,4,5,6,7,8,9,10};
+  // std::vector<double> defaultT{0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.009,
+	// 														 0.01,0.011,0.012,0.013,0.014,0.015,
+	// 														 0.016,0.018,0.020,0.025,0.03,0.04,
+	// 														 0.05,0.06,0.07,0.08,0.09,0.1,0.11,
+	// 														 0.12,0.13,0.14,0.15,0.16,0.18,0.20,
+	// 														 0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,
+	// 														 0.8,0.9,1.0,1.25,1.5,1.75,2,2.5,3,
+	// 														 3.5,4,5,6,7,8,9,10};
   
   
-  //std::vector<double> defaultT{0.001,0.01,0.05,0.1};
+  std::vector<double> defaultT{0.001,0.01,0.05,0.1};
   Temp = defaultT;
 
   logfile << "--------------------------------------------------\n";
@@ -991,7 +1024,7 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
 void WriteLatex2(double Temperature, double LowRate, double MedianRate, double HighRate,
 								 double RateSigma){
 
-  double low_x,low_f,median_x,median_f,high_x,high_f,fu,fu_f,fu_x;
+  double low_x,low_f,median_x,median_f,high_x,high_f,fu;
 
   // Write a test rate to file
   //   ofile << reactionname << endl;
@@ -1020,40 +1053,24 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate, double H
   //AD_f = floor(log(AD)/log(10.0));
   //AD_x = AD*pow(10.0,-AD_f);
   fu = exp(RateSigma);
-	fu_f = floor(log(fu)/log(10.0));
-	fu_x = fu*pow(10.0,-fu_f);
 
-  //int prec = 3 - floor(log10(fu));
+  int prec = 3 - floor(log10(fu));
     
-  latexfile << Temperature << " & ";
-	if(isnan(median_x)){
-		low_x = 0.0;
-		low_f = 0.0;
-		median_x = 0.0;
-		median_f = 0.0;
-		high_x = 0.0;
-		high_f = 0.0;
-		fu = 1.0;
-	}
-		
-	latexfile << std::setprecision(3) << low_x <<"E"
+  latexfile << Temperature << " & " << std::setprecision(2) << low_x <<"$\\times$10$^{"
 						<< std::setprecision(0) << std::setw(3)
 						<< std::setiosflags(std::ios::showpos)
-						<< low_f << " & " << std::setprecision(3)
+						<< low_f << "}$ & " << std::setprecision(2)
 						<< std::resetiosflags(std::ios::showpos)
-						<< median_x << "E" << std::setw(3)
+						<< median_x << "$\\times$10$^{" << std::setw(3)
 						<< std::setiosflags(std::ios::showpos)
-						<< std::setprecision(0) << median_f << " & \n" << std::setprecision(3)
+						<< std::setprecision(0) << median_f << "}$ &\n" << std::setprecision(2)
 						<< std::resetiosflags(std::ios::showpos)
-						<< "      " << high_x << "E" << std::setw(3)
+						<< "      " << high_x << "$\\times$10$^{" << std::setw(3)
 						<< std::setiosflags(std::ios::showpos)
-						<< std::setprecision(0) << high_f << " & " << std::setprecision(3)
+						<< std::setprecision(0) << high_f << "}$ & " << std::setprecision(prec)
 						<< std::resetiosflags(std::ios::showpos)
-						<< fu_x << "E" << std::setw(3)
-						<< std::setiosflags(std::ios::showpos)
-						<< std::setprecision(0) << fu_f << " \\\\ " << std::setprecision(3)
+						<< fu << " \\\\ " << std::setprecision(3)
 						<< std::resetiosflags(std::ios::showpos) << std::endl;
-	
   
   //  latexfile << "\n";
   //latexfile.close();

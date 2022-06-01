@@ -55,6 +55,7 @@ class Reaction{
   double calcNonResonant(double Temp, int j);
   double calcNonResonantIntegrated(double Temp, int j);
   double NonResonantIntegrand(double x, void * params);
+  //void SetOldIntegralFraction(double fraction){randFractioh = fraction;}
   void prepareSamples();
   void writeSamples();
   void writeSFactor();

@@ -5,6 +5,7 @@
 ##
 ## Need to add vertical lines for narrow resonances
 ######################################################################
+setwd("~/code/RatesMC/build/")
 
 RatesMCFile   <- "RatesMC.in"
 IntegrandFile <- "RatesMC.integ"
@@ -15,17 +16,6 @@ xlim <- c(0,1.5)
 ylim <- c(1e-10,1e15)
 
 ######################################################################
-myX11 <- function(...) 
-{ 
-    grDevices::X11(...) 
-    par(cex.axis=1.3, cex.lab=1.5,   # Font sizes
-        las=1,                       # Always horisontal text
-        lwd=2,                       # Line width
-        mar=c(5,5,3,2)+0.1,          # Margins
-        pch=19,                      # Point type (solid circles)
-        tcl=0.5,
-        mgp=c(3,0.5,0)) 
-}
 ## Read the proper s-factor file
 data <- read.table("RatesMC.sfact",header=TRUE)
 

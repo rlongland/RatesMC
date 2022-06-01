@@ -49,6 +49,10 @@
 using std::cout;
 using std::endl;
 
+
+
+
+
 // Ugly-ass hack
 Resonance *ResonancePtr;
 double ResonanceIntegrandWrapper(double x, void *params) {
@@ -235,7 +239,7 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
         // Find the lognormal parameters to generate the random partial width
 				if(dG[channel] < 0.0){
 					mu = gsl_sf_log(G[channel]);
-					sigma = gsl_sf_log(-1.0*dG[channel]);
+					sigma = gsl_sf_log(-dG[channel]);
 				} else {
 					logNormalize(G[channel], dG[channel], mu, sigma);
 				}
@@ -639,21 +643,21 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
     SubSampledPosCount++;
     G0 = G0 * 2.0 * 41.80161396 * PenFactor(E, L[0], M0, M1, Z0, Z1, R) /
          (mue * gsl_pow_2(R));
-		//		std::cout << "Negative resonance went positive!\n";
-		//		std::cout << "E_cm = " << E_cm << "E_sample = " << E << "G[0] = " << G[0]
-		//							<< " G_sample = " << G0 << std::endl;
+    // std::cout << "Negative resonance went positive!\n";
+    // std::cout << "E_cm = " << E_cm << "E_sample = " << E << "G[0] = " << G[0]
+    //	      << " G_sample = " << G0 << std::endl;
   }
 
   //  The penetration factor at the resonance energy (the "true" PF)
   if (E > 0.0) {
     Pr = PenFactor(E, L[0], M0, M1, Z0, Z1, R);
     //    std::cout << "Pr = " << Pr << "\n";
-		if(isZero(Pr))return 0.0;
-	} else {
+  } else {
     Pr = 0.0;
   }
-	//std::cout << "Pr = " << Pr << "\n";
+  // std::cout << "Pr = " << Pr << "\n";
 
+	if(isZero(Pr))return 0.0;
 	
   // Calculate the exit particle energy, depends on if it is spectator
   // if(NChannels[j]==3){
@@ -747,6 +751,10 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   gsl_error_handler_t *temp_handler;
   temp_handler = gsl_set_error_handler_off();
 
+
+
+
+
   gsl_integration_cquad_workspace *w =
       gsl_integration_cquad_workspace_alloc(10000);
   int status = gsl_integration_cquad(&F,      // Function to be integrated
@@ -758,20 +766,26 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
                                      &result, // The result
                                      &error, &nevals);
   gsl_integration_cquad_workspace_free(w);
+  
 
-	//status = -1;
+	// status = -1;
   // If the integration errored, use the slower ODE method
-  if (status != 0) {
-	//	std::cout << "Integration error = " << gsl_strerror(status) << "\n";
+  if (status != 0 || gsl_rng_uniform(r)<= 0.2 ) 
+  {
+    // std::cout << "\n";
+    // std::cout << "ERROR:"<<endl;
+    // std::cout << "Fast: "<< result <<endl;
+    // std::cout << "Res #| "<< index+1 <<" Energy| "<< E << " Gamma 1,2,3| " << G0 <<" "<<G1<< " " << G2 << endl;
+		//std::cout << "Integration error = " << gsl_strerror(status) << "\n";
     //result = std::numeric_limits<double>::quiet_NaN();
 	
 		// OK so the fast integration failed. Go back to the old method
-		const gsl_odeiv2_step_type * T
+		const gsl_odeiv2_step_type * t
 			= gsl_odeiv2_step_rkck;
 
 		// Set up the ODE solver
 		gsl_odeiv2_step * s
-			= gsl_odeiv2_step_alloc (T, 1);
+			= gsl_odeiv2_step_alloc (t, 1);
 		gsl_odeiv2_control * c
 			= gsl_odeiv2_control_y_new (1e-100, 1.0e-6);
 		gsl_odeiv2_evolve * e
@@ -825,7 +839,7 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
     }
 
 		result = y[0];
-
+    //std::cout<<"Slow: "<<result << std::endl;
 	}
   gsl_set_error_handler(temp_handler);
 
@@ -1036,6 +1050,7 @@ double Resonance::Integrand(double x, void *params) {
 int Resonance::rhs (double x, const double y[], double dydx[], void *params){
 
 	double *par = (double *)params;
+  int writeIntegrand = (int)par[0];
   double Pr = (double)par[1];
   double Pr_exit = (double)par[2];
   double Er = (double)par[3];
@@ -1053,7 +1068,7 @@ int Resonance::rhs (double x, const double y[], double dydx[], void *params){
 
   double Scale[3];
 
-  //double mue = M0*M1/(M0+M1);
+  // double mue = M0*M1/(M0+M1);
   // double R = R0*(pow(M0,1./3.) + pow(M1,1./3.));
   double PEK = 6.56618216E-1 / mue; // a correction factor
   double P = PenFactor(x, L[0], M0, M1, Z0, Z1, R);
