@@ -278,6 +278,12 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 							 >> G1 >> dG1 >> L1 >> PT1 >> G2 >> dG2 >> L2 >> PT2
 							 >> G3 >> dG3 >> L3 >> PT3
 							 >> Exf >> isBroad;
+				fin >> CorString;
+				// Make CorString lowercase
+				std::transform(CorString.begin(), CorString.end(), CorString.begin(),
+											 [](unsigned char c){ return std::tolower(c); });
+				isECorrelated = (CorString.find("e")!=std::string::npos);
+				isWidthCorrelated = (CorString.find("w")!=std::string::npos);
 	
       }
       // New style with DPT
@@ -290,7 +296,14 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 							 >> G1 >> dG1 >> L1 >> PT1 >> DPT1 >> G2 >> dG2 >> L2 >> PT2 >> DPT2
 							 >> G3 >> dG3 >> L3 >> PT3 >> DPT3
 							 >> Exf >> isBroad;
-      }
+
+				fin >> CorString;
+				// Make CorString lowercase
+				std::transform(CorString.begin(), CorString.end(), CorString.begin(),
+											 [](unsigned char c){ return std::tolower(c); });
+				isECorrelated =  (CorString.find("e")!=std::string::npos);
+				isWidthCorrelated = (CorString.find("w")!=std::string::npos);
+			}
     }
 
     // Convert to correct units
