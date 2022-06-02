@@ -333,13 +333,10 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     //infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
 		// If we care about energy correlations
-		if(bEnergyCorrelations && isECorrelated){
-			//std::cout << "Energy correlations are enabled!" << std::endl;
-			//std::cout << dE_cm << " " << R.smallestdE << " " <<  isZero(R.smallestdE) << "\n";
+		if(bEnergyCorrelations && isECorrelated)
 			if(dE_cm < R.smallestdE || isZero(R.smallestdE))R.smallestdE = dE_cm;
-			//			std::cout << R.smallestdE << "\n";
-		}
-		if(bPartialWidthCorrelations && !isUpperLimit){
+		
+		if(bPartialWidthCorrelations && !isUpperLimit && isWidthCorrelated){
 			if(!isZero(wg)){
 				if(dwg > 0.0){
 					if(dwg/wg < R.smallestdwg || isZero(R.smallestdwg))

@@ -169,7 +169,9 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
     logNormalize(wg, dwg, mu, sigma);
 
     // Correlation parameter
-    corr = smallestdwg * wg / dwg;
+		corr = 0.0;
+		if(isWidthCorrelated)
+			corr = smallestdwg * wg / dwg;
 
     // Generate the correlated samples
     for (int s = 0; s < NSamples; s++) {
@@ -243,7 +245,9 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
 				}
 
 				// Calculate the correlated partial widths for this channel
-        corr = smallestdG[channel] * G[channel] / dG[channel];
+				corr = 0.0;
+				if(isWidthCorrelated)
+					corr = smallestdG[channel] * G[channel] / dG[channel];
 				for (int s = 0; s < NSamples; s++) {
           double x2 = gsl_ran_gaussian(r, 1.0);
           x2 = corr * Ref_sample[s][channel + 1] +

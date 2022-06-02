@@ -43,8 +43,8 @@
 #include "Reaction.h"
 #include "Utilities.h"
 
-using std::cout;
-using std::endl;
+//using std::cout;
+//using std::endl;
 
 Reaction::Reaction(){
 
@@ -91,36 +91,36 @@ void Reaction::addResonance(int i, double E_cm, double dE_cm, double wg, double 
 }
 
 void Reaction::printName(){
-  cout << "The reaction name is: " << Name << "\n";
+  std::cout << "The reaction name is: " << Name << "\n";
 }
 
 void Reaction::printReaction(){
 
-  cout << "--------------------------------------------------" << "\n";
-  cout << "     This is reaction: " << Name << "\n";
-  cout << "   Z0        Z1       Z2" << "\n";
+  std::cout << "--------------------------------------------------" << "\n";
+  std::cout << "     This is reaction: " << Name << "\n";
+  std::cout << "   Z0        Z1       Z2" << "\n";
   printf( "   %2d        %2d       %2d\n",Z0,Z1,Z2);
-  cout << "   M0        M1       M2" << "\n";
+  std::cout << "   M0        M1       M2" << "\n";
   printf( " %5.2f     %5.2f    %5.2f\n",M0,M1,M2);
-  cout << "   S_entrance = " << Q << "\n";
-  cout << "   S_exit     = " << Qexit << "\n";
-  cout << "   The gamma ray channel is channel " << Gamma_index << "\n";
-  cout << "--------------------------------------------------" << "\n";
+  std::cout << "   S_entrance = " << Q << "\n";
+  std::cout << "   S_exit     = " << Qexit << "\n";
+  std::cout << "   The gamma ray channel is channel " << Gamma_index << "\n";
+  std::cout << "--------------------------------------------------" << "\n";
 
-  cout << " Direct Capture part     \n";
-  cout << "          S0       S'       S''    dS   CutoffE\n";
-  cout << " Part 1: " << S[0] << "  " << Sp[0] << "  " << Spp[0] << "  " << dS[0] << "  " << CutoffE[0] << "\n";
-  cout << " Part 2: " << S[1] << "  " << Sp[1] << "  " << Spp[1] << "  " << dS[1] << "  " << CutoffE[1] << "\n";
-  cout << "\n";
+  std::cout << " Direct Capture part     \n";
+  std::cout << "          S0       S'       S''    dS   CutoffE\n";
+  std::cout << " Part 1: " << S[0] << "  " << Sp[0] << "  " << Spp[0] << "  " << dS[0] << "  " << CutoffE[0] << "\n";
+  std::cout << " Part 2: " << S[1] << "  " << Sp[1] << "  " << Spp[1] << "  " << dS[1] << "  " << CutoffE[1] << "\n";
+  std::cout << "\n";
 
-  cout << "--------------------------------------------------" << "\n";
-  cout << " Resonances:\n";
+  std::cout << "--------------------------------------------------" << "\n";
+  std::cout << " Resonances:\n";
   // Loop through all regular resonances
   std::vector<Resonance>::iterator res;
   for(res = Resonances.begin(); res < Resonances.end(); res++){
     res->print();
   }
-  cout << "--------------------------------------------------" << "\n";
+  std::cout << "--------------------------------------------------" << "\n";
   
 
 }
@@ -178,7 +178,7 @@ void Reaction::setupContribHeader(){
       contribfile << "Res" << Res.getIndex()+1 << "       ";
     }
   }
-  contribfile << endl;
+  contribfile << std::endl;
 
 }
 
@@ -263,8 +263,8 @@ double Reaction::calcNonResonant(double Temp, int j){
   
 
   /*cout << C1e << "\t" << C2e << "\t" << C3e << "\t" << C4e << "\t" <<
-    C5e << "\t" << C6e << "\t" << C7e << endl;
-    cout << "Cutoff T = " << cutoff_T << endl;*/
+    C5e << "\t" << C6e << "\t" << C7e << std::endl;
+    cout << "Cutoff T = " << cutoff_T << std::endl;*/
 
   // Calculate the rate first and then sample at the end.
   
@@ -279,18 +279,18 @@ double Reaction::calcNonResonant(double Temp, int j){
   
   
   /*cout << (C1e/pow(Temp,2./3.))*exp(-C2e/pow(Temp,1./3.)-
-    pow(Temp/cutoff_T,2.)) << endl;
-    cout << C3e*pow(Temp,1./3.) << endl;
-    cout << C4e*pow(Temp,2./3.) << endl;
-    cout <<  C5e*Temp << endl;
+    pow(Temp/cutoff_T,2.)) << std::endl;
+    cout << C3e*pow(Temp,1./3.) << std::endl;
+    cout << C4e*pow(Temp,2./3.) << std::endl;
+    cout <<  C5e*Temp << std::endl;
 
-    cout << "ADRate = " << ADRate << endl;
-    cout << "About to Lognormalise" << endl;*/
+    cout << "ADRate = " << ADRate << std::endl;
+    cout << "About to Lognormalise" << std::endl;*/
 
   // If ADRate is negative, set to zero, this is unphysical
   if(ADRate < 0.){
     ErrorFlag = true;
-    logfile << "\tWARNING: The non-resonant part caused a negative rate, \n\t\tsetting to zero." << endl;
+    logfile << "\tWARNING: The non-resonant part caused a negative rate, \n\t\tsetting to zero." << std::endl;
     ADRate = 0.0;
     for(int i=0;i<NSamples;i++){
       ARate[j][i]=0.0;
@@ -394,7 +394,7 @@ double Reaction::calcNonResonantIntegrated(double Temp, int j){
   // If ADRate is negative, set to zero, this is unphysical
   if(ADRate < 0.){
     ErrorFlag = true;
-    logfile << "\tWARNING: The non-resonant part caused a negative rate, \n\t\tsetting to zero." << endl;
+    logfile << "\tWARNING: The non-resonant part caused a negative rate, \n\t\tsetting to zero." << std::endl;
     ADRate = 0.0;
     for(int i=0;i<NSamples;i++){
       ARate[j][i]=0.0;
@@ -459,7 +459,7 @@ double Reaction::NonResonantIntegrand(double x, void * params){
 // Prepare the Monte Carlo samples. 
 void Reaction::prepareSamples(){
 
-  cout << "Preparing " << NSamples << " samples\n\n";
+  std::cout << "Preparing " << NSamples << " samples\n\n";
 
   // The reference samples used for energies, gamma widths, and
   // resonances. There are three sets for each partial width. The
