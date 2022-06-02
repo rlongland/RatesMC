@@ -94,6 +94,27 @@ scripts below:
   Porter-Thomas samples. Use for diagnostics only
 
 # New features
+* **Correlations**  
+  Turning correlations between resonances was a bit of a hidden
+  feature before, and was a little finicky with little 'c's to flag
+  which resonances should be correlated. This how now been improved:
+  at the end of a resonance input, enter 'e' to indicate that it's
+  energy-correlated, and 'w' if it's width correlated (including
+  resonance strength).   
+  Example 1 (resonances at 560 and 877 keV have correlated widths):
+  ```
+  Ecm    DEcm     wg       Dwg    Jr      G1      DG1     L1      G2      DG2      L2   G3  DG3  L3 Exf   Int
+  -43.9  1.5      0        0      1.5     2.2     1.6     1       1.14    0.04      1    0     0    0   0.0   1
+  560.0  1.7      0.331    0.041  1.5     6       3       2       0.350   0.056     1    0     0    0   0.0   0  w
+  877.0  2.0      3.65     0.51   2.5     11.9    3.6     2       3.1     1.3       1    0     0    0   0.0   0  w
+
+  ```
+  Example 2 (resonances at 2101 and 2236 keV have correlated energies):
+  ```
+  2101.0 50.0     0        0      1.5     210e3  40e3     2       17      8.5       1    48.0  9.2  0   0.0   1  e
+  2236.0 50.0     0        0      2.5     240e3  50e3     2       1       0.5       1    520.0 100  0   0.0   1  e
+  2426.0 50.0     0        0      3.5     120e3  20e3     2       1       0.5       1    760   140  0   0.0   1
+  ```
 * **AME masses**  
   Do you want to just read the AME 2020 mass table? Me too! Now,
   insead of entering the particle mass in lines 6-8, you can just type
