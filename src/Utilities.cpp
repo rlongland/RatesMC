@@ -28,6 +28,7 @@
 #include <sstream>
 #include <algorithm>    // std::sort
 #include <cstdlib>
+#include <sstream>
 
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_math.h>
@@ -179,6 +180,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     G3, dG3, PT3=0.0, DPT3=0.0, Exf;
   int i,L1, L2, L3, isBroad;
 	bool isECorrelated, isWidthCorrelated;
+	std::string CorString;
 
   i=0;
   // Read the number of entries on the first resonance line. This
@@ -208,9 +210,14 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
      
   while(true){
 
+		// New method: Read entire line into a string first
+		std::string line;
+		std::getline(infile, line);
+		std::istringstream fin(line);
+		
     // First try to read resonance energy to see if it's a real resonance input
     std::string data;
-    infile >> data;
+    fin >> data;
 
     // Look for '***', which signifies the end of resonance input
     std::size_t found;
@@ -230,7 +237,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
       if(isUpperLimit)
 				logfile << "Upper limit ";
       logfile << "Resonance is commented-out (" << data << ")" << std::endl;
-      infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+      fin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
       continue;
     }
     
@@ -239,26 +246,28 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     //    logfile << E_cm << std::endl;;
     if(!isUpperLimit){
 			// First check whether the energy uncertainty has a correlation tag
-			infile >> data;
+			fin >> data;
 			isECorrelated = (data.find("c")!=std::string::npos);
 			dE_cm = std::stod(data);
 			// Then check if wg is correlated
-			infile >> wg;
-			infile >> data;
+			fin >> wg;
+			fin >> data;
 			isWidthCorrelated = (data.find("c")!=std::string::npos);
 			dwg = std::stod(data);
-			infile >> Jr 
+			fin >> Jr 
 						 >> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
 						 >> Exf >> isBroad;
+			fin >> CorString;
+			std::cout << "CorString is '" << CorString << "'" << std::endl;
     } else {
       // Upper limit resonances.
       // Old style with no DPT
       if(nEnt == 17){
 				// First check whether the energy uncertainty has a correlation tag
-				infile >> data;
+				fin >> data;
 				isECorrelated = (data.find("c")!=std::string::npos);
 				dE_cm = std::stod(data);
-				infile >> Jr 
+				fin >> Jr 
 							 >> G1 >> dG1 >> L1 >> PT1 >> G2 >> dG2 >> L2 >> PT2
 							 >> G3 >> dG3 >> L3 >> PT3
 							 >> Exf >> isBroad;
@@ -267,10 +276,10 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
       // New style with DPT
       else if(nEnt == 20){
 				// First check whether the energy uncertainty has a correlation tag
-				infile >> data;
+				fin >> data;
 				isECorrelated = (data.find("c")!=std::string::npos);
 				dE_cm = std::stod(data);
-				infile >> Jr 
+				fin >> Jr 
 							 >> G1 >> dG1 >> L1 >> PT1 >> DPT1 >> G2 >> dG2 >> L2 >> PT2 >> DPT2
 							 >> G3 >> dG3 >> L3 >> PT3 >> DPT3
 							 >> Exf >> isBroad;
@@ -301,7 +310,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 		if(dwg < 0.0) dwg *= 1.0e6;
 		
 
-    infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+    //infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
 		// If we care about energy correlations
 		if(bEnergyCorrelations && isECorrelated){
@@ -615,7 +624,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 // Define the temperature array
 void defineTemperatures(){
 
-  
+  /*
    std::vector<double> defaultT{0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.009,
 	 														 0.01,0.011,0.012,0.013,0.014,0.015,
 	 														 0.016,0.018,0.020,0.025,0.03,0.04,
@@ -624,9 +633,9 @@ void defineTemperatures(){
 	 														 0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,
 	 														 0.8,0.9,1.0,1.25,1.5,1.75,2,2.5,3,
 	 														 3.5,4,5,6,7,8,9,10};
+	*/
   
-  
-  //std::vector<double> defaultT{0.001,0.01,0.05,0.1};
+  std::vector<double> defaultT{0.001,0.01,0.05,0.1};
   Temp = defaultT;
 
   logfile << "--------------------------------------------------\n";
