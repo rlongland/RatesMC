@@ -192,9 +192,9 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
   if(!isUpperLimit){
     isUpperLimit = false;
     //std::cout << "Normal resonances\n";
-    if(nEnt != 16){
+    if(!(nEnt == 16 || nEnt == 17)){
       std::cout << "ERROR! The number of columns in the resonance section is wrong\n";
-      std::cout << "       Expect N=16; Got N=" << nEnt << "\n";
+      std::cout << "       Expect N=16 or 17; Got N=" << nEnt << "\n";
     }
   } else {
     isUpperLimit = true;
@@ -214,6 +214,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 		std::string line;
 		std::getline(infile, line);
 		std::istringstream fin(line);
+		CorString = "";
 		
     // First try to read resonance energy to see if it's a real resonance input
     std::string data;
@@ -247,7 +248,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     if(!isUpperLimit){
 			// First check whether the energy uncertainty has a correlation tag
 			fin >> data;
-			isECorrelated = (data.find("c")!=std::string::npos);
+			//isECorrelated = (data.find("c")!=std::string::npos);
 			dE_cm = std::stod(data);
 			// Then check if wg is correlated
 			fin >> wg;
@@ -258,14 +259,20 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 						 >> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
 						 >> Exf >> isBroad;
 			fin >> CorString;
-			std::cout << "CorString is '" << CorString << "'" << std::endl;
-    } else {
+			//			std::cout << "CorString is '" << CorString << "'" << std::endl;
+			// Make CorString lowercase
+			std::transform(CorString.begin(), CorString.end(), CorString.begin(),
+										 [](unsigned char c){ return std::tolower(c); });
+			isECorrelated = (CorString.find("e")!=std::string::npos);
+			isWidthCorrelated = (CorString.find("w")!=std::string::npos);
+			//			std::cout << isECorrelated << " " << isWidthCorrelated << "\n";
+		} else {
       // Upper limit resonances.
       // Old style with no DPT
       if(nEnt == 17){
 				// First check whether the energy uncertainty has a correlation tag
 				fin >> data;
-				isECorrelated = (data.find("c")!=std::string::npos);
+				//isECorrelated = (data.find("c")!=std::string::npos);
 				dE_cm = std::stod(data);
 				fin >> Jr 
 							 >> G1 >> dG1 >> L1 >> PT1 >> G2 >> dG2 >> L2 >> PT2
@@ -277,7 +284,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
       else if(nEnt == 20){
 				// First check whether the energy uncertainty has a correlation tag
 				fin >> data;
-				isECorrelated = (data.find("c")!=std::string::npos);
+				//isECorrelated = (data.find("c")!=std::string::npos);
 				dE_cm = std::stod(data);
 				fin >> Jr 
 							 >> G1 >> dG1 >> L1 >> PT1 >> DPT1 >> G2 >> dG2 >> L2 >> PT2 >> DPT2
@@ -368,7 +375,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 									 G1, dG1, L1, PT1, DPT1,
 									 G2, dG2, L2, PT2, DPT2,
 									 G3, dG3, L3, PT3, DPT3,
-									 Exf, isBroad, isUpperLimit,isECorrelated);
+									 Exf, isBroad, isUpperLimit,isECorrelated, isWidthCorrelated);
     
   }
   

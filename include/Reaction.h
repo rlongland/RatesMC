@@ -50,7 +50,7 @@ class Reaction{
 		    double, double, int, double, double,
 		    double, double, int, double, double,
 		    double, double, int, double, double,
-										double, bool, bool, bool);
+										double, bool, bool, bool, bool);
   double calcResonant(double Temp);
   double calcNonResonant(double Temp, int j);
   double calcNonResonantIntegrated(double Temp, int j);

@@ -42,7 +42,8 @@ class Resonance {
 	    int index=0, double E_cm=0.0, double dE_cm=0.0, double wg=0.0, double dwg=0.0, double Jr=0.0,
 						double G[3]=defaultdinit, double dG[3]=defaultdinit, int L[3]=defaultiinit,
 						double PT[3]=defaultdinit, double dPT[3]=defaultdinit,
-						double Exf=0, bool bInt=false, bool bUpperLimit=false, bool isECorrelated=false); 
+						double Exf=0, bool bInt=false, bool bUpperLimit=false,
+						bool isECorrelated=false, bool isWidthCorrelated=false); 
   // Destructor
   ~Resonance();
 
@@ -95,7 +96,7 @@ class Resonance {
   Reaction & Reac;
   
   // Resonance control and bookkeeping
-  bool isBroad, isECorrelated, isUpperLimit;
+  bool isBroad, isECorrelated, isWidthCorrelated, isUpperLimit;
   bool ErrorFlag;
   
   // Resonance parameters
