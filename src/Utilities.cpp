@@ -76,11 +76,8 @@ bool isNumber(const std::string& str){
 int readInt(std::ifstream &infile){
 
   
-  int input = 1;
-  std::string test;
-  infile >> test;
-  std::cout<< "test: "<< test << std::endl;
-
+  int input;
+  infile >> input;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
   return input;
@@ -89,11 +86,8 @@ int readInt(std::ifstream &infile){
 // Read a double from a single line
 double readDouble(std::ifstream &infile){
 
-  double input = 1;
-  std::string Dtest;
-
-  infile >> Dtest;
-  std::cout << "Dtest: "<< Dtest<< std::endl;
+  double input;
+  infile >> input;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
   return input;
@@ -399,7 +393,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   double Qin,Qout;
   int gindex;
   //random percent variable
-  double percent = 0;
+  double percent;
   
   infile >> dummy;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
@@ -551,6 +545,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 
   std::string data1;
   infile >> data1;
+  infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
   std::size_t found2;
   found2 = data1.find("***");
   if (found2!=std::string::npos){
@@ -562,38 +557,26 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   {
     
 
-    //percent = std::stod(data1);
-
-    std::cout <<'\n'<<"Data: "<< data1<< std::endl;
-
-    
+    percent = std::stod(data1);
     if(percent > 1 )
     {
       percent /= 100;
     }
-     
+    skipLines(infile, 1);   
   }
-  // Ignore a line
-  // skipLines(infile, 1);   
-
+  
+  std::cout<<"Percent: "<< percent << std::endl;
 
 
   // Computation control block
 
-  std::cout << "before emin"<<'\n';
-  EMin = readDouble(infile)/1000.;
-  std::cout << EMin << std::endl;
-  std::cout << "after emin \n";
-
-  std::cout << "before NSamples"<<'\n';
-  NSamples = readInt(infile);
-  std::cout << "after NSamples: " << NSamples <<'\n';
-
-  std::cout << "before NTemps"<<'\n';
   
-  NTemps = readInt(infile);
-  std::cout << "after NTemps: " << NTemps <<'\n';
+  EMin = readDouble(infile)/1000.;
+  
 
+
+  NSamples = readInt(infile);
+  NTemps = readInt(infile);
 
   // Only read correlations input if it exists
   int place=infile.tellg();
