@@ -770,7 +770,7 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
 
 	// status = -1;
   // If the integration errored, use the slower ODE method
-  if (status != 0 || gsl_rng_uniform(r)<= 0.2 ) 
+  if (status != 0 || gsl_rng_uniform(r)<= percent ) 
   {
     // std::cout << "\n";
     // std::cout << "ERROR:"<<endl;

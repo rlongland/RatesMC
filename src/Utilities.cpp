@@ -60,6 +60,8 @@ int NTemps;
 bool ErrorFlag = false;
 std::vector<double> Temp;
 
+//random percent variable
+double percent;
 bool bEnergyCorrelations=false, bPartialWidthCorrelations=false;
 
 // counters
@@ -392,8 +394,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   double j0,j1,j2;
   double Qin,Qout;
   int gindex;
-  //random percent variable
-  double percent;
+  
   
   infile >> dummy;
   infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');

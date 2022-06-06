@@ -64,8 +64,10 @@ extern std::ofstream outfullfile;
 extern std::ofstream latexfile;
 extern std::ofstream testfile;
 
+
 // Other program-wide variables
 extern std::vector<double> Temp;
+extern double percent;
 
 // Read input file
 int ReadInputFile(std::string inputfilename, Reaction *R);
