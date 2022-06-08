@@ -178,7 +178,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 
   double E_cm, dE_cm, wg=0.0, dwg=0.0, Jr,
     G1, dG1, PT1=0.0, DPT1=0.0, G2, dG2, PT2=0.0, DPT2=0.0,
-    G3, dG3, PT3=0.0, DPT3=0.0, Exf;
+    G3, dG3, PT3=0.0, DPT3=0.0, Exf, Frac=1.0;
   int i,L1, L2, L3, isBroad;
 	int CorresRes;
 	bool isECorrelated, isWidthCorrelated;
@@ -284,11 +284,24 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 						 >> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
 						 >> Exf >> isBroad;
 			fin >> CorString;
+			//std::cout << CorString << "\n";
 			// Make CorString lowercase
 			std::transform(CorString.begin(), CorString.end(), CorString.begin(),
 										 [](unsigned char c){ return std::tolower(c); });
 			isECorrelated = (CorString.find("e")!=std::string::npos);
 			isWidthCorrelated = (CorString.find("w")!=std::string::npos);
+
+			// If this is a resonance possibility, try to read the probability
+			//if(CorresRes != i){
+				// First check if the fraction is contained in CorString
+				if(isNumeric(CorString)){
+					Frac = stod(CorString);
+					//std::cout << "CorString is numeric!\n";
+				} else {
+					fin >> Frac;
+				}
+				//std::cout << i << " " << CorresRes << " " << " " << Frac << "\n";
+				//}
 		} else {
       // Upper limit resonances.
       // Old style with no DPT
@@ -302,12 +315,26 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 							 >> G3 >> dG3 >> L3 >> PT3
 							 >> Exf >> isBroad;
 				fin >> CorString;
+				//std::cout << CorString << "\n";
 				// Make CorString lowercase
 				std::transform(CorString.begin(), CorString.end(), CorString.begin(),
 											 [](unsigned char c){ return std::tolower(c); });
 				isECorrelated = (CorString.find("e")!=std::string::npos);
 				isWidthCorrelated = (CorString.find("w")!=std::string::npos);
-	
+
+				// If this is a resonance possibility, try to
+				// read the probability
+				//if (CorresRes != i) {
+					// First check if the fraction is contained in
+					// CorString
+					if (isNumeric(CorString)) {
+						Frac = stod(CorString);
+					} else {
+						fin >> Frac;
+					}
+					//std::cout << i << " " << CorresRes << " " << " " << Frac << "\n";
+					//}
+				
       }
       // New style with DPT
       else if(nEnt == 20){
@@ -321,11 +348,24 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 							 >> Exf >> isBroad;
 
 				fin >> CorString;
+				//std::cout << CorString << "\n";
 				// Make CorString lowercase
 				std::transform(CorString.begin(), CorString.end(), CorString.begin(),
 											 [](unsigned char c){ return std::tolower(c); });
 				isECorrelated =  (CorString.find("e")!=std::string::npos);
 				isWidthCorrelated = (CorString.find("w")!=std::string::npos);
+
+				// If this is a resonance possibility, try to read the probability
+				//if(CorresRes != i){
+					// First check if the fraction is contained in CorString
+					if(isNumeric(CorString)){
+						Frac = stod(CorString);
+					} else {
+						fin >> Frac;
+					}
+					//std::cout << i << " " << CorresRes << " " << " " << Frac << "\n";
+					//}
+
 			}
     }
 
@@ -409,7 +449,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 									 G2, dG2, L2, PT2, DPT2,
 									 G3, dG3, L3, PT3, DPT3,
 									 Exf, isBroad, isUpperLimit,isECorrelated, isWidthCorrelated,
-									 CorresRes);
+									 CorresRes, Frac);
     
   }
   
@@ -1255,6 +1295,17 @@ bool isZero(double x){
 // Convert atomic to nuclear mass
 double atomicToNuclear(double A, double Z) {
 	return A - Z*ElectronMass;
+}
+
+//----------------------------------------------------------------------
+// Check if a string is numeric
+bool isNumeric(std::string str) {
+	if(str.length() == 0)return false;
+	//std::cout << str << ": length = " << str.length() << "\n";		
+	for (size_t i = 0; i < str.length(); i++)
+		if (isdigit(str[i]) == false && ispunct(str[i]) == false)
+			return false; //when one non numeric value is found, return false
+	return true;
 }
 
 //----------------------------------------------------------------------

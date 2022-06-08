@@ -44,7 +44,7 @@ class Resonance {
 						double PT[3]=defaultdinit, double dPT[3]=defaultdinit,
 						double Exf=0, bool bInt=false, bool bUpperLimit=false,
 						bool isECorrelated=false, bool isWidthCorrelated=false,
-						int CorresRes=0); 
+						int CorresRes=0, double Frac=1.0); 
   // Destructor
   ~Resonance();
 
@@ -110,6 +110,7 @@ class Resonance {
   int Z0,Z1,Z2;
   int NChannels;
 	int CorresRes;
+	double Frac;
   
   double R, mue;
   

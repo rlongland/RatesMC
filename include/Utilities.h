@@ -120,6 +120,8 @@ bool isZero(double x);
 // Convert atomic to nuclear mass
 double atomicToNuclear(double A, double Z);
 
+bool isNumeric(std::string str);
+
 // Check whether a file exists
 inline bool fileExists (const std::string& name);
 
