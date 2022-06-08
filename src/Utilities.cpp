@@ -29,6 +29,7 @@
 #include <algorithm>    // std::sort
 #include <cstdlib>
 #include <sstream>
+#include <chrono>
 
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_math.h>
@@ -641,7 +642,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 // Define the temperature array
 void defineTemperatures(){
 
-  /*
+  
    std::vector<double> defaultT{0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.009,
 	 														 0.01,0.011,0.012,0.013,0.014,0.015,
 	 														 0.016,0.018,0.020,0.025,0.03,0.04,
@@ -650,9 +651,9 @@ void defineTemperatures(){
 	 														 0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,
 	 														 0.8,0.9,1.0,1.25,1.5,1.75,2,2.5,3,
 	 														 3.5,4,5,6,7,8,9,10};
-	*/
+	
   
-  std::vector<double> defaultT{0.001,0.01,0.05,0.1};
+	 //std::vector<double> defaultT{0.001,0.01,0.05,0.1};
   Temp = defaultT;
 
   logfile << "--------------------------------------------------\n";
@@ -768,25 +769,29 @@ void transpose(std::vector<std::vector<double> > &b){
 //----------------------------------------------------------------------
 void writeOutputFileHeaders(Reaction *R){
 
+	// current date/time based on current system
+	auto now = std::chrono::system_clock::now();
+	std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+	
   outfile << R->getName() << std::endl;
-  outfile << "Calculated with RatesMC " << VersionNumber << " (" <<
-    VersionDate << ")" << std::endl;
+  outfile << "Calculated with RatesMC " << VersionNumber << " on " <<
+    std::ctime(&now_time);// <<  std::endl;
   outfile << "Samples = " << NSamples << std::endl;
   outfile << " T9      RRate_low       Median Rate" << 
     "     RRate_high     f.u."  << std::endl;
   
   outfullfile << R->getName() << std::endl;
-  outfullfile << "Calculated with RatesMC " << VersionNumber << " (" <<
-    VersionDate << ")" << std::endl;
+  outfullfile << "Calculated with RatesMC " << VersionNumber << " on "
+              << std::ctime(&now_time);// << std::endl;
   outfullfile << "Samples = " << NSamples << std::endl;
   outfullfile << " T9      RRate_2low      RRate_low       Classical Rate  Median Rate" << 
     "     Mean Rate       RRate_high     RRate_2high     Log-Normal mu" <<
     "      Log-Normal sigma A-D Statistic" << std::endl;
 
   sampfile << R->getName() << std::endl;
-  sampfile << "Calculated with RatesMC " << VersionNumber << " (" <<
-    VersionDate << ")" << std::endl;
-  
+  sampfile << "Calculated with RatesMC " << VersionNumber << " on " <<
+		std::ctime(&now_time);// <<  std::endl;
+	
 }
 
 //----------------------------------------------------------------------
