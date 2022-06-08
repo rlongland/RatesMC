@@ -184,7 +184,11 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 	bool isECorrelated, isWidthCorrelated;
 	std::string CorString;
 
-  i=0;
+  if(!isUpperLimit){
+		i=0;
+	} else {
+		i = R.getNResonances();
+	}
   // Read the number of entries on the first resonance line. This
   // gives us another check on whether it's an upper limit or normal
   // resonance
@@ -705,7 +709,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 // Define the temperature array
 void defineTemperatures(){
 
-  
+	/*  
    std::vector<double> defaultT{0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.009,
 	 														 0.01,0.011,0.012,0.013,0.014,0.015,
 	 														 0.016,0.018,0.020,0.025,0.03,0.04,
@@ -714,9 +718,9 @@ void defineTemperatures(){
 	 														 0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,
 	 														 0.8,0.9,1.0,1.25,1.5,1.75,2,2.5,3,
 	 														 3.5,4,5,6,7,8,9,10};
-	
+	*/	
   
-	 //std::vector<double> defaultT{0.001,0.01,0.05,0.1};
+	 std::vector<double> defaultT{1};
   Temp = defaultT;
 
   logfile << "--------------------------------------------------\n";

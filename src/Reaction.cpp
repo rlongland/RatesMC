@@ -243,19 +243,18 @@ void Reaction::CombineResonancePossibilities(){
 	int sstart=0, send=0, ds=0;
 	for(Resonance &R : Resonances){
 
+		ds = (int)(R.getFrac()*NSamples);
 		// Is the corresponding resonance a different one?
 		if(R.getCorresRes() != R.getIndex()){
-			// What is the Frac of the corresponding resonance
-			Resonance mainRes = Resonances[R.getCorresRes()];
-			int smain = (int)(mainRes.getFrac()*NSamples);
-			sstart = smain+ds;
-			ds = (int)(R.getFrac()*NSamples);
-			send = sstart + ds;
-			std::cout << R.getIndex() << ": sstart = " << sstart << " send = " << send << "\n";
-
+			Resonance &RCorres = Resonances[R.getCorresRes()];
+			sstart = send;
+			send = sstart+ds;
+			std::cout << R.getIndex() << "<->" << R.getCorresRes()  << ": sstart = " << sstart << " send = " << send << "\n";
+			for(int s=sstart; s<send; s++)
+				RCorres.putRateSample(s, R.getRateSample(s));
 		} else {
 			sstart = 0;
-			ds=0;
+			send = sstart + ds;
 		}
 
 	}
@@ -270,8 +269,8 @@ std::vector<double> Reaction::getResonantRateSample(int s){
   
   for(Resonance &R : Resonances){
     //R.printRate();
-
-    Rate_s.push_back(R.getRateSample(s));
+		if(R.getCorresRes() == R.getIndex())
+			Rate_s.push_back(R.getRateSample(s));
   }
   //std::cout << Rate_s[0] << "   ";
   return Rate_s;
