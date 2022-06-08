@@ -202,15 +202,23 @@ double Reaction::calcResonant(double Temp){
     if(!R.getisBroad()){
       //      std::cout << "Resonance " << R.getIndex() << " at "
       //      		<< R.getE_cm() << " keV is narrow\n";
-      individualRate.push_back(RateFactorNarrow*R.calcNarrow(Temp));
+			double nRate = RateFactorNarrow*R.calcNarrow(Temp);
+
+			// Only  store the rate for the first possibility if multiple resonance possibilities 
+			if(R.getIndex() == R.getCorresRes())
+				individualRate.push_back(nRate);
       // Multiply every sample by the reaction rate constant above
       R.scaleByConstant(RateFactorNarrow);
       // If it's broad
     } else {
       //      std::cout << "Resonance " << R.getIndex() << " at "
       //      		<< R.getE_cm() << " keV is being numerically integrated\n";
-      individualRate.push_back(RateFactorBroad*R.calcBroad(Temp));
-      // Multiply every sample by the reaction rate constant above
+			double bRate = RateFactorBroad*R.calcBroad(Temp);
+			// Only  store the rate for the first possibility if multiple resonance possibilities 
+			if(R.getIndex() == R.getCorresRes())
+				individualRate.push_back(bRate);
+
+			// Multiply every sample by the reaction rate constant above
       R.scaleByConstant(RateFactorBroad);
     }
 
@@ -224,6 +232,34 @@ double Reaction::calcResonant(double Temp){
   //  std::cout << "Total classical rate from resonances = " << classicalRate << "\n";
 
   return classicalRate;
+}
+
+
+//----------------------------------------------------------------------
+// For resonances that have a list of possibilities, use this function
+// to combine them
+void Reaction::CombineResonancePossibilities(){
+
+	int sstart=0, send=0, ds=0;
+	for(Resonance &R : Resonances){
+
+		// Is the corresponding resonance a different one?
+		if(R.getCorresRes() != R.getIndex()){
+			// What is the Frac of the corresponding resonance
+			Resonance mainRes = Resonances[R.getCorresRes()];
+			int smain = (int)(mainRes.getFrac()*NSamples);
+			sstart = smain+ds;
+			ds = (int)(R.getFrac()*NSamples);
+			send = sstart + ds;
+			std::cout << R.getIndex() << ": sstart = " << sstart << " send = " << send << "\n";
+
+		} else {
+			sstart = 0;
+			ds=0;
+		}
+
+	}
+
 }
 
 //----------------------------------------------------------------------

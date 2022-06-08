@@ -59,7 +59,9 @@ class Reaction{
   void writeSamples();
   void writeSFactor();
   void setupSFactorHeader(std::ofstream &sfactorfile);
-  
+
+	void CombineResonancePossibilities();
+	
   // Getters
   std::string getName(){return Name;}
   double getsmallestdE(){return smallestdE;}

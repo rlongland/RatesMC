@@ -168,6 +168,9 @@ int main(int argc, char** argv){
     classicalRate.push_back(ADRate[0]+ADRate[1]+ResRate);
     //std::cout << "Classical Total Rate = " << classicalRate.back() << "\n";
 
+		// Combine Resonance possibilities
+		Reac -> CombineResonancePossibilities();
+		
     // Contribution array (NSamples)by(NRes+2)
     std::vector<std::vector<double> > Contributions;
     // Vector of rate samples at this temperature

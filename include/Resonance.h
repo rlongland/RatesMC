@@ -54,6 +54,7 @@ class Resonance {
   double getdE_cm(){return dE_cm;}
   double getisBroad(){return isBroad;}
 	int getCorresRes(){return CorresRes;}
+	double getFrac(){return Frac;}
   
   // Setters
   void setIndex(int i){index=i;}
@@ -72,6 +73,7 @@ class Resonance {
   
   void printRate();
 
+	void putRateSample(int s, double rate){Rate_sample[s] = rate;}
   double getRateSample(int s){return Rate_sample[s];}
 
 	double getSFactor(double E);
