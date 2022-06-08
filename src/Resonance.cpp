@@ -66,7 +66,8 @@ Resonance::Resonance(Reaction &R, int index, double E_cm, double dE_cm,
                      double wg, double dwg, double Jr, double G[3],
                      double dG[3], int L[3], double PT[3], double dPT[3],
                      double Exf, bool isBroad, bool isUpperLimit,
-										 bool isECorrelated, bool isWidthCorrelated)
+										 bool isECorrelated, bool isWidthCorrelated,
+										 int CorresRes)
     : Reac(R) {
   // 'this' is a special pointer to the "current instance"
   this->index = index;
@@ -87,7 +88,8 @@ Resonance::Resonance(Reaction &R, int index, double E_cm, double dE_cm,
   this->isUpperLimit = isUpperLimit;
 	this->isECorrelated = isECorrelated;
 	this->isWidthCorrelated = isWidthCorrelated;
-  this->M0 = R.M0;
+	this->CorresRes = CorresRes;
+	this->M0 = R.M0;
   this->M1 = R.M1;
   this->M2 = R.M2;
   this->Z0 = R.Z0;
@@ -96,6 +98,7 @@ Resonance::Resonance(Reaction &R, int index, double E_cm, double dE_cm,
   this->J0 = R.J0;
   this->J1 = R.J1;
   this->J2 = R.J2;
+	
 
   classicalRate = 0.0;
 
@@ -1230,6 +1233,7 @@ void Resonance::print() {
   cout << "          Upper Limit = " << isUpperLimit << "\n";
 	cout << "    Energy Correlated = " << isECorrelated << "\n";
 	cout << "     Width Correlated = " << isWidthCorrelated << "\n";
+	cout << "   Corresponding res. = " << CorresRes << "\n";
 	
   //  cout << "--------------------------------------------------" << "\n";
   int NPrintSamples = 5;
@@ -1289,7 +1293,8 @@ void Resonance::write() {
   logfile << "          Upper Limit = " << isUpperLimit << "\n";
 	logfile << "    Energy Correlated = " << isECorrelated << "\n";
 	logfile << "     Width Correlated = " << isWidthCorrelated << "\n";
-	
+	logfile << "   Corresponding res. = " << CorresRes << "\n";
+
   int NPrintSamples = 5;
   logfile << "First " << NPrintSamples << " samples    -------\n";
   logfile << "E_cm: ";

@@ -43,14 +43,17 @@ class Resonance {
 						double G[3]=defaultdinit, double dG[3]=defaultdinit, int L[3]=defaultiinit,
 						double PT[3]=defaultdinit, double dPT[3]=defaultdinit,
 						double Exf=0, bool bInt=false, bool bUpperLimit=false,
-						bool isECorrelated=false, bool isWidthCorrelated=false); 
+						bool isECorrelated=false, bool isWidthCorrelated=false,
+						int CorresRes=0); 
   // Destructor
   ~Resonance();
 
   // Getters
   int getIndex(){return index;}
   double getE_cm(){return E_cm;}
+  double getdE_cm(){return dE_cm;}
   double getisBroad(){return isBroad;}
+	int getCorresRes(){return CorresRes;}
   
   // Setters
   void setIndex(int i){index=i;}
@@ -106,6 +109,7 @@ class Resonance {
   double M0,M1,M2,J0,J1,J2;
   int Z0,Z1,Z2;
   int NChannels;
+	int CorresRes;
   
   double R, mue;
   

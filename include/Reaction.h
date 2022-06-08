@@ -50,7 +50,7 @@ class Reaction{
 		    double, double, int, double, double,
 		    double, double, int, double, double,
 		    double, double, int, double, double,
-										double, bool, bool, bool, bool);
+										double, bool, bool, bool, bool, int);
   double calcResonant(double Temp);
   double calcNonResonant(double Temp, int j);
   double calcNonResonantIntegrated(double Temp, int j);
@@ -64,6 +64,8 @@ class Reaction{
   std::string getName(){return Name;}
   double getsmallestdE(){return smallestdE;}
   int getGamma_index(){return Gamma_index;}
+	Resonance getLastResonance(){return Resonances.back();}
+	int getNResonances(){return Resonances.size();}
 
   // Get rates
   // Analytical Rate
