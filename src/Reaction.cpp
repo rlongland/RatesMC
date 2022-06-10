@@ -249,7 +249,7 @@ void Reaction::CombineResonancePossibilities(){
 			Resonance &RCorres = Resonances[R.getCorresRes()];
 			sstart = send;
 			send = sstart+ds;
-			std::cout << R.getIndex() << "<->" << R.getCorresRes()  << ": sstart = " << sstart << " send = " << send << "\n";
+			//			std::cout << R.getIndex() << "<->" << R.getCorresRes()  << ": sstart = " << sstart << " send = " << send << "\n";
 			for(int s=sstart; s<send; s++)
 				RCorres.putRateSample(s, R.getRateSample(s));
 		} else {
