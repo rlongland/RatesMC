@@ -459,6 +459,128 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
   
 }
 
+//----------------------------------------------------------------------
+void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
+
+	int IntfSign;
+  double E_cm, dE_cm, Jr,
+    G1, dG1, PT1=0.0, DPT1=0.0, G2, dG2, PT2=0.0, DPT2=0.0,
+    G3, dG3, PT3=0.0, DPT3=0.0, Exf;
+  int L1, L2, L3;
+	std::string CorString, dummy;
+
+
+	// Skip the interference sign to make sure there are the right number of inputs
+	int place=infile.tellg();
+	skipLines(infile, 1);
+
+	// Read the number of entries on the first resonance line. This
+  // gives us another check on whether it's an upper limit or normal
+  // resonance
+  int nEnt = countEntries(infile);
+  //  std::cout << "Reading resonances:\n";
+  //std::cout << "There are " << countEntries(infile) << " entries in this section\n";
+	if(!(nEnt == 19 )){
+		std::cout << "ERROR! The number of columns in the resonance section is wrong\n";
+		std::cout << "       Expect N=19; Got N=" << nEnt << "\n";
+	}
+
+	// Rewind back
+	infile.seekg(place);
+
+	
+  while(true){
+
+		infile >> dummy;
+		infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+
+		// Look for '***', which signifies the end of resonance input
+    std::size_t found;
+    found = dummy.find("***");
+    if (found!=std::string::npos){
+      logfile << "Found end of interfering ";
+      logfile << "resonances\n" << dummy << std::endl;
+      break;
+    }
+
+		// Now look for an exclamation point, which indicates a commented-out interfering pair
+    //logfile << dummy << "\n";
+    found = dummy.find("!");
+    if (found!=std::string::npos){
+      logfile << "Interfering resonances commented-out (" << dummy << ")" << std::endl;
+      infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+      continue;
+    }
+
+		// Otherwise Read the sign of interference
+		if( dummy ==  "+-" )
+			IntfSign = 0;
+		else if( dummy == "+" ) 
+			IntfSign=  1;
+		else if (dummy == "-")
+			IntfSign = -1;
+		else {
+			std::cout << "ERROR: Enter '+-', '+', or '-'"
+								<< " for the interference sign!\n";
+			std::cout << " You entered '" << dummy << "'\n";
+			exit(EXIT_FAILURE);
+		}
+
+		// TODO: Create an interfering pair
+		
+		// Now read two resonances back-to-back
+		for(int i=0; i<2; i++){
+			// New method: Read entire line into a string first
+			std::string line;
+			std::getline(infile, line);
+			std::istringstream fin(line);
+			CorString = "";
+		
+			// First try to read resonance energy to see if it's a real resonance input
+			std::string data;
+			fin >> E_cm;
+			fin >> dE_cm;
+		
+			//std::cout << E_cm << std::endl;
+
+			fin >> Jr 
+					>> G1 >> dG1 >> L1 >> PT1 >> DPT1 >> G2 >> dG2 >> L2 >> PT2 >> DPT2
+					>> G3 >> dG3 >> L3 >> PT3 >> DPT3 >> Exf;
+
+
+			// Convert to correct units
+			E_cm  *= 1.0e-3;   // keV to MeV
+			dE_cm *= 1.0e-3;   // keV to MeV
+			G1 *= 1.0e-6;      // eV to MeV
+			dG1 *= 1.0e-6;     // eV to MeV
+			G2 *= 1.0e-6;      // eV to MeV
+			dG2 *= 1.0e-6;     // eV to MeV
+			G3 *= 1.0e-6;      // eV to MeV
+			dG3 *= 1.0e-6;     // eV to MeV
+			
+			// if E_cm is negative, G1 is actually unitless, so undo
+			// the unit operation above
+			if (E_cm < 0) {
+				G1 *= 1.0e6;
+				dG1 *= 1.0e6;
+			}
+			// If factor uncertainties are input, don't scale 
+			if(dG1 < 0.0) dG1 *= 1.0e6;
+			if(dG2 < 0.0) dG2 *= 1.0e6;
+			if(dG3 < 0.0) dG3 *= 1.0e6;
+
+					
+			// TODO: Add this resonance to the interfering pair
+			
+    
+		}
+		// TODO: Add the interfering pair to the reaction
+  
+	}
+}
+
+
+//----------------------------------------------------------------------
 int ReadInputFile(std::string inputfilename, Reaction *R){
 
 	// Load in the AME Reader
@@ -697,6 +819,11 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   // Read the upper limit resonances
   readResonanceBlock(infile, *R, true);
 
+	// Skip 4 lines
+	skipLines(infile, 4);
+	// Read the interfering resonance block
+	readInterferingResonanceBlock(infile, *R);
+	
   logfile << std::endl;
 
 
