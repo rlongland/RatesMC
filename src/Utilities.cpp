@@ -512,6 +512,9 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
       continue;
     }
 
+		// If it's a real thing to read, make two resonances
+		Resonance* Res[2];
+		
 		// Otherwise Read the sign of interference
 		if( dummy ==  "+-" )
 			IntfSign = 0;
@@ -571,7 +574,7 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
 
 					
 			// TODO: Add this resonance to the interfering pair
-			
+			//			Res[i] = new Resonance();
     
 		}
 		// TODO: Add the interfering pair to the reaction

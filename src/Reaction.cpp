@@ -68,7 +68,8 @@ void Reaction::setNonResonant(double s, double sp, double spp, double ds, double
   ARate.push_back(A);
 }
 
-void Reaction::addResonance(int i, double E_cm, double dE_cm, double wg, double dwg, double Jr,
+void Reaction::
+    addResonance(int i, double E_cm, double dE_cm, double wg, double dwg, double Jr,
 														double G1, double dG1, int L1, double PT1, double dPT1,
 														double G2, double dG2, int L2, double PT2, double dPT2,
 														double G3, double dG3, int L3, double PT3, double dPT3,
