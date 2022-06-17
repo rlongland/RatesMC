@@ -92,6 +92,42 @@ void Reaction::
   Resonances.push_back(Res);
 }
 
+void Reaction::addInterference(int i, int IntfSign){
+	
+	// Make an interfering pair
+	Interference Intf(*this, i, IntfSign);
+
+	Interferences.push_back(Intf);
+}
+//----------------------------------------------------------------------
+// Add a resonance to the interference term
+void Reaction::addResonanceToInterference(int index, double E_cm,	double dE_cm, double Jr,
+																					double G1, double dG1, int L1,
+																					double PT1, double dPT1,
+																					double G2, double dG2, int L2,
+																					double PT2, double dPT2,
+																					double G3, double dG3, int L3,
+																					double PT3, double dPT3,
+																					double Exf, int i) {
+
+  double G[3] = {G1, G2, G3};
+  double dG[3] = {dG1, dG2, dG3};
+  int L[3] = {L1, L2, L3};
+  double PT[3] = {PT1, PT2, PT3};
+  double dPT[3] = {dPT1, dPT2, dPT3};
+
+	// Make a resonance
+  Resonance *Res = new Resonance(*this, i, E_cm, dE_cm, 0.0, 0.0, Jr,
+								G, dG, L, PT, dPT, Exf, true, false,
+								false, false, index, 1.0);
+
+	// Add this resonance to the interference
+	Interferences[index].addResonance(Res, i);
+
+}
+
+
+//----------------------------------------------------------------------
 void Reaction::printName(){
   std::cout << "The reaction name is: " << Name << "\n";
 }
@@ -123,7 +159,14 @@ void Reaction::printReaction(){
     res->print();
   }
   std::cout << "--------------------------------------------------" << "\n";
-  
+
+	std::cout << " Interferences:\n";
+	// Loop through all interferences
+	std::vector<Interference>::iterator interf;
+	for(interf = Interferences.begin(); interf < Interferences.end(); interf++){
+		interf->print();
+	}
+  std::cout << "--------------------------------------------------" << "\n";
 
 }
 
@@ -158,6 +201,14 @@ void Reaction::writeReaction(){
     res->write();
   }
   //std::cout << "Done!\n";
+  logfile << "--------------------------------------------------" << "\n";
+	logfile << " Interferences:\n";
+	// Loop through all interferences
+	std::vector<Interference>::iterator interf;
+	for(interf = Interferences.begin(); interf < Interferences.end(); interf++){
+		interf->write();
+	}
+  logfile << "--------------------------------------------------" << "\n";
 	logfile << " The smallest dE value = " << smallestdE << "\n";
 	logfile << " The smallest dwg/wg value = " << smallestdwg << "\n";
 	logfile << " The smallest dG1/G1 value = " << smallestdG[0] << "\n";
@@ -527,7 +578,9 @@ void Reaction::prepareSamples(){
     Res.makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
     //std::cout << "done\n";
   }
-
+	for(Interference &Intf : Interferences){
+		Intf.makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
+	}
   
 }
 

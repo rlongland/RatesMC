@@ -467,6 +467,7 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
     G1, dG1, PT1=0.0, DPT1=0.0, G2, dG2, PT2=0.0, DPT2=0.0,
     G3, dG3, PT3=0.0, DPT3=0.0, Exf;
   int L1, L2, L3;
+	int count=0;
 	std::string CorString, dummy;
 
 
@@ -478,7 +479,7 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
   // gives us another check on whether it's an upper limit or normal
   // resonance
   int nEnt = countEntries(infile);
-  //  std::cout << "Reading resonances:\n";
+	//std::cout << "Reading interfering resonances:\n";
   //std::cout << "There are " << countEntries(infile) << " entries in this section\n";
 	if(!(nEnt == 19 )){
 		std::cout << "ERROR! The number of columns in the resonance section is wrong\n";
@@ -504,16 +505,17 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
     }
 
 		// Now look for an exclamation point, which indicates a commented-out interfering pair
-    //logfile << dummy << "\n";
+		//std::cout << "read: " << dummy << "\n";
     found = dummy.find("!");
     if (found!=std::string::npos){
-      logfile << "Interfering resonances commented-out (" << dummy << ")" << std::endl;
+			logfile << "Interfering resonances commented-out (" << dummy << ")" << std::endl;
       infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+			skipLines(infile, 1);
       continue;
     }
 
 		// If it's a real thing to read, make two resonances
-		Resonance* Res[2];
+		//		Resonance* Res[2];
 		
 		// Otherwise Read the sign of interference
 		if( dummy ==  "+-" )
@@ -530,6 +532,8 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
 		}
 
 		// TODO: Create an interfering pair
+		R.addInterference(count, IntfSign);
+
 		
 		// Now read two resonances back-to-back
 		for(int i=0; i<2; i++){
@@ -574,9 +578,27 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
 
 					
 			// TODO: Add this resonance to the interfering pair
+			/*
+				IntfPair->addResonance(count, E_cm, dE_cm, Jr, G1,G1,G3, dG1,dG2,dG3,
+				L1,L2,L3, PT1,PT2,PT3, DPT1,DPT2,DPT3,
+				Exf, i);
+			*/
+			R.addResonanceToInterference(count, E_cm, dE_cm,Jr,
+																	 G1, dG1, L1, PT1, DPT1,
+																	 G2, dG2, L2, PT2, DPT2,
+																	 G3, dG3, L3, PT3, DPT3,
+																	 Exf, i);
+			/*
+				R.addInterference(count, E_cm, dE_cm, Jr,
+				G1, dG1, L1, PT1, DPT1,
+				G2, dG2, L2, PT2, DPT2,
+				G3, dG3, L3, PT3, DPT3,
+				Exf, i);
+			*/
 			//			Res[i] = new Resonance();
     
 		}
+		count++;
 		// TODO: Add the interfering pair to the reaction
   
 	}
@@ -823,7 +845,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   readResonanceBlock(infile, *R, true);
 
 	// Skip 4 lines
-	skipLines(infile, 4);
+	skipLines(infile, 3);
 	// Read the interfering resonance block
 	readInterferingResonanceBlock(infile, *R);
 	

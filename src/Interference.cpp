@@ -60,11 +60,30 @@ int rhsInterferenceWrapper(double x, const double y[], double dydt[], void *para
 }
 // end
 
-Interference::Interference(Reaction &R)
-	: Reac(R) {}
+Interference::Interference(Reaction &R, int i, int isign)
+	: Reac(R) {
+
+  index = i;
+	IntfSign = isign;
+
+}
 
 Interference::~Interference() {}
 
+void Interference::addResonance(Resonance* R, int index) {
+	std::cout << "Adding resonance to part " << index << "\n"; 
+	Res[index] = R;
+	
+}
+
+void Interference::makeSamples(std::vector<std::vector<double> > Ref_sample,
+															 double smallestdE,
+															 double smallestdwg, double smallestdG[3]){
+
+	Res[0]->makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
+	Res[1]->makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
+
+}
 
 //----------------------------------------------------------------------
 // Function to numerically integrate broad resonances
@@ -690,9 +709,26 @@ double Interference::getSFactor(double E){
 void Interference::print() {
 
   
-	std::cout << " Interfering pair \n";
+	std::cout << " Interfering pair " << std::setw(3) << index << std::endl;
+	switch(IntfSign){
+	case(0):
+		std::cout << "  with unknown sign\n";
+		break;
+	case(1):
+		std::cout << "  with positive interference\n";
+		break;
+	case(-1):
+		std::cout << "  with negative interference\n";
+		break;
+	default:
+		std::cout << "  SOME ERROR IN INTERFERENCE!\n";
+	}
+	std::cout << "  First Resonance:\n";
+	Res[0]->print();
+	std::cout << "  Second Resonance:\n";
+	Res[1]->print();
 	/*
-	cout << std::setw(3) << index << "    E_cm = " << E_cm
+cout << "    E_cm = " << E_cm
  << " +/- " << dE_cm << "\n";
 cout << "                 wg   = " << wg << " +/- " << dwg << "\n";
 cout << "                 Jr   = " << Jr << "\n";
@@ -753,9 +789,26 @@ void Interference::write() {
 
   //  logfile << "--------------------------------------------------" << "\n";
   // logfile << "     This is resonance: " << index << "\n";
-  logfile << " Interfering Pair \n";
-  /*
-  logfile << std::setw(3) << index << "    E_cm = " << E_cm
+  logfile << " Interfering Pair " << std::setw(3) << index << "\n";
+	switch(IntfSign){
+	case(0):
+		logfile << "  with unknown sign\n";
+		break;
+	case(1):
+		logfile << "  with positive interference\n";
+		break;
+	case(-1):
+		logfile << "  with negative interference\n";
+		break;
+	default:
+		logfile << "  SOME ERROR IN INTERFERENCE!\n";
+	}
+	logfile << "  First Resonance:\n";
+	Res[0]->write();
+	logfile << "  Second Resonance:\n";
+	Res[1]->write();
+        /*
+	"    E_cm = " << E_cm
     << " +/- " << dE_cm << " MeV\n";
 logfile << "                 wg   = " << wg << " +/- " << dwg << " MeV\n";
 logfile << "                 Jr   = " << Jr << "\n";

@@ -28,6 +28,7 @@
 
 
 class Reaction;
+class Resonance;
 
 class Interference {
 
@@ -35,7 +36,7 @@ class Interference {
 
 
   // Constructor
-  Interference(Reaction & R); 
+  Interference(Reaction & R, int i, int IntfSign); 
   // Destructor
   ~Interference();
 
@@ -45,6 +46,12 @@ class Interference {
   // Setters
   void setIndex(int i){index=i;}
 
+	void addResonance(Resonance* Res, int index);
+
+	// Make the MC samples
+	void makeSamples(std::vector<std::vector<double> > Ref_sample,
+									 double, double, double[3]);
+	
   // Functions that do stuff
   // Functions to calculate the rate from this resonance. They return
   // the traditional rate and fill 'Rate', which is a vector of rate
@@ -84,9 +91,11 @@ class Interference {
   bool ErrorFlag;
 
 	// TODO Should just hold two resonances, not the rest of this junk
+	Resonance* Res[2];
 
+	int IntfSign;
 	
-  // Resonance parameters
+	// Resonance parameters
   int index;
   int L[3];
   double E_cm, dE_cm, Jr, G[3], dG[3], Exf, PT[3], dPT[3];

@@ -26,6 +26,7 @@
 #include <iostream>
 #include <vector>
 #include "Resonance.h"
+#include "Interference.h"
 
 class Reaction{
 
@@ -47,10 +48,17 @@ class Reaction{
   void setGammaIndex(int gindex){Gamma_index = gindex;}
   void setNonResonant(double, double, double, double, double, int);
   void addResonance(int, double, double, double, double, double,
-		    double, double, int, double, double,
-		    double, double, int, double, double,
-		    double, double, int, double, double,
+										double, double, int, double, double,
+										double, double, int, double, double,
+										double, double, int, double, double,
 										double, bool, bool, bool, bool, int, double);
+  void addInterference(int,int);
+	void addResonanceToInterference(int,
+																	double, double,	double,
+																	double, double, int, double, double,
+																	double, double, int, double, double,
+																	double, double, int, double, double,
+																	double, int);
   double calcResonant(double Temp);
   double calcNonResonant(double Temp, int j);
   double calcNonResonantIntegrated(double Temp, int j);
@@ -96,6 +104,7 @@ class Reaction{
   int Gamma_index;
 
   std::vector<Resonance> Resonances;
+	std::vector<Interference> Interferences;
 
   // Reaction-wide Monte Carlo
   std::vector<std::vector<double> > Ref_sample;  std::vector<std::vector<double> > ARate;
