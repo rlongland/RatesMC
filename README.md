@@ -94,6 +94,10 @@ scripts below:
   Porter-Thomas samples. Use for diagnostics only
 
 # New features
+* **Interfering Resonances**  
+  Interferences now work like in the old version of RatesMC. Be warned
+  that this feature is still under testing and there is not a lot of
+  error checking at present.
 * **Correlations**  
   Turning correlations between resonances was a bit of a hidden
   feature before, and was a little finicky with little 'c's to flag
