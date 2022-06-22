@@ -42,6 +42,7 @@ class Interference {
 
   // Getters
   int getIndex(){return index;}
+	int getSign(){return IntfSign;}
   
   // Setters
   void setIndex(int i){index=i;}
@@ -65,13 +66,11 @@ class Interference {
 	void putRateSample(int s, double rate){Rate_sample[s] = rate;}
   double getRateSample(int s){return Rate_sample[s];}
 
-	double getSFactor(double E);
+	double getSFactor(double E, int sign);
 	
   // Function to integrate a broad resonance
-  double NumericalRate(double T,
-		       double E, double G0, double G1, double G2,
-		       double erFrac0, double erFrac1, double erFrac2,
-		       bool writeIntegrand);
+  double NumericalRate(double T,  double E_sample[2], double G_sample[2][3],
+											 double erFrac[2][3], double sign_sample, bool writeIntegrand);
   // The resonance integrand to be integrated in the function above
   //extern "C" {
   double Integrand(double x, void * params);
@@ -94,23 +93,22 @@ class Interference {
 	Resonance* Res[2];
 
 	int IntfSign;
+	double mue;
+
+	int index;
+	double M0,M1,M2;
+	int Z0,Z1,Z2;
+	double Jr[2],J0,J1;
+	double R;
+	double E_cm[2];
+	double G[2][3];
+	double Exf[2];
+	double NChannels[2];
+	int L[2][3];
 	
-	// Resonance parameters
-  int index;
-  int L[3];
-  double E_cm, dE_cm, Jr, G[3], dG[3], Exf, PT[3], dPT[3];
-  double M0,M1,M2,J0,J1,J2;
-  int Z0,Z1,Z2;
-  int NChannels;
-  
-  double R, mue;
-  
-  // Sampled parameters
-  std::vector<double> E_sample;               // Energies
-  std::vector<std::vector<double> > G_sample; // Partial widths
-  std::vector<std::vector<double> > erFrac;   // Energy shift effect on widths
-  
-  // The rate from this resonance
+	std::vector<int> sign_sample;
+	  
+  // The rate from this interfering pair
   double classicalRate;
   std::vector<double> Rate_sample;   // length is number of samples
   double MeanRate, MedianRate, RateMu, RateSigma;

@@ -278,6 +278,18 @@ double Reaction::calcResonant(double Temp){
     //R.printRate();
   }
 
+	// Also loop over the interferences
+	for(Interference &Inter : Interferences){
+
+		double bRate = RateFactorBroad*Inter.calcBroad(Temp);
+		individualRate.push_back(bRate);
+		
+		// Multiply every sample by the reaction rate constant above
+		Inter.scaleByConstant(RateFactorBroad);
+
+	}
+
+	
   // Sum all the classical individual resonanances
   classicalRate = std::accumulate(individualRate.begin(), individualRate.end(), 0.0);
 
@@ -643,6 +655,8 @@ void Reaction::writeSFactor(){
 	// S-factor of each resonance and analytical contribution
 	for(double E=EMin; E<10.0; E+=0.001){
 
+		//std::cout << "E = " << E << "\n";
+          
 		// Write the energy
 		sfactorfile << std::scientific << std::setprecision(3) << E << "   ";
 
@@ -658,9 +672,25 @@ void Reaction::writeSFactor(){
 
 		// Collect S-factor for each resonance
 		for(Resonance &Res : Resonances){
+			//std::cout << "\nRes " << Res.getIndex() << "\n";
 			sfactorfile << Res.getSFactor(E) << "  ";
 		}
-		
+
+		// Same for interferences
+		for(Interference &Inter : Interferences){
+			//std::cout << "\nInt " << Inter.getIndex() << "\n";
+			switch(Inter.getSign()){
+			case(1):
+				sfactorfile << Inter.getSFactor(E, 1) << "  ";
+				break;
+			case(-1):
+				sfactorfile << Inter.getSFactor(E, -1) << "  ";
+				break;
+			default:
+				sfactorfile << Inter.getSFactor(E, 1) << "  ";
+				sfactorfile << Inter.getSFactor(E, -1) << "  ";
+			}
+		}
 		sfactorfile << std::endl;
 	}
 
@@ -677,6 +707,20 @@ void Reaction::setupSFactorHeader(std::ofstream &sfactorfile){
 	sfactorfile << "A-Rate-2    ";
   for(Resonance &Res : Resonances){
 		sfactorfile << "Res" << std::setw(3) << std::setfill('0') << (Res.getIndex()+1) << "     ";
+	}
+	for(Interference &Inter : Interferences){
+		switch(Inter.getSign()){
+		case(0):
+			sfactorfile << "Int" << std::setw(3) << std::setfill('0') << (Inter.getIndex()+1) << "+    ";
+			sfactorfile << "Int" << std::setw(3) << std::setfill('0') << (Inter.getIndex()+1) << "-    ";
+			break;
+		case(1):
+			sfactorfile << "Int" << std::setw(3) << std::setfill('0') << (Inter.getIndex()+1) << "+    ";
+			break;
+		case(-1):
+			sfactorfile << "Int" << std::setw(3) << std::setfill('0') << (Inter.getIndex()+1) << "-    ";
+			break;
+		}
 	}
   sfactorfile << std::endl;
 

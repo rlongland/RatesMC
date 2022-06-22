@@ -55,8 +55,24 @@ class Resonance {
   double getisBroad(){return isBroad;}
 	int getCorresRes(){return CorresRes;}
 	double getFrac(){return Frac;}
-  
-  // Setters
+	double getExf(){return Exf;}
+	double getESample(int s){return E_sample[s];}
+	double getGSample(int i,int s){return G_sample[i][s];}
+	double geterFrac(int i,int s){return erFrac[i][s];}
+	double getG(int i){return G[i];}
+	int getL(int i){return L[i];}
+	double getM0(){return M0;}
+	double getM1(){return M1;}
+	double getM2(){return M2;}
+	int getZ0(){return Z0;}
+	int getZ1(){return Z1;}
+	int getZ2(){return Z2;}
+	double getR(){return R;}
+	double getmue(){return mue;}
+	int getNChannels(){return NChannels;}
+	double getJr(){return Jr;}
+	
+	// Setters
   void setIndex(int i){index=i;}
 
   // Functions that do stuff

@@ -1199,6 +1199,8 @@ double Resonance::getSFactor(double E){
   double S3 = gsl_pow_2(E_cm - E) +
               0.25 * gsl_pow_2(G[0] * Scale[0] + G[1] * Scale[1] + G[2] * Scale[2]);
 
+	//	std::cout << omega << " " << G[0] << " " << G[1] << " ";
+	//	std::cout << Scale[0] << " " << Scale[1] << " " << Scale[2] << "\n";
 	//	std::cout << S1 << " " << S2 << " " << S3 << "\n";
 	
   double SFactor = Consts * S1 * S2 / S3; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));

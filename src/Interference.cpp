@@ -80,9 +80,54 @@ void Interference::makeSamples(std::vector<std::vector<double> > Ref_sample,
 															 double smallestdE,
 															 double smallestdwg, double smallestdG[3]){
 
+	// Make sure the Rate vector is the right size
+  Rate_sample.resize(NSamples);
+
+	M0 = Res[0]->getM0();
+	M1 = Res[0]->getM1();
+	M2 = Res[0]->getM2();
+	Z0 = Res[0]->getZ0();
+	Z1 = Res[0]->getZ1();
+	Z2 = Res[0]->getZ2();
+	J0 = Reac.J0;
+	J1 = Reac.J1;
+	
+  R = Reac.R0 * (pow(M0, (1. / 3.)) + pow(M1, (1. / 3.)));
+  mue = M0 * M1 / (M0 + M1);
+
+	for(int iRes = 0; iRes<2; iRes++){
+		
+		E_cm[iRes] = Res[iRes]->getE_cm();
+		Jr[iRes] = Res[iRes]->getJr();
+		for(int i=0; i<3; i++){
+			G[iRes][i] = Res[iRes]->getG(i);
+			L[iRes][i] = Res[iRes]->getL(i);
+		}
+		Exf[iRes] = Res[iRes]->getExf();
+		NChannels[iRes] = Res[iRes]->getNChannels();
+	}
+	
+	
 	Res[0]->makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
 	Res[1]->makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
 
+	// get the interference sign
+	switch(IntfSign){
+	case -1:
+		sign_sample.resize(NSamples);
+		std::fill(sign_sample.begin(),sign_sample.end(),-1);
+		break;
+	case 1:
+		sign_sample.resize(NSamples);
+		std::fill(sign_sample.begin(),sign_sample.end(),1);
+		break;
+	case 0:
+		for(int i=0; i<NSamples; i++)
+			sign_sample.push_back(2*gsl_rng_uniform_int (r,2)-1);
+		break;
+	}
+
+	
 }
 
 //----------------------------------------------------------------------
@@ -90,28 +135,54 @@ void Interference::makeSamples(std::vector<std::vector<double> > Ref_sample,
 double Interference::calcBroad(double T) {
 
   double classicalRate = 0.0; //, ARate;
-  /*
+
+
   // Calculate the rate samples
   for (int s = 0; s < NSamples; s++) {
 
-  if (s % 10 == 0) {
-  // \r goes back to the beginning of the line.
-  std::cout << "\r" << 100 * s / NSamples << "% Complete for Resonance "
-            << index + 1 << std::flush;
-  }
+		if (s % 10 == 0) {
+			// \r goes back to the beginning of the line.
+			std::cout << "\r" << 100 * s / NSamples << "% Complete for Interference "
+								<< index + 1 << std::flush;
+		}
 
-            // Calculate the single integrated rate sample
-  Rate_sample[s] = NumericalRate(T, E_sample[s], G_sample[0][s],
-                               G_sample[1][s], G_sample[2][s], erFrac[0][s],
-                               erFrac[1][s], erFrac[2][s], false);
-
+		// Calculate the single integrated rate sample
+		// For each resonance we need to grab the samples
+		double E_sample[2];
+		double G_sample[2][3];
+		double erFrac[2][3];
+		
+		for(int iRes=0; iRes<2; iRes++){
+			E_sample[iRes] = Res[iRes]->getESample(s);
+			for(int i=0; i<3; i++){
+				G_sample[iRes][i] = Res[iRes]->getGSample(i,s);
+				erFrac[iRes][i] = Res[iRes]->geterFrac(i,s);
+			}			
+		}
+    Rate_sample[s] = NumericalRate(T, E_sample, G_sample, erFrac, sign_sample[s], false);
+		//std::cout << "Returned from NumericalRate with " << Rate_sample[s] << "\n";
   }
 
   // And the central value, which is the classical rate
-    // Write the integrand to a file
-  classicalRate = NumericalRate(T, E_cm, G[0], G[1], G[2], 1.0, 1.0, 1.0, true);
-    integrandfile << std::endl;
-          */
+	// Write the integrand to a file
+	double erFrac[2][3];
+	for(int iRes=0; iRes<2;iRes++)
+		for(int i=0; i<3; i++)
+			erFrac[iRes][i] = 1.0;
+	switch(IntfSign){
+	case(0):
+		classicalRate = NumericalRate(T, E_cm, G, erFrac, 1, true);
+		classicalRate = NumericalRate(T, E_cm, G, erFrac, -1, true);
+		break;
+	case(1):
+		classicalRate = NumericalRate(T, E_cm, G, erFrac, 1, true);
+		break;
+	case(-1):
+		classicalRate = NumericalRate(T, E_cm, G, erFrac, -1, true);
+		break;
+	}
+	integrandfile << std::endl;
+          
   return classicalRate;
 }
 
@@ -160,86 +231,98 @@ void Interference::printRate() {
 
 //----------------------------------------------------------------------
 // This function gets called for each sample
-double Interference::NumericalRate(double T, double E, double G0, double G1,
-                                double G2, double erFrac0, double erFrac1,
-                                double erFrac2, bool writeIntegrand) {
+double Interference::NumericalRate(double T, double E_sample[2],
+																	 double G_sample[2][3],
+																	 double erFrac[2][3],
+																	 double sign_sample,
+																	 bool writeIntegrand) {
 
   double ARate = 0.0;
-
-  double Pr(0.0), Pr_exit(0.0);
+		
+	double Pr[2], Pr_exit[2];
 
   InterferencePtr = this;
 
   // if reaction is endothermic, need to make minimum energy
   // enough to ensure no integration over negative energies
   double E_min = EMin;
+	double E_max = 10.0;
 
-  // if particle is in spectator channel, integration should
-  //  not be truncated
-  if (Reac.Qexit > Reac.Q && Reac.getGamma_index() == 2)
-    E_min += Reac.Qexit + Exf - Reac.Q;
+	// For each resonance in the interfering pair, do any
+	// energy-dependent scaling, sub-threshold resonance conversion,
+	// etc.
+	for(int iRes = 0; iRes<2; iRes++){
+		//		std::cout << "iRes = " << iRes << " with E = " << E_cm[iRes] << "\n";
+		//std::cout << "E_sample = " << E_sample[iRes] << ", L[iRes][] = " << L[iRes][0] << " " <<
+		//	L[iRes][1] << " " << L[iRes][2] << "\n";
+		// if particle is in spectator channel, integration should
+		//  not be truncated
+		if (Reac.Qexit > Reac.Q && Reac.getGamma_index() == 2)
+			E_min += Reac.Qexit + Exf[iRes] - Reac.Q;
 
-  double E_max = 10.0;
-
-  //  ofstream evsr;
-  //  ofstream testhist;
-  //  testhist.open("integrands.dat");
-
-	// Scale the partial widths by the energy effect
-	G0 *= erFrac0;
-	G1 *= erFrac1;
-	G2 *= erFrac2;
+		// Scale the partial widths by the energy effect
+		for(int i=0; i<3; i++){
+			G_sample[iRes][i] *= erFrac[iRes][i];
+		}
 	
-  // IF we input E>0, but the sample is <0, we need to treat it as a
-  // subthreshold resonance. To do this, we need to convert
-  // G into C2S*Theta_sp
-  if (E_cm > 0.0 && E < 0.0) {
-    ErrorFlag = true;
-    SampledNegCount++;
-    G0 = mue * gsl_pow_2(R) * G0 /
-         (2.0 * 41.80161396 * PenFactor(E_cm, L[0], M0, M1, Z0, Z1, R));
-    //    std::cout << "Positive resonance went negative!\n";
-    //    std::cout << "E_cm = " << E_cm << "E_sample = " << E << "G[0] = " <<
-    //    G[0]
-    //              << " G_sample = " << G0 << std::endl;
-  } else if (E_cm < 0.0 && E > 0.0) {
-    // or convert to real resonance if E>0.0
-    ErrorFlag = true;
-    SubSampledPosCount++;
-    G0 = G0 * 2.0 * 41.80161396 * PenFactor(E, L[0], M0, M1, Z0, Z1, R) /
-         (mue * gsl_pow_2(R));
-		//		std::cout << "Negative resonance went positive!\n";
-		//		std::cout << "E_cm = " << E_cm << "E_sample = " << E << "G[0] = " << G[0]
-		//							<< " G_sample = " << G0 << std::endl;
-  }
+		// IF we input E>0, but the sample is <0, we need to treat it as a
+		// subthreshold resonance. To do this, we need to convert
+		// G into C2S*Theta_sp
+		//std::cout << "here\n";
+		if (E_cm[iRes] > 0.0 && E_sample[iRes] < 0.0) {
+			ErrorFlag = true;
+			SampledNegCount++;
+			G_sample[iRes][0] = mue * gsl_pow_2(R) * G_sample[iRes][0] /
+				(2.0 * 41.80161396 * PenFactor(E_sample[iRes], L[iRes][0], M0, M1, Z0, Z1, R));
+			//std::cout << "Positive resonance went negative!\n";
+			//std::cout << "E_cm = " << E_cm << "E_sample = " << E_sample[iRes] << "G[0] = " <<
+			//	G[0]	<< " G_sample = " << G_sample[iRes][0] << std::endl;
+		} else if (E_cm[iRes] < 0.0 && E_sample[iRes] > 0.0) {
+			// or convert to real resonance if E>0.0
+			ErrorFlag = true;
+			SubSampledPosCount++;
+			G_sample[iRes][0] = G_sample[iRes][0] * 2.0 * 41.80161396 *
+				PenFactor(E_sample[iRes], L[iRes][0], M0, M1, Z0, Z1, R) /
+				(mue * gsl_pow_2(R));
+			//	std::cout << "Negative resonance went positive!\n";
+			//		std::cout << "E_cm = " << E_cm << "E_sample = " << E_sample[iRes] << "G[0] = " << G[0]
+			//							<< " G_sample = " << G_sample[iRes][0] << std::endl;
+		}
 
-  //  The penetration factor at the resonance energy (the "true" PF)
-  if (E > 0.0) {
-    Pr = PenFactor(E, L[0], M0, M1, Z0, Z1, R);
-    //    std::cout << "Pr = " << Pr << "\n";
-		if(isZero(Pr))return 0.0;
-	} else {
-    Pr = 0.0;
-  }
-	//std::cout << "Pr = " << Pr << "\n";
+		//  The penetration factor at the resonance energy (the "true" PF)
+		//std::cout << "normal\n";
+		if (E_sample[iRes] > 0.0) {
+			//std::cout << M0 << " " << M1 << " " << M2 << " " << Z0 << " " << Z1 << " " << R << "\n";
+			Pr[iRes] = PenFactor(E_sample[iRes], L[iRes][0], M0, M1, Z0, Z1, R);
+			//std::cout << "Pr = " << Pr[iRes] << "\n";
+			//if(isZero(Pr[iRes]))return 0.0;
+		} else {
+			Pr[iRes] = 0.0;
+		}
+		//		std::cout << "Pr = " << Pr[iRes] << "\n";
 
 	
-  // Calculate the exit particle energy, depends on if it is spectator
-  // if(NChannels[j]==3){
-  if (Reac.getGamma_index() == 2) {
-    // if exit particle is observed decay, take final excitation into account
-    Pr_exit = PenFactor(E + Reac.Q - Reac.Qexit - Exf, L[1], M0 + M1 - M2, M2,
-                        Z0 + Z1 - Z2, Z2, R);
-    // cout << "Exit energy = " << E+Reac.Q-Reac.Qexit-Exf << endl;
-  } else if (Reac.getGamma_index() == 1 && NChannels == 3) {
-    // ignore spectator final excitation if it is spectator
-    Pr_exit = PenFactor(E + Reac.Q - Reac.Qexit, L[2], M0 + M1 - M2, M2,
-                        Z0 + Z1 - Z2, Z2, R);
-    // cout << "Exit energy = " << E+Reac.Q-Reac.Qexit << endl;
-  }
+		// Calculate the exit particle energy, depends on if it is spectator
+		// if(NChannels[j]==3){
+		if (Reac.getGamma_index() == 2) {
+			// if exit particle is observed decay, take final excitation into account
+			Pr_exit[iRes] = PenFactor(E_sample[iRes] + Reac.Q - Reac.Qexit - Exf[iRes], L[iRes][1],
+																M0 + M1 - M2, M2,
+																Z0 + Z1 - Z2, Z2, R);
+			// cout << "Exit energy = " << E+Reac.Q-Reac.Qexit-Exf << endl;
+		} else if (Reac.getGamma_index() == 1 && NChannels[iRes] == 3) {
+			// ignore spectator final excitation if it is spectator
+			Pr_exit[iRes] = PenFactor(E_sample[iRes] + Reac.Q - Reac.Qexit, L[iRes][2],
+																M0 + M1 - M2, M2,
+																Z0 + Z1 - Z2, Z2, R);
+			// cout << "Exit energy = " << E+Reac.Q-Reac.Qexit << endl;
+		}
+	}
 
-  //--------------------------------------------------
-  // GSL Integration functions
+	// Now we're ready to do the integration!
+		
+	//--------------------------------------------------
+	// GSL Integration functions
   double result, error;
   size_t nevals;
 
@@ -248,15 +331,23 @@ double Interference::NumericalRate(double T, double E, double G0, double G1,
   //double pole = E;
 
   // The array that needs to be passed to the integration function
-  double alpha[8];
+	//	std::cout << "About to start integration\n";
+  double alpha[15];
   alpha[0] = (int)writeIntegrand;
-  alpha[1] = Pr;
-  alpha[2] = Pr_exit;
-  alpha[3] = E;
-  alpha[4] = T;
-  alpha[5] = G0;
-  alpha[6] = G1;
-  alpha[7] = G2;
+  alpha[1] = Pr[0];
+  alpha[2] = Pr[1];
+  alpha[3] = Pr_exit[0];
+  alpha[4] = Pr_exit[0];
+  alpha[5] = E_sample[0];
+  alpha[6] = E_sample[1];
+  alpha[7] = G_sample[0][0];
+  alpha[8] = G_sample[0][1];
+  alpha[9] = G_sample[1][0];
+  alpha[10] = G_sample[1][1];
+  alpha[11] = G_sample[2][0];
+  alpha[12] = G_sample[2][1];
+  alpha[13] = sign_sample;
+  alpha[14] = T;
 
   //double gammaT = G0 + G1 + G2;
 
@@ -316,8 +407,10 @@ double Interference::NumericalRate(double T, double E, double G0, double G1,
   gsl_error_handler_t *temp_handler;
   temp_handler = gsl_set_error_handler_off();
 
+	//std::cout << "Setting up integration workspace\n";
   gsl_integration_cquad_workspace *w =
       gsl_integration_cquad_workspace_alloc(10000);
+	//std::cout << "Integration!\n";
   int status = gsl_integration_cquad(&F,      // Function to be integrated
                                      E_min,   // Where known singularity is
                                      E_max,   // number of singularities
@@ -328,6 +421,7 @@ double Interference::NumericalRate(double T, double E, double G0, double G1,
                                      &error, &nevals);
   gsl_integration_cquad_workspace_free(w);
 
+	//std::cout << "Done integration: " << status << "\n";
 	//status = -1;
   // If the integration errored, use the slower ODE method
   if (status != 0) {
@@ -363,12 +457,20 @@ double Interference::NumericalRate(double T, double E, double G0, double G1,
 
       // 2007-12-27
       // If the step will bring it close to the Er, take small steps
-      if(x < E && (x + h) > (E-(3.0*(G0+G1+G2))))smallstep=true;
+      if(x < E_sample[0] && (x + h) > (E_sample[0]-(3.0*(G_sample[0][0]+
+																												 G_sample[0][1]+
+																												 G_sample[0][2]))))smallstep=true;
+      if(x < E_sample[1] && (x + h) > (E_sample[1]-(3.0*(G_sample[1][0]+
+																												 G_sample[1][1]+
+																												 G_sample[1][2]))))smallstep=true;
 			
       // Now make step small if it isn't already, can be fairly large because
       // it starts on the resonance wing
-      if(smallstep && h>(G0+G1+G2)){
-				h = (G0+G1+G2);
+      if(smallstep && h>(G_sample[0][0]+G_sample[0][1]+G_sample[0][2])){
+				h = (G_sample[0][0]+G_sample[0][1]+G_sample[0][2]);
+      }
+      if(smallstep && h>(G_sample[1][0]+G_sample[1][1]+G_sample[1][2])){
+				h = (G_sample[1][0]+G_sample[1][1]+G_sample[1][2]);
       }
 
       // Make the step...
@@ -398,7 +500,7 @@ double Interference::NumericalRate(double T, double E, double G0, double G1,
 	}
   gsl_set_error_handler(temp_handler);
 
-
+	//	std::cout << "Result = " << result << "\n";
 	// The integration result
   ARate = result;
 
@@ -427,280 +529,340 @@ double Interference::Integrand(double x, void *params) {
 
   double *par = (double *)params;
   int writeIntegrand = (int)par[0];
-  double Pr = (double)par[1];
-  double Pr_exit = (double)par[2];
-  double Er = (double)par[3];
-  double Temp = (double)par[4];
-  double G0 = (double)par[5];
-  double G1 = (double)par[6];
-  double G2 = (double)par[7];
-
-  //  this->print();
-
-  // std::cout << Pr << " " << Pr_exit << " " << Er << " "
-  //	    << Temp << " " << G0 << " " << G1 << " " << G2 << " " << "\n";
-
-  // std::cout << "R = " << R << "\n";
+	double Pr[2];
+  Pr[0] = (double)par[1];
+  Pr[1] = (double)par[2];
+  double Pr_exit[2];
+	Pr_exit[0] = (double)par[3];
+	Pr_exit[1] = (double)par[4];
+  double Er[2];
+	Er[0] = (double)par[5];
+	Er[1] = (double)par[6];
+  double G0[2], G1[2], G2[2];
+	G0[0] = (double)par[7];
+	G0[1] = (double)par[8];
+	G1[0] = (double)par[9];
+	G1[1] = (double)par[10];
+	G2[0] = (double)par[11];
+	G2[1] = (double)par[12];
+	double sign = (double)par[13];
+	double Temp = (double)par[14];
 
   double Scale[3];
-
+	double RatePart[3];    // Stores the rate part for each resonance and the interference term
+	double SFactorPart[3]; // Stores the S-factor for each term
+	double delta[3];
+	
   // double mue = M0*M1/(M0+M1);
   // double R = R0*(pow(M0,1./3.) + pow(M1,1./3.));
   double PEK = 6.56618216E-1 / mue; // a correction factor
-  double P = PenFactor(x, L[0], M0, M1, Z0, Z1, R);
-  double P_exit, E_exit = 0.;
-  double omega = (2. * Jr + 1.) / ((2. * J0 + 1.) * (2. * J1 + 1.));
 
-  // cout << Jr << " " << J0 << " " << J1 << " " << mue << " " << R << " " <<
-  // PEK << " " << omega << "\n";
+	double singular_point;
 
-  // std::cout << P << " " << omega << "\n";
+	// Do the individual resonances
+	for(int iRes=0; iRes<2; iRes++){
+		double P = PenFactor(x, L[iRes][0], M0, M1, Z0, Z1, R);
+		double P_exit, E_exit=0.0;
+		double omega = (2. * Jr[iRes] + 1.) / ((2. * J0 + 1.) * (2. * J1 + 1.));
 
-  if (Er > 0.0) {
-    Scale[0] = P / Pr;
-  } else {
-    Scale[0] = 1.0;
-    G0 = 2.0 * P * G0 * 41.80161396 / (mue * gsl_pow_2(R));
+	// TODO Got here!
+	
+		if (Er[iRes] > 0.0) {
+			Scale[0] = P / Pr[iRes];
+		} else {
+			Scale[0] = 1.0;
+			G0[iRes] = 2.0 * P * G0[iRes] * 41.80161396 / (mue * gsl_pow_2(R));
+		}
+
+		// TODO from here!
+		for (int i = 1; i < 3; i++) {
+			if (G1[iRes] > 0.0) {
+				if (i == Reac.getGamma_index()) {
+					if (i == 1)
+						Scale[i] = pow((Reac.Q + x - Exf[iRes]) /
+													 (Reac.Q + Er[iRes] - Exf[iRes]), (2. * L[iRes][i] + 1.0));
+					if (i == 2)
+						Scale[i] = pow((Reac.Q + x) / (Reac.Q + Er[iRes]), (2. * L[iRes][i] + 1.0));
+				} else {
+					if (i == 1)
+						E_exit = Reac.Q + x - Reac.Qexit - Exf[iRes];
+					if (i == 2)
+						E_exit = Reac.Q + x - Reac.Qexit;
+					if (E_exit > 0.0) {
+						P_exit = PenFactor(E_exit, L[iRes][i], M0 + M1 - M2, M2,
+															 Z0 + Z1 - Z2, Z2, R);
+						Scale[i] = P_exit / Pr_exit[iRes];
+					} else {
+						Scale[i] = 0.0;
+					}
+				}
+			} else {
+				Scale[i] = 1;
+			}
+		}
+
+		double S1 = PEK * omega * Scale[0] * G0[iRes] * Scale[1] * G1[iRes];
+		double S2 = gsl_pow_2(Er[iRes] - x) +
+			0.25 * gsl_pow_2(G0[iRes] * Scale[0] + G1[iRes] * Scale[1] + G2[iRes] * Scale[2]);
+		double S3 = exp(-11.605 * x / Temp);
+
+		double integrand = S1 * S3 / S2; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
+		
+		double sfactor = (S1/S2)*exp(0.989534*Z0*Z1*sqrt(mue/x));
+
+		RatePart[iRes] = integrand;
+		SFactorPart[iRes] = sfactor;
+    delta[iRes] = atan( (G0[iRes]*Scale[0] + G1[iRes]*Scale[1] +
+			  G2[iRes]*Scale[2])/(2.0*(x-Er[iRes])));
+    if(delta[iRes] < 0.0)delta[iRes]+=M_PI;
+
+		// Check for singular points
+		double diff = fabs(x - Er[iRes]);
+		singular_point = (diff <= (std::numeric_limits<double>::epsilon() * Er[iRes]));
+
+	}
+
+	// Now the interference term
+  // Then, the interference term
+  double del = delta[0]-delta[1];
+  RatePart[2] = sign*2.0*sqrt(RatePart[0]*RatePart[1])*cos(del);
+	SFactorPart[2] = sign*2.0*sqrt(SFactorPart[0]*SFactorPart[1])*cos(del);
+
+  if(isnan(RatePart[2])){
+    RatePart[2] = 0.0;
+		//    IntfNAN=true;
   }
-  // std::cout << "Scale[0] = " << Scale[0] << " E = " << x << " G0(E) = " << G0
-  // << "\n";
 
-  for (int i = 1; i < 3; i++) {
-    if (G[i] > 0.0) {
-      if (i == Reac.getGamma_index()) {
-        if (i == 1)
-          Scale[i] =
-              pow((Reac.Q + x - Exf) / (Reac.Q + Er - Exf), (2. * L[i] + 1.0));
-        if (i == 2)
-          Scale[i] = pow((Reac.Q + x) / (Reac.Q + Er), (2. * L[i] + 1.0));
-      } else {
-        if (i == 1)
-          E_exit = Reac.Q + x - Reac.Qexit - Exf;
-        if (i == 2)
-          E_exit = Reac.Q + x - Reac.Qexit;
-        if (E_exit > 0.0) {
-          P_exit =
-              PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
-          Scale[i] = P_exit / Pr_exit;
-        } else {
-          Scale[i] = 0.0;
-        }
-      }
-    } else {
-      Scale[i] = 1;
-    }
-  }
-
-  double S1 = PEK * omega * Scale[0] * G0 * Scale[1] * G1;
-  double S2 = gsl_pow_2(Er - x) +
-              0.25 * gsl_pow_2(G0 * Scale[0] + G1 * Scale[1] + G2 * Scale[2]);
-  double S3 = exp(-11.605 * x / Temp);
-
-  double integrand = S1 * S3 / S2; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
-
-	double sfactor = (S1/S2)*exp(0.989534*Z0*Z1*sqrt(mue/x)); 
-
-  //  if(integrand < 1.e-99)integrand=0.0;
-
-  //  std::cout << x << " " << integrand << "\n";
-
-  // cout << x << "\t" << dydx[0] << endl;
-
-  //  integrand = gsl_max(integrand,1e-300);
-  double diff = fabs(x - Er);
-  bool singular_point = (diff <= (std::numeric_limits<double>::epsilon() * Er));
-
+	double totalIntegrand = RatePart[0] + RatePart[1] - RatePart[2];
+	double totalSFactor = SFactorPart[0] + SFactorPart[1] - SFactorPart[2];
+	
   if (singular_point)
-    integrand = std::numeric_limits<double>::quiet_NaN();
+    totalIntegrand = std::numeric_limits<double>::quiet_NaN();
 
   // Write the integrand to a file if requested
 	//	std::cout << writeIntegrand << " ";
 	if (writeIntegrand){
-		integrandfile << std::scientific << std::setprecision(9) << x << " " << integrand
-									<< " " << sfactor << " " << P << std::endl;
+		integrandfile << std::scientific << std::setprecision(9) << x << " " << totalIntegrand
+									<< " " << totalSFactor << std::endl;
 	}
 	
-  // astrohpysical s-factor
-  // cout << x << "\t" << x*(S1/S2)/exp(-0.989534*Z0*Z1*sqrt(mue/x)) << endl;
-  // Numerator of x section
-  // cout << x << "\t" << Scale[0]*G0*Scale[1]*G1 << endl;
-  // Denominator of x-section
-  // cout << x << "\t" << S2 << "\t" << gsl_pow_2(Er-x) << endl;
-  // G0+G1 and G2 and G0+G1+G2
-  // cout << x << "\t" << G0*Scale[0]+G1*Scale[1] << "\t" << G2*Scale[2] << "\t"
-  // <<
-  //  G0*Scale[0]+G1*Scale[1]+G2*Scale[2] << endl;
-  // all
-  // cout << x << "\t" << x*(S1/S2)/exp(-0.989534*Z0*Z1*sqrt(mue/x)) << "\t" <<
-  // S2 <<
-  //  "\t" << G0*Scale[0]+G1*Scale[1] << "\t" << G2*Scale[2] << "\t" <<
-  //  G0*Scale[0]+G1*Scale[1]+G2*Scale[2] << endl;
-  // penetration factor for exit paritlce
-  //  cout << x << "\t" << P_exit << endl;
-  // std::cout << integrand << "\n";
 
-  return integrand;
+  return totalIntegrand;
 }
 
 int Interference::rhs (double x, const double y[], double dydx[], void *params){
 
-	double *par = (double *)params;
-  double Pr = (double)par[1];
-  double Pr_exit = (double)par[2];
-  double Er = (double)par[3];
-  double Temp = (double)par[4];
-  double G0 = (double)par[5];
-  double G1 = (double)par[6];
-  double G2 = (double)par[7];
 
-  //  this->print();
+  double *par = (double *)params;
+  //int writeIntegrand = (int)par[0];
+	double Pr[2];
+  Pr[0] = (double)par[1];
+  Pr[1] = (double)par[2];
+  double Pr_exit[2];
+	Pr_exit[0] = (double)par[3];
+	Pr_exit[1] = (double)par[4];
+  double Er[2];
+	Er[0] = (double)par[5];
+	Er[1] = (double)par[6];
+  double G0[2], G1[2], G2[2];
+	G0[0] = (double)par[7];
+	G0[1] = (double)par[8];
+	G1[0] = (double)par[9];
+	G1[1] = (double)par[10];
+	G2[0] = (double)par[11];
+	G2[1] = (double)par[12];
+	double sign = (double)par[13];
+	double Temp = (double)par[14];
 
-  // std::cout << Pr << " " << Pr_exit << " " << Er << " "
-  //	    << Temp << " " << G0 << " " << G1 << " " << G2 << " " << "\n";
-
-  // std::cout << "R = " << R << "\n";
 
   double Scale[3];
+	double RatePart[3];    // Stores the rate part for each resonance and the interference term
+	double SFactorPart[3]; // Stores the S-factor for each term
+	double delta[3];
 
-  //double mue = M0*M1/(M0+M1);
+  // double mue = M0*M1/(M0+M1);
   // double R = R0*(pow(M0,1./3.) + pow(M1,1./3.));
   double PEK = 6.56618216E-1 / mue; // a correction factor
-  double P = PenFactor(x, L[0], M0, M1, Z0, Z1, R);
-  double P_exit, E_exit = 0.;
-  double omega = (2. * Jr + 1.) / ((2. * J0 + 1.) * (2. * J1 + 1.));
 
-  // cout << Jr << " " << J0 << " " << J1 << " " << mue << " " << R << " " <<
-  // PEK << " " << omega << "\n";
+	//double singular_point;
 
-  // std::cout << P << " " << omega << "\n";
+	// Do the individual resonances
+	for(int iRes=0; iRes<2; iRes++){
+		double P = PenFactor(x, L[iRes][0], M0, M1, Z0, Z1, R);
+		double P_exit, E_exit=0.0;
+		double omega = (2. * Jr[iRes] + 1.) / ((2. * J0 + 1.) * (2. * J1 + 1.));
 
-  if (Er > 0.0) {
-    Scale[0] = P / Pr;
-  } else {
-    Scale[0] = 1.0;
-    G0 = 2.0 * P * G0 * 41.80161396 / (mue * gsl_pow_2(R));
+	// TODO Got here!
+	
+		if (Er[iRes] > 0.0) {
+			Scale[0] = P / Pr[iRes];
+		} else {
+			Scale[0] = 1.0;
+			G0[iRes] = 2.0 * P * G0[iRes] * 41.80161396 / (mue * gsl_pow_2(R));
+		}
+
+		// TODO from here!
+		for (int i = 1; i < 3; i++) {
+			if (G1[iRes] > 0.0) {
+				if (i == Reac.getGamma_index()) {
+					if (i == 1)
+						Scale[i] = pow((Reac.Q + x - Exf[iRes]) /
+													 (Reac.Q + Er[iRes] - Exf[iRes]), (2. * L[iRes][i] + 1.0));
+					if (i == 2)
+						Scale[i] = pow((Reac.Q + x) / (Reac.Q + Er[iRes]), (2. * L[iRes][i] + 1.0));
+				} else {
+					if (i == 1)
+						E_exit = Reac.Q + x - Reac.Qexit - Exf[iRes];
+					if (i == 2)
+						E_exit = Reac.Q + x - Reac.Qexit;
+					if (E_exit > 0.0) {
+						P_exit = PenFactor(E_exit, L[iRes][i], M0 + M1 - M2, M2,
+															 Z0 + Z1 - Z2, Z2, R);
+						Scale[i] = P_exit / Pr_exit[iRes];
+					} else {
+						Scale[i] = 0.0;
+					}
+				}
+			} else {
+				Scale[i] = 1;
+			}
+		}
+
+		double S1 = PEK * omega * Scale[0] * G0[iRes] * Scale[1] * G1[iRes];
+		double S2 = gsl_pow_2(Er[iRes] - x) +
+			0.25 * gsl_pow_2(G0[iRes] * Scale[0] + G1[iRes] * Scale[1] + G2[iRes] * Scale[2]);
+		double S3 = exp(-11.605 * x / Temp);
+
+		double integrand = S1 * S3 / S2; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
+		
+		double sfactor = (S1/S2)*exp(0.989534*Z0*Z1*sqrt(mue/x));
+
+		RatePart[iRes] = integrand;
+		SFactorPart[iRes] = sfactor;
+    delta[iRes] = atan( (G0[iRes]*Scale[0] + G1[iRes]*Scale[1] +
+			  G2[iRes]*Scale[2])/(2.0*(x-Er[iRes])));
+    if(delta[iRes] < 0.0)delta[iRes]+=M_PI;
+
+		// Check for singular points
+		//double diff = fabs(x - Er[iRes]);
+		//singular_point = (diff <= (std::numeric_limits<double>::epsilon() * Er[iRes]));
+
+	}
+
+	// Now the interference term
+  // Then, the interference term
+  double del = delta[0]-delta[1];
+  RatePart[2] = sign*2.0*sqrt(RatePart[0]*RatePart[1])*cos(del);
+	SFactorPart[2] = sign*2.0*sqrt(SFactorPart[0]*SFactorPart[1])*cos(del);
+
+  if(isnan(RatePart[2])){
+    RatePart[2] = 0.0;
+		//    IntfNAN=true;
   }
-  // std::cout << "Scale[0] = " << Scale[0] << " E = " << x << " G0(E) = " << G0
-  // << "\n";
 
-  for (int i = 1; i < 3; i++) {
-    if (G[i] > 0.0) {
-      if (i == Reac.getGamma_index()) {
-        if (i == 1)
-          Scale[i] =
-              pow((Reac.Q + x - Exf) / (Reac.Q + Er - Exf), (2. * L[i] + 1.0));
-        if (i == 2)
-          Scale[i] = pow((Reac.Q + x) / (Reac.Q + Er), (2. * L[i] + 1.0));
-      } else {
-        if (i == 1)
-          E_exit = Reac.Q + x - Reac.Qexit - Exf;
-        if (i == 2)
-          E_exit = Reac.Q + x - Reac.Qexit;
-        if (E_exit > 0.0) {
-          P_exit =
-              PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
-          Scale[i] = P_exit / Pr_exit;
-        } else {
-          Scale[i] = 0.0;
-        }
-      }
-    } else {
-      Scale[i] = 1;
-    }
-  }
+	double totalIntegrand = RatePart[0] + RatePart[1] - RatePart[2];
+	//	double totalSFactor = SFactorPart[0] + SFactorPart[1] - SFactorPart[2];
 
-  double S1 = PEK * omega * Scale[0] * G0 * Scale[1] * G1;
-  double S2 = gsl_pow_2(Er - x) +
-              0.25 * gsl_pow_2(G0 * Scale[0] + G1 * Scale[1] + G2 * Scale[2]);
-  double S3 = exp(-11.605 * x / Temp);
-
-  double integrand = S1 * S3 / S2; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
-
-	dydx[0] = integrand;
+	dydx[0] = totalIntegrand;
 	
 	return GSL_SUCCESS;
 }
 //}
 
 //----------------------------------------------------------------------
-double Interference::getSFactor(double E){
+double Interference::getSFactor(double E, int sign){
 
   //double PEK = 6.56618216E-1 / mue; // a correction factor
-  double P = PenFactor(E, L[0], M0, M1, Z0, Z1, R);
-	double Pr, Pr_exit;
-  double P_exit, E_exit = 0.;
-  double omega = (2. * Jr + 1.) / ((2. * J0 + 1.) * (2. * J1 + 1.));
 
-	double Scale[3];
+	double SFactorPart[3], delta[3];
+	
+	for(int iRes=0; iRes<2; iRes++){
+		double P = PenFactor(E, L[iRes][0], M0, M1, Z0, Z1, R);
+		double Pr, Pr_exit;
+		double P_exit, E_exit = 0.;
+		double G0 = Res[iRes]->getG(0);
+		double G1 = Res[iRes]->getG(1);
+		double G2 = Res[iRes]->getG(2);
+		double omega = (2. * Jr[iRes] + 1.) / ((2. * J0 + 1.) * (2. * J1 + 1.));
 
-  double eta = 0.989510*Z0*Z1*sqrt(mue/E);
+		double Scale[3];
+
+		double eta = 0.989510*Z0*Z1*sqrt(mue/E);
 
 	
-  //  The penetration factor at the resonance energy (the "true" PF)
-  if (E_cm > 0.0) {
-    Pr = PenFactor(E_cm, L[0], M0, M1, Z0, Z1, R);
-  } else {
-    Pr = 0.0;
-  }
+		//  The penetration factor at the resonance energy (the "true" PF)
+		if (E_cm[iRes] > 0.0) {
+			Pr = PenFactor(E_cm[iRes], L[iRes][0], M0, M1, Z0, Z1, R);
+		} else {
+			Pr = 0.0;
+		}
 
-  // Calculate the exit particle energy, depends on if it is spectator
-  if (Reac.getGamma_index() == 2) {
-    // if exit particle is observed decay, take final excitation into account
-    Pr_exit = PenFactor(E_cm + Reac.Q - Reac.Qexit - Exf, L[1], M0 + M1 - M2, M2,
-                        Z0 + Z1 - Z2, Z2, R);
-  } else if (Reac.getGamma_index() == 1 && NChannels == 3) {
-    // ignore spectator final excitation if it is spectator
-    Pr_exit = PenFactor(E_cm + Reac.Q - Reac.Qexit, L[2], M0 + M1 - M2, M2,
-                        Z0 + Z1 - Z2, Z2, R);
-  }
+		// Calculate the exit particle energy, depends on if it is spectator
+		if (Reac.getGamma_index() == 2) {
+			// if exit particle is observed decay, take final excitation into account
+			Pr_exit = PenFactor(E_cm[iRes] + Reac.Q - Reac.Qexit - Exf[iRes], L[iRes][1], M0 + M1 - M2, M2,
+													Z0 + Z1 - Z2, Z2, R);
+		} else if (Reac.getGamma_index() == 1 && NChannels[iRes] == 3) {
+			// ignore spectator final excitation if it is spectator
+			Pr_exit = PenFactor(E_cm[iRes] + Reac.Q - Reac.Qexit, L[iRes][2], M0 + M1 - M2, M2,
+													Z0 + Z1 - Z2, Z2, R);
+		}
 
-	// Entrance particle scale
-  if (E_cm > 0.0) {
-    Scale[0] = P / Pr;
-  } else {
-    Scale[0] = 2.0 * P * 41.80161396 / (mue * gsl_pow_2(R));
-		//Scale[0] = 1.0;
-    //		G0 = 2.0 * P * G0 * 41.80161396 / (mue * gsl_pow_2(R));
-  }
+		// Entrance particle scale
+		if (E_cm[iRes] > 0.0) {
+			Scale[0] = P / Pr;
+		} else {
+			Scale[0] = 2.0 * P * 41.80161396 / (mue * gsl_pow_2(R));
+		}
 
-	// Exit and spectator scales
-  for (int i = 1; i < 3; i++) {
-    if (G[i] > 0.0) {
-      if (i == Reac.getGamma_index()) {
-        if (i == 1)
-          Scale[i] =
-              pow((Reac.Q + E - Exf) / (Reac.Q + E_cm - Exf), (2. * L[i] + 1.0));
-        if (i == 2)
-          Scale[i] = pow((Reac.Q + E) / (Reac.Q + E_cm), (2. * L[i] + 1.0));
-      } else {
-        if (i == 1)
-          E_exit = Reac.Q + E - Reac.Qexit - Exf;
-        if (i == 2)
-          E_exit = Reac.Q + E - Reac.Qexit;
-        if (E_exit > 0.0) {
-          P_exit =
-              PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
-          Scale[i] = P_exit / Pr_exit;
-        } else {
-          Scale[i] = 0.0;
-        }
-      }
-    } else {
-      Scale[i] = 1;
-    }
-  }
+		// Exit and spectator scales
+		for (int i = 1; i < 3; i++) {
+			if (G[iRes][i] > 0.0) {
+				if (i == Reac.getGamma_index()) {
+					if (i == 1)
+						Scale[i] =
+              pow((Reac.Q + E - Exf[iRes]) / (Reac.Q + E_cm[iRes] - Exf[iRes]), (2. * L[iRes][i] + 1.0));
+					if (i == 2)
+						Scale[i] = pow((Reac.Q + E) / (Reac.Q + E_cm[iRes]), (2. * L[iRes][i] + 1.0));
+				} else {
+					if (i == 1)
+						E_exit = Reac.Q + E - Reac.Qexit - Exf[iRes];
+					if (i == 2)
+						E_exit = Reac.Q + E - Reac.Qexit;
+					if (E_exit > 0.0) {
+						P_exit =
+              PenFactor(E_exit, L[iRes][i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
+						Scale[i] = P_exit / Pr_exit;
+					} else {
+						Scale[i] = 0.0;
+					}
+				}
+			} else {
+				Scale[i] = 1;
+			}
+		}
 
+		double S1 = exp(eta);
+		double S2 = omega * Scale[0] * G0 * Scale[1] * G1;
+		double S3 = gsl_pow_2(E_cm[iRes] - E) +
+			0.25 * gsl_pow_2(G0 * Scale[0] + G1 * Scale[1] + G2 * Scale[2]);
+
+		//		std::cout << Scale[0] << " " << Scale[1] << " " << Scale[2] << "\n";
+		//std::cout << S1 << " " << S2 << " " << S3 << "\n";
+	
+		SFactorPart[iRes] = S1 * S2 / S3; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
+		delta[iRes] = atan( (G0*Scale[0] + G1*Scale[1] +
+												 G2*Scale[2])/(2.0*(E - E_cm[iRes])));
+		if(delta[iRes] < 0.0)delta[iRes]+=M_PI;
+	}
+
+	// Now the interference term
+  // Then, the interference term
+  double del = delta[0]-delta[1];
+	SFactorPart[2] = sign*2.0*sqrt(SFactorPart[0]*SFactorPart[1])*cos(del);
 	double Consts = 0.6566/mue;   // pi*hbar^2/(2*mu) in MeV.b
-	double S1 = exp(eta);
-  double S2 = omega * Scale[0] * G[0] * Scale[1] * G[1];
-  double S3 = gsl_pow_2(E_cm - E) +
-              0.25 * gsl_pow_2(G[0] * Scale[0] + G[1] * Scale[1] + G[2] * Scale[2]);
-
-	//	std::cout << S1 << " " << S2 << " " << S3 << "\n";
 	
-  double SFactor = Consts * S1 * S2 / S3; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
-
-	return SFactor;
+	return Consts*(SFactorPart[0] + SFactorPart[1] - SFactorPart[2]);
 	
 }
 
@@ -727,64 +889,9 @@ void Interference::print() {
 	Res[0]->print();
 	std::cout << "  Second Resonance:\n";
 	Res[1]->print();
-	/*
-cout << "    E_cm = " << E_cm
- << " +/- " << dE_cm << "\n";
-cout << "                 wg   = " << wg << " +/- " << dwg << "\n";
-cout << "                 Jr   = " << Jr << "\n";
-cout << "                 G1   = " << G[0] << " +/- " << dG[0]
- << " (L = " << L[0] << ")\n";
-if (isUpperLimit)
-cout << "                 PT   = " << PT[0] << " +/- " << dPT[0] << "\n";
-cout << "                 G2   = " << G[1] << " +/- " << dG[1]
- << " (L = " << L[1] << ")\n";
-if (isUpperLimit)
-cout << "                 PT   = " << PT[1] << " +/- " << dPT[1] << "\n";
-cout << "                 G3   = " << G[2] << " +/- " << dG[2]
- << " (L = " << L[2] << ")\n";
-if (isUpperLimit)
-cout << "                 PT   = " << PT[2] << " +/- " << dPT[2] << "\n";
-cout << "                 Exf  = " << Exf << "\n";
-cout << "           Integrated = " << isBroad << "\n";
-cout << "          Upper Limit = " << isUpperLimit << "\n";
-  cout << "    Energy Correlated = " << isECorrelated << "\n";
-  cout << "     Width Correlated = " << isWidthCorrelated << "\n";
-  cout << "   Corresponding res. = " << CorresRes << "\n";
-  cout << "                 Frac = " << Frac << "\n";
 
-//  cout << "--------------------------------------------------" << "\n";
-int NPrintSamples = 5;
-cout << "First " << NPrintSamples << " samples    -------\n";
-cout << "E_cm: ";
-//  cout << E_sample.size() << "\n";
-// Print energy samples
-for (int s = 0; s < NPrintSamples; s++) {
-cout << E_sample[s] << " ";
-}
-cout << "\n";
-
-// Print wg samples
-if (wg_sample.size() > 0) {
-cout << "wg: ";
-for (int s = 0; s < NPrintSamples; s++) {
-cout << wg_sample[s] << " ";
-}
-cout << "\n";
 }
 
-// Print Gamma samples
-for (int i = 0; i < NChannels; i++) {
-if (G_sample[i].size() > 0) {
-cout << "G" << i << ": ";
-for (int s = 0; s < NPrintSamples; s++) {
-  cout << G_sample[i][s] << " ";
-}
-cout << "\n";
-}
-}
-	*/
-	std::cout << "\n";
-}
 void Interference::write() {
 
   //  logfile << "--------------------------------------------------" << "\n";

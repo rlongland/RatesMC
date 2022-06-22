@@ -101,7 +101,7 @@ int main(int argc, char** argv){
   Reac -> prepareSamples();
 
   // Write the reaction information to log file for diagnostics
-	Reac -> printReaction();
+	//Reac -> printReaction();
   Reac -> writeReaction();
 
 	// Before we write anything long, write the astrophysical S-factor
