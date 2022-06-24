@@ -182,7 +182,9 @@ double Interference::calcBroad(double T) {
 		break;
 	}
 	integrandfile << std::endl;
-          
+
+	//	std::cout << "ClassicalRate = " << classicalRate << "\n";
+	
   return classicalRate;
 }
 

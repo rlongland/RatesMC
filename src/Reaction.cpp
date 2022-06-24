@@ -293,7 +293,7 @@ double Reaction::calcResonant(double Temp){
   // Sum all the classical individual resonanances
   classicalRate = std::accumulate(individualRate.begin(), individualRate.end(), 0.0);
 
-  //  std::cout << "Total classical rate from resonances = " << classicalRate << "\n";
+	//	std::cout << "Total classical rate from resonances = " << classicalRate << "\n";
 
   return classicalRate;
 }
@@ -335,6 +335,11 @@ std::vector<double> Reaction::getResonantRateSample(int s){
     //R.printRate();
 		if(R.getCorresRes() == R.getIndex())
 			Rate_s.push_back(R.getRateSample(s));
+  }
+
+  for(Interference &Inter : Interferences){
+    //R.printRate();
+		Rate_s.push_back(Inter.getRateSample(s));
   }
   //std::cout << Rate_s[0] << "   ";
   return Rate_s;
