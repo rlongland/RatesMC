@@ -51,7 +51,7 @@ xlim.default <- c(0,10)
 if(is.na(xlim[1]))xlim <- xlim.default
  
 plot(xlim,ylim,ylim=ylim,type='n',log='y',
-     xlab="E (MeV)", ylab="SFactor (arb. units)")
+     xlab="E (MeV)", ylab="SFactor (MeV b)")
  
 for(i in 1:nparts){
 
