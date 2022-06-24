@@ -793,8 +793,10 @@ double Interference::getSFactor(double E, int sign){
 		//  The penetration factor at the resonance energy (the "true" PF)
 		if (E_cm[iRes] > 0.0) {
 			Pr = PenFactor(E_cm[iRes], L[iRes][0], M0, M1, Z0, Z1, R);
+			Scale[0] = P / Pr;
 		} else {
-			Pr = 0.0;
+			//Scale[0] = 1.0;
+			Scale[0] = 2.0 * P * 41.80161396 / (mue * gsl_pow_2(R));
 		}
 
 		// Calculate the exit particle energy, depends on if it is spectator
@@ -808,12 +810,6 @@ double Interference::getSFactor(double E, int sign){
 													Z0 + Z1 - Z2, Z2, R);
 		}
 
-		// Entrance particle scale
-		if (E_cm[iRes] > 0.0) {
-			Scale[0] = P / Pr;
-		} else {
-			Scale[0] = 2.0 * P * 41.80161396 / (mue * gsl_pow_2(R));
-		}
 
 		// Exit and spectator scales
 		for (int i = 1; i < 3; i++) {
