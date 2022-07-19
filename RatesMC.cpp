@@ -50,10 +50,14 @@ int main(int argc, char** argv){
   std::string ofilename;
   std::string ofullfilename;
   std::string ifilename;
+  //integration algorithm investigation file
+  std::string ointegname;
   if(argc==1){
     ifilename = "RatesMC.in";
     ofilename = "RatesMC.out";
     ofullfilename = "RatesMC.full";
+    ointegname = "RatesMC.ointeg";
+
   } else {
     std::cout << "Custom filenames not yet implemented!" << std::endl;
     return 0;
@@ -61,6 +65,8 @@ int main(int argc, char** argv){
   }
   outfile.open(ofilename);
   outfullfile.open(ofullfilename);
+  integfile.open(ointegname);
+  
   // Open log file
   logfile.open("RatesMC.log");
   // Open the test file for writing samples, etc.
@@ -101,7 +107,6 @@ int main(int argc, char** argv){
   Reac -> prepareSamples();
 
   // Write the reaction information to log file for diagnostics
-	//Reac -> printReaction();
   Reac -> writeReaction();
 
 	// Before we write anything long, write the astrophysical S-factor
@@ -169,9 +174,6 @@ int main(int argc, char** argv){
     classicalRate.push_back(ADRate[0]+ADRate[1]+ResRate);
     //std::cout << "Classical Total Rate = " << classicalRate.back() << "\n";
 
-		// Combine Resonance possibilities into the main corresponding resonance
-		Reac -> CombineResonancePossibilities();
-		
     // Contribution array (NSamples)by(NRes+2)
     std::vector<std::vector<double> > Contributions;
     // Vector of rate samples at this temperature
@@ -215,6 +217,9 @@ int main(int argc, char** argv){
 
     // Write the rate samples
     writeRateSamples(RateSample, T);
+
+
+    
     
     /*
 			#pragma omp critical

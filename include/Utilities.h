@@ -61,11 +61,14 @@ extern std::ofstream sampfile;
 extern std::ofstream contribfile;
 extern std::ofstream outfile;
 extern std::ofstream outfullfile;
+extern std::ofstream integfile;
 extern std::ofstream latexfile;
 extern std::ofstream testfile;
 
+
 // Other program-wide variables
 extern std::vector<double> Temp;
+extern double percent;
 
 // Read input file
 int ReadInputFile(std::string inputfilename, Reaction *R);
@@ -82,9 +85,7 @@ int countEntries(std::ifstream &in);
 // Read a non-resonant line
 void readNonResonant(std::ifstream &in, Reaction &R, int part);
 // Read all of the standard resonances
-void readResonanceBlock(std::ifstream &in, Reaction &R, bool isUpperlimit);
-// Read interfering resonances
-void readInterferingResonanceBlock(std::ifstream &in, Reaction &R);
+void readResonanceBlock(std::ifstream &in, Reaction &R);
 
 // Define the temperature array
 void defineTemperatures();
@@ -110,6 +111,8 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate, double H
 		 double RateSigma);
 // Write the sample file
 void writeRateSamples(std::vector<double> RateSample, double Temp);
+//write integration results for both algorithms
+void writeInteg(double fast, double slow);
 // Write a summary of all errors at this temperature to the log file
 void summarizeErrors(double Temp);
 
@@ -121,8 +124,6 @@ bool isZero(double x);
 
 // Convert atomic to nuclear mass
 double atomicToNuclear(double A, double Z);
-
-bool isNumeric(std::string str);
 
 // Check whether a file exists
 inline bool fileExists (const std::string& name);

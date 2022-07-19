@@ -1,6 +1,6 @@
 ######################################################################
-## PlotParameter.R
-## Plots the samples from each parameter and calculates their mean, etc.
+## PlotCorrelations.R
+## Plot correlation between rate and input parameters
 ##
 ######################################################################
 
@@ -38,18 +38,12 @@ for(i in 1:length(names.cut)){
     var.par <-var(pars.cut[,i])
     mean.par <- mean(pars.cut[,i])
 
-    med.par <- median(pars.cut[,i])
-    fu <- exp(sd(log(pars.cut[,i]))) 
-    
     cat("Par",names.cut[i],": Mean =",mean.par, " SD =",sqrt(var.par),"\n")
-    cat("          : Median =",med.par, " f.u. =",fu,"\n")
     xx <- grconvertX(0.9,from="npc",to="user")
     yy <- grconvertY(0.9,from="npc",to="user")
 
     mtext(bquote(.(format(mean.par,digits=4)) ~ "+/-" ~ .(format(sqrt(var.par),digits=4))),
 	  side=1,line=2,cex=0.8)
-    mtext(bquote(.(format(med.par,digits=4)) ~ "f.u." ~ .(format(fu,digits=4))),
-	  side=1,line=3,cex=0.8)
     
     if(i%%9 == 0){
 	layout(matrix(c(1:9), 3, 3, byrow = TRUE))

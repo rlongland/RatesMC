@@ -43,8 +43,8 @@
 #include "Reaction.h"
 #include "Utilities.h"
 
-//using std::cout;
-//using std::endl;
+using std::cout;
+using std::endl;
 
 Reaction::Reaction(){
 
@@ -68,14 +68,12 @@ void Reaction::setNonResonant(double s, double sp, double spp, double ds, double
   ARate.push_back(A);
 }
 
-void Reaction::
-    addResonance(int i, double E_cm, double dE_cm, double wg, double dwg, double Jr,
+void Reaction::addResonance(int i, double E_cm, double dE_cm, double wg, double dwg, double Jr,
 														double G1, double dG1, int L1, double PT1, double dPT1,
 														double G2, double dG2, int L2, double PT2, double dPT2,
 														double G3, double dG3, int L3, double PT3, double dPT3,
 														double Exf, bool bInt, bool bUpperLimit,
-														bool isECorrelated, bool isWidthCorrelated,
-														int CorresRes, double Frac){
+														bool isECorrelated){
 
   double G[3] = {G1, G2, G3};
   double dG[3] = {dG1, dG2, dG3};
@@ -85,88 +83,44 @@ void Reaction::
   
   // Make a resonance
   Resonance Res(*this, i, E_cm, dE_cm, wg, dwg, Jr,
-								G, dG, L, PT, dPT, Exf, bInt, bUpperLimit,
-								isECorrelated, isWidthCorrelated, CorresRes, Frac);
+								G, dG, L, PT, dPT, Exf, bInt, bUpperLimit, isECorrelated);
   //Res.print();
   // Add that resonance to the list of resonances
   Resonances.push_back(Res);
 }
 
-void Reaction::addInterference(int i, int IntfSign){
-	
-	// Make an interfering pair
-	Interference Intf(*this, i, IntfSign);
-
-	Interferences.push_back(Intf);
-}
-//----------------------------------------------------------------------
-// Add a resonance to the interference term
-void Reaction::addResonanceToInterference(int index, double E_cm,	double dE_cm, double Jr,
-																					double G1, double dG1, int L1,
-																					double PT1, double dPT1,
-																					double G2, double dG2, int L2,
-																					double PT2, double dPT2,
-																					double G3, double dG3, int L3,
-																					double PT3, double dPT3,
-																					double Exf, int i) {
-
-  double G[3] = {G1, G2, G3};
-  double dG[3] = {dG1, dG2, dG3};
-  int L[3] = {L1, L2, L3};
-  double PT[3] = {PT1, PT2, PT3};
-  double dPT[3] = {dPT1, dPT2, dPT3};
-
-	// Make a resonance
-  Resonance *Res = new Resonance(*this, i, E_cm, dE_cm, 0.0, 0.0, Jr,
-								G, dG, L, PT, dPT, Exf, true, false,
-								false, false, index, 1.0);
-
-	// Add this resonance to the interference
-	Interferences[index].addResonance(Res, i);
-
-}
-
-
-//----------------------------------------------------------------------
 void Reaction::printName(){
-  std::cout << "The reaction name is: " << Name << "\n";
+  cout << "The reaction name is: " << Name << "\n";
 }
 
 void Reaction::printReaction(){
 
-  std::cout << "--------------------------------------------------" << "\n";
-  std::cout << "     This is reaction: " << Name << "\n";
-  std::cout << "   Z0        Z1       Z2" << "\n";
+  cout << "--------------------------------------------------" << "\n";
+  cout << "     This is reaction: " << Name << "\n";
+  cout << "   Z0        Z1       Z2" << "\n";
   printf( "   %2d        %2d       %2d\n",Z0,Z1,Z2);
-  std::cout << "   M0        M1       M2" << "\n";
+  cout << "   M0        M1       M2" << "\n";
   printf( " %5.2f     %5.2f    %5.2f\n",M0,M1,M2);
-  std::cout << "   S_entrance = " << Q << "\n";
-  std::cout << "   S_exit     = " << Qexit << "\n";
-  std::cout << "   The gamma ray channel is channel " << Gamma_index << "\n";
-  std::cout << "--------------------------------------------------" << "\n";
+  cout << "   S_entrance = " << Q << "\n";
+  cout << "   S_exit     = " << Qexit << "\n";
+  cout << "   The gamma ray channel is channel " << Gamma_index << "\n";
+  cout << "--------------------------------------------------" << "\n";
 
-  std::cout << " Direct Capture part     \n";
-  std::cout << "          S0       S'       S''    dS   CutoffE\n";
-  std::cout << " Part 1: " << S[0] << "  " << Sp[0] << "  " << Spp[0] << "  " << dS[0] << "  " << CutoffE[0] << "\n";
-  std::cout << " Part 2: " << S[1] << "  " << Sp[1] << "  " << Spp[1] << "  " << dS[1] << "  " << CutoffE[1] << "\n";
-  std::cout << "\n";
+  cout << " Direct Capture part     \n";
+  cout << "          S0       S'       S''    dS   CutoffE\n";
+  cout << " Part 1: " << S[0] << "  " << Sp[0] << "  " << Spp[0] << "  " << dS[0] << "  " << CutoffE[0] << "\n";
+  cout << " Part 2: " << S[1] << "  " << Sp[1] << "  " << Spp[1] << "  " << dS[1] << "  " << CutoffE[1] << "\n";
+  cout << "\n";
 
-  std::cout << "--------------------------------------------------" << "\n";
-  std::cout << " Resonances:\n";
+  cout << "--------------------------------------------------" << "\n";
+  cout << " Resonances:\n";
   // Loop through all regular resonances
   std::vector<Resonance>::iterator res;
   for(res = Resonances.begin(); res < Resonances.end(); res++){
     res->print();
   }
-  std::cout << "--------------------------------------------------" << "\n";
-
-	std::cout << " Interferences:\n";
-	// Loop through all interferences
-	std::vector<Interference>::iterator interf;
-	for(interf = Interferences.begin(); interf < Interferences.end(); interf++){
-		interf->print();
-	}
-  std::cout << "--------------------------------------------------" << "\n";
+  cout << "--------------------------------------------------" << "\n";
+  
 
 }
 
@@ -201,14 +155,6 @@ void Reaction::writeReaction(){
     res->write();
   }
   //std::cout << "Done!\n";
-  logfile << "--------------------------------------------------" << "\n";
-	logfile << " Interferences:\n";
-	// Loop through all interferences
-	std::vector<Interference>::iterator interf;
-	for(interf = Interferences.begin(); interf < Interferences.end(); interf++){
-		interf->write();
-	}
-  logfile << "--------------------------------------------------" << "\n";
 	logfile << " The smallest dE value = " << smallestdE << "\n";
 	logfile << " The smallest dwg/wg value = " << smallestdwg << "\n";
 	logfile << " The smallest dG1/G1 value = " << smallestdG[0] << "\n";
@@ -231,7 +177,7 @@ void Reaction::setupContribHeader(){
       contribfile << "Res" << Res.getIndex()+1 << "       ";
     }
   }
-  contribfile << std::endl;
+  contribfile << endl;
 
 }
 
@@ -254,23 +200,15 @@ double Reaction::calcResonant(double Temp){
     if(!R.getisBroad()){
       //      std::cout << "Resonance " << R.getIndex() << " at "
       //      		<< R.getE_cm() << " keV is narrow\n";
-			double nRate = RateFactorNarrow*R.calcNarrow(Temp);
-
-			// Only  store the rate for the first possibility if multiple resonance possibilities 
-			if(R.getIndex() == R.getCorresRes())
-				individualRate.push_back(nRate);
+      individualRate.push_back(RateFactorNarrow*R.calcNarrow(Temp));
       // Multiply every sample by the reaction rate constant above
       R.scaleByConstant(RateFactorNarrow);
       // If it's broad
     } else {
       //      std::cout << "Resonance " << R.getIndex() << " at "
       //      		<< R.getE_cm() << " keV is being numerically integrated\n";
-			double bRate = RateFactorBroad*R.calcBroad(Temp);
-			// Only  store the rate for the first possibility if multiple resonance possibilities 
-			if(R.getIndex() == R.getCorresRes())
-				individualRate.push_back(bRate);
-
-			// Multiply every sample by the reaction rate constant above
+      individualRate.push_back(RateFactorBroad*R.calcBroad(Temp));
+      // Multiply every sample by the reaction rate constant above
       R.scaleByConstant(RateFactorBroad);
     }
 
@@ -278,51 +216,12 @@ double Reaction::calcResonant(double Temp){
     //R.printRate();
   }
 
-	// Also loop over the interferences
-	for(Interference &Inter : Interferences){
-
-		double bRate = RateFactorBroad*Inter.calcBroad(Temp);
-		individualRate.push_back(bRate);
-		
-		// Multiply every sample by the reaction rate constant above
-		Inter.scaleByConstant(RateFactorBroad);
-
-	}
-
-	
   // Sum all the classical individual resonanances
   classicalRate = std::accumulate(individualRate.begin(), individualRate.end(), 0.0);
 
-	//	std::cout << "Total classical rate from resonances = " << classicalRate << "\n";
+  //  std::cout << "Total classical rate from resonances = " << classicalRate << "\n";
 
   return classicalRate;
-}
-
-
-//----------------------------------------------------------------------
-// For resonances that have a list of possibilities, use this function
-// to combine them
-void Reaction::CombineResonancePossibilities(){
-
-	int sstart=0, send=0, ds=0;
-	for(Resonance &R : Resonances){
-
-		ds = (int)(R.getFrac()*NSamples);
-		// Is the corresponding resonance a different one?
-		if(R.getCorresRes() != R.getIndex()){
-			Resonance &RCorres = Resonances[R.getCorresRes()];
-			sstart = send;
-			send = sstart+ds;
-			//			std::cout << R.getIndex() << "<->" << R.getCorresRes()  << ": sstart = " << sstart << " send = " << send << "\n";
-			for(int s=sstart; s<send; s++)
-				RCorres.putRateSample(s, R.getRateSample(s));
-		} else {
-			sstart = 0;
-			send = sstart + ds;
-		}
-
-	}
-
 }
 
 //----------------------------------------------------------------------
@@ -333,13 +232,8 @@ std::vector<double> Reaction::getResonantRateSample(int s){
   
   for(Resonance &R : Resonances){
     //R.printRate();
-		if(R.getCorresRes() == R.getIndex())
-			Rate_s.push_back(R.getRateSample(s));
-  }
 
-  for(Interference &Inter : Interferences){
-    //R.printRate();
-		Rate_s.push_back(Inter.getRateSample(s));
+    Rate_s.push_back(R.getRateSample(s));
   }
   //std::cout << Rate_s[0] << "   ";
   return Rate_s;
@@ -368,8 +262,8 @@ double Reaction::calcNonResonant(double Temp, int j){
   
 
   /*cout << C1e << "\t" << C2e << "\t" << C3e << "\t" << C4e << "\t" <<
-    C5e << "\t" << C6e << "\t" << C7e << std::endl;
-    cout << "Cutoff T = " << cutoff_T << std::endl;*/
+    C5e << "\t" << C6e << "\t" << C7e << endl;
+    cout << "Cutoff T = " << cutoff_T << endl;*/
 
   // Calculate the rate first and then sample at the end.
   
@@ -384,18 +278,18 @@ double Reaction::calcNonResonant(double Temp, int j){
   
   
   /*cout << (C1e/pow(Temp,2./3.))*exp(-C2e/pow(Temp,1./3.)-
-    pow(Temp/cutoff_T,2.)) << std::endl;
-    cout << C3e*pow(Temp,1./3.) << std::endl;
-    cout << C4e*pow(Temp,2./3.) << std::endl;
-    cout <<  C5e*Temp << std::endl;
+    pow(Temp/cutoff_T,2.)) << endl;
+    cout << C3e*pow(Temp,1./3.) << endl;
+    cout << C4e*pow(Temp,2./3.) << endl;
+    cout <<  C5e*Temp << endl;
 
-    cout << "ADRate = " << ADRate << std::endl;
-    cout << "About to Lognormalise" << std::endl;*/
+    cout << "ADRate = " << ADRate << endl;
+    cout << "About to Lognormalise" << endl;*/
 
   // If ADRate is negative, set to zero, this is unphysical
   if(ADRate < 0.){
     ErrorFlag = true;
-    logfile << "\tWARNING: The non-resonant part caused a negative rate, \n\t\tsetting to zero." << std::endl;
+    logfile << "\tWARNING: The non-resonant part caused a negative rate, \n\t\tsetting to zero." << endl;
     ADRate = 0.0;
     for(int i=0;i<NSamples;i++){
       ARate[j][i]=0.0;
@@ -499,7 +393,7 @@ double Reaction::calcNonResonantIntegrated(double Temp, int j){
   // If ADRate is negative, set to zero, this is unphysical
   if(ADRate < 0.){
     ErrorFlag = true;
-    logfile << "\tWARNING: The non-resonant part caused a negative rate, \n\t\tsetting to zero." << std::endl;
+    logfile << "\tWARNING: The non-resonant part caused a negative rate, \n\t\tsetting to zero." << endl;
     ADRate = 0.0;
     for(int i=0;i<NSamples;i++){
       ARate[j][i]=0.0;
@@ -564,7 +458,7 @@ double Reaction::NonResonantIntegrand(double x, void * params){
 // Prepare the Monte Carlo samples. 
 void Reaction::prepareSamples(){
 
-  std::cout << "Preparing " << NSamples << " samples\n\n";
+  cout << "Preparing " << NSamples << " samples\n\n";
 
   // The reference samples used for energies, gamma widths, and
   // resonances. There are three sets for each partial width. The
@@ -595,9 +489,7 @@ void Reaction::prepareSamples(){
     Res.makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
     //std::cout << "done\n";
   }
-	for(Interference &Intf : Interferences){
-		Intf.makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
-	}
+
   
 }
 
@@ -660,8 +552,6 @@ void Reaction::writeSFactor(){
 	// S-factor of each resonance and analytical contribution
 	for(double E=EMin; E<10.0; E+=0.001){
 
-		//std::cout << "E = " << E << "\n";
-          
 		// Write the energy
 		sfactorfile << std::scientific << std::setprecision(3) << E << "   ";
 
@@ -677,25 +567,9 @@ void Reaction::writeSFactor(){
 
 		// Collect S-factor for each resonance
 		for(Resonance &Res : Resonances){
-			//std::cout << "\nRes " << Res.getIndex() << "\n";
 			sfactorfile << Res.getSFactor(E) << "  ";
 		}
-
-		// Same for interferences
-		for(Interference &Inter : Interferences){
-			//std::cout << "\nInt " << Inter.getIndex() << "\n";
-			switch(Inter.getSign()){
-			case(1):
-				sfactorfile << Inter.getSFactor(E, 1) << "  ";
-				break;
-			case(-1):
-				sfactorfile << Inter.getSFactor(E, -1) << "  ";
-				break;
-			default:
-				sfactorfile << Inter.getSFactor(E, 1) << "  ";
-				sfactorfile << Inter.getSFactor(E, -1) << "  ";
-			}
-		}
+		
 		sfactorfile << std::endl;
 	}
 
@@ -712,20 +586,6 @@ void Reaction::setupSFactorHeader(std::ofstream &sfactorfile){
 	sfactorfile << "A-Rate-2    ";
   for(Resonance &Res : Resonances){
 		sfactorfile << "Res" << std::setw(3) << std::setfill('0') << (Res.getIndex()+1) << "     ";
-	}
-	for(Interference &Inter : Interferences){
-		switch(Inter.getSign()){
-		case(0):
-			sfactorfile << "Int" << std::setw(3) << std::setfill('0') << (Inter.getIndex()+1) << "+    ";
-			sfactorfile << "Int" << std::setw(3) << std::setfill('0') << (Inter.getIndex()+1) << "-    ";
-			break;
-		case(1):
-			sfactorfile << "Int" << std::setw(3) << std::setfill('0') << (Inter.getIndex()+1) << "+    ";
-			break;
-		case(-1):
-			sfactorfile << "Int" << std::setw(3) << std::setfill('0') << (Inter.getIndex()+1) << "-    ";
-			break;
-		}
 	}
   sfactorfile << std::endl;
 

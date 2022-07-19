@@ -49,6 +49,14 @@
 using std::cout;
 using std::endl;
 
+//For the fast integration method
+double FastResult = -32;
+//For the slow integration method
+double SlowResult = -32;
+
+
+
+
 // Ugly-ass hack
 Resonance *ResonancePtr;
 double ResonanceIntegrandWrapper(double x, void *params) {
@@ -65,9 +73,7 @@ int rhsWrapper(double x, const double y[], double dydt[], void *params_ptr){
 Resonance::Resonance(Reaction &R, int index, double E_cm, double dE_cm,
                      double wg, double dwg, double Jr, double G[3],
                      double dG[3], int L[3], double PT[3], double dPT[3],
-                     double Exf, bool isBroad, bool isUpperLimit,
-										 bool isECorrelated, bool isWidthCorrelated,
-										 int CorresRes, double Frac)
+                     double Exf, bool isBroad, bool isUpperLimit, bool isECorrelated)
     : Reac(R) {
   // 'this' is a special pointer to the "current instance"
   this->index = index;
@@ -87,10 +93,7 @@ Resonance::Resonance(Reaction &R, int index, double E_cm, double dE_cm,
   this->isBroad = isBroad;
   this->isUpperLimit = isUpperLimit;
 	this->isECorrelated = isECorrelated;
-	this->isWidthCorrelated = isWidthCorrelated;
-	this->CorresRes = CorresRes;
-	this->Frac = Frac;
-	this->M0 = R.M0;
+  this->M0 = R.M0;
   this->M1 = R.M1;
   this->M2 = R.M2;
   this->Z0 = R.Z0;
@@ -99,7 +102,6 @@ Resonance::Resonance(Reaction &R, int index, double E_cm, double dE_cm,
   this->J0 = R.J0;
   this->J1 = R.J1;
   this->J2 = R.J2;
-	
 
   classicalRate = 0.0;
 
@@ -173,9 +175,7 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
     logNormalize(wg, dwg, mu, sigma);
 
     // Correlation parameter
-		corr = 0.0;
-		if(isWidthCorrelated)
-			corr = smallestdwg * wg / dwg;
+    corr = smallestdwg * wg / dwg;
 
     // Generate the correlated samples
     for (int s = 0; s < NSamples; s++) {
@@ -249,9 +249,7 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
 				}
 
 				// Calculate the correlated partial widths for this channel
-				corr = 0.0;
-				if(isWidthCorrelated)
-					corr = smallestdG[channel] * G[channel] / dG[channel];
+        corr = smallestdG[channel] * G[channel] / dG[channel];
 				for (int s = 0; s < NSamples; s++) {
           double x2 = gsl_ran_gaussian(r, 1.0);
           x2 = corr * Ref_sample[s][channel + 1] +
@@ -649,21 +647,21 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
     SubSampledPosCount++;
     G0 = G0 * 2.0 * 41.80161396 * PenFactor(E, L[0], M0, M1, Z0, Z1, R) /
          (mue * gsl_pow_2(R));
-		//		std::cout << "Negative resonance went positive!\n";
-		//		std::cout << "E_cm = " << E_cm << "E_sample = " << E << "G[0] = " << G[0]
-		//							<< " G_sample = " << G0 << std::endl;
+    // std::cout << "Negative resonance went positive!\n";
+    // std::cout << "E_cm = " << E_cm << "E_sample = " << E << "G[0] = " << G[0]
+    //	      << " G_sample = " << G0 << std::endl;
   }
 
   //  The penetration factor at the resonance energy (the "true" PF)
   if (E > 0.0) {
     Pr = PenFactor(E, L[0], M0, M1, Z0, Z1, R);
     //    std::cout << "Pr = " << Pr << "\n";
-		if(isZero(Pr))return 0.0;
-	} else {
+  } else {
     Pr = 0.0;
   }
-	//std::cout << "Pr = " << Pr << "\n";
+  // std::cout << "Pr = " << Pr << "\n";
 
+	if(isZero(Pr))return 0.0;
 	
   // Calculate the exit particle energy, depends on if it is spectator
   // if(NChannels[j]==3){
@@ -757,6 +755,10 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   gsl_error_handler_t *temp_handler;
   temp_handler = gsl_set_error_handler_off();
 
+
+
+
+
   gsl_integration_cquad_workspace *w =
       gsl_integration_cquad_workspace_alloc(10000);
   int status = gsl_integration_cquad(&F,      // Function to be integrated
@@ -768,12 +770,20 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
                                      &result, // The result
                                      &error, &nevals);
   gsl_integration_cquad_workspace_free(w);
+  
 
-	//status = -1;
+	// status = -1;
   // If the integration errored, use the slower ODE method
-  if (status != 0) {
-	//	std::cout << "Integration error = " << gsl_strerror(status) << "\n";
-    //result = std::numeric_limits<double>::quiet_NaN();
+  if (status != 0 || gsl_rng_uniform(r)<= percent ) 
+  {
+
+
+
+    FastResult = result;
+    
+
+
+
 	
 		// OK so the fast integration failed. Go back to the old method
 		const gsl_odeiv2_step_type * T
@@ -835,8 +845,20 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
     }
 
 		result = y[0];
+    SlowResult = result;
+
+
+    //write fast and slow results onto txt file
+    writeInteg(FastResult, SlowResult);
+  
 
 	}
+  
+  std::cout << "\n" << "Res #| "<< index+1 <<" Energy| "<< E << " Gamma 1,2,3| " << G0 <<" "<<G1<< " " << G2 << std::endl;
+  std::cout << " Fast: " << FastResult<<std::endl;
+  std::cout << " Slow: "<< SlowResult<<std::endl;
+  
+
   gsl_set_error_handler(temp_handler);
 
   // Some other attemps that I had trouble with...
@@ -1063,7 +1085,7 @@ int Resonance::rhs (double x, const double y[], double dydx[], void *params){
 
   double Scale[3];
 
-  //double mue = M0*M1/(M0+M1);
+  // double mue = M0*M1/(M0+M1);
   // double R = R0*(pow(M0,1./3.) + pow(M1,1./3.));
   double PEK = 6.56618216E-1 / mue; // a correction factor
   double P = PenFactor(x, L[0], M0, M1, Z0, Z1, R);
@@ -1199,8 +1221,6 @@ double Resonance::getSFactor(double E){
   double S3 = gsl_pow_2(E_cm - E) +
               0.25 * gsl_pow_2(G[0] * Scale[0] + G[1] * Scale[1] + G[2] * Scale[2]);
 
-	//	std::cout << omega << " " << G[0] << " " << G[1] << " ";
-	//	std::cout << Scale[0] << " " << Scale[1] << " " << Scale[2] << "\n";
 	//	std::cout << S1 << " " << S2 << " " << S3 << "\n";
 	
   double SFactor = Consts * S1 * S2 / S3; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
@@ -1234,11 +1254,6 @@ void Resonance::print() {
   cout << "                 Exf  = " << Exf << "\n";
   cout << "           Integrated = " << isBroad << "\n";
   cout << "          Upper Limit = " << isUpperLimit << "\n";
-	cout << "    Energy Correlated = " << isECorrelated << "\n";
-	cout << "     Width Correlated = " << isWidthCorrelated << "\n";
-	cout << "   Corresponding res. = " << CorresRes << "\n";
-	cout << "                 Frac = " << Frac << "\n";
-	
   //  cout << "--------------------------------------------------" << "\n";
   int NPrintSamples = 5;
   cout << "First " << NPrintSamples << " samples    -------\n";
@@ -1295,10 +1310,6 @@ void Resonance::write() {
   logfile << "                  Exf = " << Exf << "\n";
   logfile << "           Integrated = " << isBroad << "\n";
   logfile << "          Upper Limit = " << isUpperLimit << "\n";
-	logfile << "    Energy Correlated = " << isECorrelated << "\n";
-	logfile << "     Width Correlated = " << isWidthCorrelated << "\n";
-	logfile << "   Corresponding res. = " << CorresRes << "\n";
-	logfile << "                 Frac = " << Frac << "\n";
 
   int NPrintSamples = 5;
   logfile << "First " << NPrintSamples << " samples    -------\n";

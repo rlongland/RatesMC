@@ -42,37 +42,16 @@ class Resonance {
 	    int index=0, double E_cm=0.0, double dE_cm=0.0, double wg=0.0, double dwg=0.0, double Jr=0.0,
 						double G[3]=defaultdinit, double dG[3]=defaultdinit, int L[3]=defaultiinit,
 						double PT[3]=defaultdinit, double dPT[3]=defaultdinit,
-						double Exf=0, bool bInt=false, bool bUpperLimit=false,
-						bool isECorrelated=false, bool isWidthCorrelated=false,
-						int CorresRes=0, double Frac=1.0); 
+						double Exf=0, bool bInt=false, bool bUpperLimit=false, bool isECorrelated=false); 
   // Destructor
   ~Resonance();
 
   // Getters
   int getIndex(){return index;}
   double getE_cm(){return E_cm;}
-  double getdE_cm(){return dE_cm;}
   double getisBroad(){return isBroad;}
-	int getCorresRes(){return CorresRes;}
-	double getFrac(){return Frac;}
-	double getExf(){return Exf;}
-	double getESample(int s){return E_sample[s];}
-	double getGSample(int i,int s){return G_sample[i][s];}
-	double geterFrac(int i,int s){return erFrac[i][s];}
-	double getG(int i){return G[i];}
-	int getL(int i){return L[i];}
-	double getM0(){return M0;}
-	double getM1(){return M1;}
-	double getM2(){return M2;}
-	int getZ0(){return Z0;}
-	int getZ1(){return Z1;}
-	int getZ2(){return Z2;}
-	double getR(){return R;}
-	double getmue(){return mue;}
-	int getNChannels(){return NChannels;}
-	double getJr(){return Jr;}
-	
-	// Setters
+  
+  // Setters
   void setIndex(int i){index=i;}
 
   // Functions that do stuff
@@ -89,7 +68,6 @@ class Resonance {
   
   void printRate();
 
-	void putRateSample(int s, double rate){Rate_sample[s] = rate;}
   double getRateSample(int s){return Rate_sample[s];}
 
 	double getSFactor(double E);
@@ -117,7 +95,7 @@ class Resonance {
   Reaction & Reac;
   
   // Resonance control and bookkeeping
-  bool isBroad, isECorrelated, isWidthCorrelated, isUpperLimit;
+  bool isBroad, isECorrelated, isUpperLimit;
   bool ErrorFlag;
   
   // Resonance parameters
@@ -127,8 +105,6 @@ class Resonance {
   double M0,M1,M2,J0,J1,J2;
   int Z0,Z1,Z2;
   int NChannels;
-	int CorresRes;
-	double Frac;
   
   double R, mue;
   

@@ -1,29 +1,16 @@
+dat <- read.table("PT.dat")
 
-dat <- read.table("RatesMC.PT")
-
-i <- 0
-j <- 0
-
-myX11 <- function(...) 
-{ 
-    grDevices::X11(...) 
-    par(cex.axis=1.3, cex.lab=1.5,   # Font sizes
-        las=1,                       # Always horisontal text
-        lwd=2,                       # Line width
-        mar=c(5,5,3,2)+0.1,          # Margins
-        pch=19,                      # Point type (solid circles)
-        tcl=0.5,
-        mgp=c(3,0.5,0)) 
-}
+i <- 116
+j <- 117
 
 while(dev.cur()>1)dev.off()
 myX11(height=8,width=5)
 par(mfrow=c(2,1))
 
-cut1 <- dat[,2]==i
-cut2 <- dat[,2]==j
-h1 <- hist(log(dat[cut1,4]),plot=F,breaks=50)
-h2 <- hist(log(dat[cut2,4]),plot=F,breaks=50)
+cut1 <- dat[,1]==i
+cut2 <- dat[,1]==j
+h1 <- hist(log(dat[cut1,3]),plot=F,breaks=50)
+h2 <- hist(log(dat[cut2,3]),plot=F,breaks=50)
 
 plot(h1$mids,h1$density,xlab=paste("Resonance",i),ylab="Freq",
      type='s',xaxt='n')
@@ -32,7 +19,7 @@ axis(1,at=aX,labels=aX)
 #,
 #     xlim=range(c(h1$breaks,h2$breaks)),
 #     ylim=range(c(h1$density,h2$density)))
-abline(v=log(1e-3),col="red",lty=2)
+abline(v=log(4.5e-3),col="red",lty=2)
 
 plot(h2$mids,h2$density,xlab=paste("Resonance",j),ylab="Freq",
      type='s',xaxt='n')
