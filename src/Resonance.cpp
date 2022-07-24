@@ -31,6 +31,7 @@
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
+#include <limits>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_integration.h>

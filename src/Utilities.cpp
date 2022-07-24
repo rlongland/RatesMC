@@ -216,6 +216,8 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
      
   while(true){
 
+		//		std::cout << "New resonance\n";
+		
 		// New method: Read entire line into a string first
 		std::string line;
 		std::getline(infile, line);
@@ -288,7 +290,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 						 >> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
 						 >> Exf >> isBroad;
 			fin >> CorString;
-			//std::cout << CorString << "\n";
+			//std::cout << "CorString = " << CorString << "\n";
 			// Make CorString lowercase
 			std::transform(CorString.begin(), CorString.end(), CorString.begin(),
 										 [](unsigned char c){ return std::tolower(c); });
