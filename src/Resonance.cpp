@@ -728,6 +728,19 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   */
 
 
+ /*   //Gauss-Legendre Integration:
+  gsl_integration_glfixed_table *t = 
+      gsl_integration_glfixed_table_alloc(size_t n);
+  int gsl_integration_glfixed_point(a,   //double, interval start
+                                    b,   //double, interval end
+                                    i,   //size_t, for i in [0,...,n-1] obtains ith point xi
+                                    *xi, //double, point location
+                                    *wi, //double, weight
+                                    *t)  //table, the table of the fuction;
+
+ */
+
+
   /*
   double pts[3];
   pts[0] = E_min;
@@ -758,7 +771,7 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
 
 
 
-
+/*   CQUAD Integration: This works, but gives 'inf' ocationally 
   gsl_integration_cquad_workspace *w =
       gsl_integration_cquad_workspace_alloc(10000);
   int status = gsl_integration_cquad(&F,      // Function to be integrated
@@ -769,11 +782,37 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
                                      w,       // workspace
                                      &result, // The result
                                      &error, &nevals);
-  gsl_integration_cquad_workspace_free(w);
+  gsl_integration_cquad_workspace_free(w); */
   
+
+
+  //Romberg Integration: Does not work completely yet
+  gsl_integration_romberg_workspace *w =
+      gsl_integration_romberg_alloc(10000);
+  int status = gsl_integration_romberg(&F,        //Function being integrated
+                                        E_min,    //start of the integration
+                                        E_max,    //end of the integration
+                                        1e-100,   //epsabs
+                                        1e-6,     //epsrel
+                                        &result,  //integration result
+                                        &nevals,  //number of function evalutations
+                                        w);
+
+
+
+
+
+
+
+
+
 
 	// status = -1;
   // If the integration errored, use the slower ODE method
+
+
+
+
   if (status != 0 || gsl_rng_uniform(r)<= percent ) 
   {
 
@@ -804,7 +843,8 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
 		double x = E_min, x1 = E_max;
 		// stepsize
 		double h=1.0e-10;
-		double hmin = 1.0e-12;   // The minimum step size
+    // The minimum step size
+		double hmin = 1.0e-12;   
 		// Value of the integrand. Starts at zero
 		double y[2] = {0.0, 0.0};
 		// Flag to take small steps
