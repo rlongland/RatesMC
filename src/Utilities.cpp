@@ -1079,8 +1079,7 @@ void writeInteg(double fast, double slow)
 {
   char buffer[100];
   sprintf(buffer,"Fast: %e || Slow: %e ", fast, slow);
-  integfile<<buffer<<std::endl;
-
+  integfile << buffer << std::endl;
   return;
 }
 

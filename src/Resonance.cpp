@@ -740,6 +740,18 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
 
  */
 
+  //Romberg Integration: Does not work completely yet
+  /* gsl_integration_romberg_workspace *w =
+      gsl_integration_romberg_alloc(10000);
+  int status = gsl_integration_romberg(&F,        //Function being integrated
+                                        E_min,    //start of the integration
+                                        E_max,    //end of the integration
+                                        5e-100,   //epsabs
+                                        5e-10,     //epsrel
+                                        &result,  //integration result
+                                        &nevals,  //number of function evalutations
+                                        w); */
+
 
   /*
   double pts[3];
@@ -771,7 +783,7 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
 
 
 
-/*   CQUAD Integration: This works, but gives 'inf' ocationally 
+  //CQUAD Integration: This works, but gives 'inf' ocationally 
   gsl_integration_cquad_workspace *w =
       gsl_integration_cquad_workspace_alloc(10000);
   int status = gsl_integration_cquad(&F,      // Function to be integrated
@@ -782,22 +794,8 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
                                      w,       // workspace
                                      &result, // The result
                                      &error, &nevals);
-  gsl_integration_cquad_workspace_free(w); */
+  gsl_integration_cquad_workspace_free(w);
   
-
-
-  //Romberg Integration: Does not work completely yet
-  gsl_integration_romberg_workspace *w =
-      gsl_integration_romberg_alloc(10000);
-  int status = gsl_integration_romberg(&F,        //Function being integrated
-                                        E_min,    //start of the integration
-                                        E_max,    //end of the integration
-                                        1e-100,   //epsabs
-                                        1e-6,     //epsrel
-                                        &result,  //integration result
-                                        &nevals,  //number of function evalutations
-                                        w);
-
 
 
 
@@ -809,13 +807,12 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
 
 	// status = -1;
   // If the integration errored, use the slower ODE method
-
-
-
-
+  // if (status != 0)
   if (status != 0 || gsl_rng_uniform(r)<= percent ) 
   {
 
+    // double eval_num =  E_min+E_min*.001;
+    // std::cout <<"Function: "<< (*((F).function))(eval_num,(F).params)<<std::endl;
 
 
     FastResult = result;
@@ -894,9 +891,16 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
 
 	}
   
-  std::cout << "\n" << "Res #| "<< index+1 <<" Energy| "<< E << " Gamma 1,2,3| " << G0 <<" "<<G1<< " " << G2 << std::endl;
-  std::cout << " Fast: " << FastResult<<std::endl;
-  std::cout << " Slow: "<< SlowResult<<std::endl;
+  // if (FastResult==INFINITY)
+  // {
+  //     std::cout << "\n" << "Res #| "<< index+1 <<" Energy| "<< E << " Gamma 1,2,3| " << G0 <<" "<<G1<< " " << G2 << std::endl;
+  //     std::cout << " Fast: " << FastResult<<std::endl;
+  //     std::cout << " Slow: "<< SlowResult<<std::endl;
+  //     std::cout <<"Function: "<< F.function<<std::endl;
+
+  // }
+  
+
   
 
   gsl_set_error_handler(temp_handler);
