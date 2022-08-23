@@ -7,6 +7,7 @@
 ######################################################################
 
 RatesMCFile      <- "RatesMC.in"
+RatesMCOutput    <- "RatesMC.out"
 ContributionFile <- "RatesMC.cont"
 HFFile           <- "Tmatch.HF"
 
@@ -129,6 +130,8 @@ Gamow <- function(Temp, plot=FALSE, ymax=1){
 
 ## For each temperature, plot the contributions of each resonance as a bar graph
 mypdf(file="GraphTMatch.pdf",width=8.25,height=10.75)
+def.par <- par(no.readonly = TRUE)
+
 layout(matrix(c(1:9), 3, 3, byrow=TRUE))
 
 ## For each temperature,
@@ -187,15 +190,48 @@ interp.ETER <- splinefun(x=ETER.array[cut], y=T[cut])
 TMatch.ETER <- interp.ETER(maxE)
 cat("TMatch from ETER method:       ",TMatch.ETER,"\n")
 
+##par(def.par)
+layout(matrix(c(1:2), 2, 1, byrow=TRUE))
+
+
+######################################################################
+## Now match the HF rate
+Rates <- read.table(RatesMCOutput,skip=4)
+HF <- read.table(HFFile, skip=3)
+
+## Make an interpolation spline for Rates and HF Rate
+interp.Rate <- splinefun(Rates[,1],Rates[,3])
+interp.HF <- splinefun(HF)
+Rates.MatchT <- interp.Rate(TMatch.ETER)
+HF.MatchT <-    interp.HF(TMatch.ETER)
+## Normalization (multiplicative) to apply to HF rate
+Norm <- Rates.MatchT/HF.MatchT
+
+## Now the matched HF rate!
+HF.matched <- HF[,2]*Norm
+HF <- cbind(HF,HF.matched)
+
+ylim <- range(c(Rates[,2],HF[,2], HF[,3]))
+
+plot(Rates[,1], Rates[,3], type='l', ylim=ylim,
+     xlab="Temperature", ylab="Rate", col=cols[1], log="")
+abline(v=TMatch.ETER,lty=3,col="grey")
+lines(HF[,1],HF[,2],col=cols[2],lty=2)
+lines(HF[,1],HF[,3],col=cols[3],lty=1)
+
+legend("topleft",legend=c("Rec.","HF","Matched HF"),lty=c(1,2,1),col=cols[c(1,2,3)])
+
 
 dev.off()
 
 ## Next:
-## Find the normalization needed for HF rate
-## Normalize
+## Normalize HF at high and low rate, too
+## Interpolate HF rate at the RatesMC temperature gridpoints
 ## Format output
 
 ## Then come back and calculate narrow resonances
 
 ## END
 ######################################################################
+xx <- c(1e-12,-3.98765e-10,1.45645e-69,1e-70,pi*1e37,3.44e4)
+formatC(xx[1:4], format = "g", width=12,digits = 3,flag="+#")
