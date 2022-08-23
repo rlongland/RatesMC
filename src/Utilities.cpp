@@ -391,6 +391,11 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     if(E_cm < 0){
       G1 *= 1.0e6;
       dG1 *= 1.0e6;
+			// Also, force it to be broad
+			if(!isBroad){
+				logfile << "WARNING: sub-threshold resonances must be broad. The code switched this automatically for you!\n";
+				isBroad = true;
+			}
     }
 		// If factor uncertainties are input, don't scale 
 		if(dG1 < 0.0) dG1 *= 1.0e6;
