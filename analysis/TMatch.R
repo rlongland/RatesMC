@@ -11,6 +11,8 @@ RatesMCOutput    <- "RatesMC.out"
 ContributionFile <- "RatesMC.cont"
 HFFile           <- "Tmatch.HF"
 
+OutputFile       <- "TMatch.out"
+
 ## The parameter, n, to determine maximum of Gamow peak
 ## (see Newton paper, Eqn. 3)
 n.Gamow <- 1
@@ -200,38 +202,106 @@ Rates <- read.table(RatesMCOutput,skip=4)
 HF <- read.table(HFFile, skip=3)
 
 ## Make an interpolation spline for Rates and HF Rate
-interp.Rate <- splinefun(Rates[,1],Rates[,3])
+interp.Rate.med  <- splinefun(Rates[,1],Rates[,3])
+interp.Rate.low  <- splinefun(Rates[,1],Rates[,2])
+interp.Rate.high <- splinefun(Rates[,1],Rates[,4])
 interp.HF <- splinefun(HF)
-Rates.MatchT <- interp.Rate(TMatch.ETER)
+
+Rates.MatchT.med  <- interp.Rate.med(TMatch.ETER)
+Rates.MatchT.low  <- interp.Rate.low(TMatch.ETER)
+Rates.MatchT.high <- interp.Rate.high(TMatch.ETER)
 HF.MatchT <-    interp.HF(TMatch.ETER)
 ## Normalization (multiplicative) to apply to HF rate
-Norm <- Rates.MatchT/HF.MatchT
+Norm.med  <- Rates.MatchT.med/HF.MatchT
+Norm.low  <- Rates.MatchT.low/HF.MatchT
+Norm.high <- Rates.MatchT.high/HF.MatchT
 
 ## Now the matched HF rate!
-HF.matched <- HF[,2]*Norm
-HF <- cbind(HF,HF.matched)
+HF.matched.med  <- HF[,2]*Norm.med
+HF.matched.low  <- HF[,2]*Norm.low
+HF.matched.high <- HF[,2]*Norm.high
+HF <- cbind(HF, HF.matched.low, HF.matched.med, HF.matched.high)
 
-ylim <- range(c(Rates[,2],HF[,2], HF[,3]))
+ylim <- range(c(Rates[,2],HF[,2:5]))
 
 plot(Rates[,1], Rates[,3], type='l', ylim=ylim,
-     xlab="Temperature", ylab="Rate", col=cols[1], log="")
+     xlab="Temperature", ylab="Rate", col=cols[1], log="",
+     xaxs='i')
 abline(v=TMatch.ETER,lty=3,col="grey")
 lines(HF[,1],HF[,2],col=cols[2],lty=2)
-lines(HF[,1],HF[,3],col=cols[3],lty=1)
+lines(HF[,1],HF[,4],col=cols[3],lty=1)
 
-legend("topleft",legend=c("Rec.","HF","Matched HF"),lty=c(1,2,1),col=cols[c(1,2,3)])
 
+## Now we need to interpolate thew matched HF rate at the RatesMC temperatures
+interp.HF.low  <- splinefun(HF[,1], HF[,3])
+interp.HF.med  <- splinefun(HF[,1], HF[,4])
+interp.HF.high <- splinefun(HF[,1], HF[,5])
+HF.final.low  <- interp.HF.low(Rates[,1])
+HF.final.med  <- interp.HF.med(Rates[,1])
+HF.final.high <- interp.HF.high(Rates[,1])
+## and plot!
+lines(Rates[,1],HF.final.med,col=cols[4],lty=2)
+
+legend("topleft",legend=c("Rec.","HF","Matched HF", "Matched HF at RatesMC gridpoints"),
+       lty=c(1,2,1,2),col=cols[c(1,2,3,4)])
+
+## Create the final rates table
+## Logical vectors for above and below TMatch
+cut <- T<TMatch.ETER
+cut.length <- sum(cut)
+acut <- T >= TMatch.ETER
+acut.length <- sum(acut)
+
+Rates.final <- Rates[cut,]
+Rates.final <- rbind(Rates.final,
+		     cbind(Rates[acut,1],
+			   HF.final.low[acut], HF.final.med[acut], HF.final.high[acut],
+			   rep(Rates[cut.length,5],acut.length)))
+
+ylim <- range(Rates.final[,2:4])
+plot(Rates[,1], Rates[,3], type='l', ylim=ylim,
+     xlab="Temperature", ylab="Rate", col=cols[1], log="",
+     xaxs='i')
+abline(v=TMatch.ETER,lty=3,col="grey")
+lines(Rates.final[,1], Rates.final[,2], lwd=1, col=cols[3])
+lines(Rates.final[,1], Rates.final[,3], lwd=2, col=cols[3])
+lines(Rates.final[,1], Rates.final[,4], lwd=1, col=cols[3])
+legend("topleft",legend=c("Unmatched Rate","Matched Rate"),
+       lty=1,col=cols[c(1,3)])
 
 dev.off()
 
-## Next:
-## Normalize HF at high and low rate, too
-## Interpolate HF rate at the RatesMC temperature gridpoints
-## Format output
+######################################################################
+## Write the output!
 
-## Then come back and calculate narrow resonances
+## Read in the header from RatesMC.out
+header <- readLines(RatesMCOutput,n=4)
+writeLines(header, OutputFile)
+
+## Output the Rates up to the matching temperature
+cut <- T<TMatch.ETER
+OP.T <- formatC(Rates.final[cut,1],"f",width=6, digits=3)
+OP.Low  <- formatC(Rates.final[cut,2],"e",width=12, digits=3,flag="#")
+OP.Med  <- formatC(Rates.final[cut,3],"e",width=16, digits=3,flag="#")
+OP.High <- formatC(Rates.final[cut,4],"e",width=16, digits=3,flag="#")
+OP.fu   <- formatC(Rates.final[cut,5],"e",width=17, digits=3,flag="#")
+OP <- cbind(OP.T, OP.Low, OP.Med, OP.High, OP.fu)
+write.table(OP,OutputFile,col.names=FALSE, row.names=FALSE, quote=FALSE, append=TRUE, sep="")
+
+## Repeat the process above the matching temperature
+cut <- T>=TMatch.ETER
+OP.T <- formatC(Rates.final[cut,1],"f",width=6, digits=3)
+OP.Low  <- formatC(Rates.final[cut,2],"e",width=8, digits=3,flag="#")
+OP.Med  <- formatC(Rates.final[cut,3],"e",width=8, digits=3,flag="#")
+OP.High <- formatC(Rates.final[cut,4],"e",width=8, digits=3,flag="#")
+OP.fu   <- formatC(Rates.final[cut,5],"e",width=8, digits=3,flag="#")
+OP <- cbind(OP.T, "  (", OP.Low, ")", "     (", OP.Med,")", "     (", OP.High, ")","      (", OP.fu,")")
+write.table(OP,OutputFile,col.names=FALSE, row.names=FALSE, quote=FALSE, append=TRUE, sep="")
+
+## Next:
+## calculate narrow resonances
+## 
+## 
 
 ## END
 ######################################################################
-xx <- c(1e-12,-3.98765e-10,1.45645e-69,1e-70,pi*1e37,3.44e4)
-formatC(xx[1:4], format = "g", width=12,digits = 3,flag="+#")
