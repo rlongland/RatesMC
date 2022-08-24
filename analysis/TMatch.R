@@ -15,7 +15,7 @@ OutputFile       <- "TMatch.out"
 LaTeXFile        <- "TMatch.latex"
 
 ## Read the contributions file? (otherwise use narrow resonances)
-ReadCont         <- TRUE
+ReadCont         <- FALSE
 
 ## The parameter, n, to determine maximum of Gamow peak
 ## (see Newton paper, Eqn. 3)
@@ -131,7 +131,7 @@ if(ReadCont){
 	## Break the loop if we see *s
 	if(substr(x[,1],1,2) == "**") break
 	## Is the first entry a '+' or '!'? Ignore if so
-	if(x[1] == "+" || x[1] == "!") {
+	if(x[1] == "+" || x[1] == "!" || sign(x[1]) == -1) {
 	    skip <- skip+1
 	    next
 	}
@@ -233,7 +233,7 @@ for(i in 1:length(T)){
 	       col=cols[1],lwd=2,length=0.1)
 	text(x=(ETER[1]+ETER[3])/2,y=max(resCont[i,])*0.92, "ETER",adj=0.5)
 	text(x=ETER[3],y=max(resCont[i,])*0.92, "Median + ETER",pos=3)
-	##plot(y=Energies.o,x=cumsum(cont/sum(cont)))
+	##plot(y=Energies.o,x=cumsum(cont/sum(cont)),xlim=c(0,1))
 	##abline(v=c(0.08,0.5,0.92))
 	##abline(h=interp.ETER(c(0.08,0.5,0.92)))
     } else {
