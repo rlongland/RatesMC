@@ -203,7 +203,7 @@ ETER.array <- numeric()
 
 for(i in 1:length(T)){
 
-    plot(range(Energies),c(0,max(resCont[i,])),type='n',xlab="E",ylab="Cont",main=T[i])
+    plot(c(0,max(Energies)),c(0,max(resCont[i,])),type='n',xlab="E",ylab="Cont",main=T[i])
     segments(x0=Energies,y0=0,y1=as.double(resCont[i,]),col=cols[1])
  
     ## Gamow window method first
