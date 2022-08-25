@@ -203,7 +203,8 @@ ETER.array <- numeric()
 
 for(i in 1:length(T)){
 
-    plot(c(0,max(Energies)),c(0,max(resCont[i,])),type='n',xlab="E",ylab="Cont",main=T[i])
+    plot(c(0,max(Energies)),c(0,max(resCont[i,])),type='n',xlab="E",ylab="Cont",
+	 main=paste(T[i]," (i=",i,")",sep=""))
     segments(x0=Energies,y0=0,y1=as.double(resCont[i,]),col=cols[1])
  
     ## Gamow window method first
@@ -223,7 +224,11 @@ for(i in 1:length(T)){
     ## Now do a linear interpolation. cubic spline acts too crazy!
     csum <- cumsum(cont/sum(cont))
     if(length(unique(csum)) > 1){
-	interp.ETER <- approxfun(y=Energies.o,x=cumsum(cont/sum(cont)))
+    ##if(sum(cont>0.5) < 2){
+    ##if(max(cont) < 0.8){   ## If a single resonance is contributing
+			   ## most, the ETER algorithm doesn't work!
+
+	interp.ETER <- approxfun(y=Energies.o,x=cumsum(cont/sum(cont)),ties="ordered")
 	ETER <- interp.ETER(c(0.08,0.5,0.92))
 	ETER.array <- c(ETER.array,ETER[2] + (ETER[3]-ETER[1]))
 
@@ -233,6 +238,7 @@ for(i in 1:length(T)){
 	       col=cols[1],lwd=2,length=0.1)
 	text(x=(ETER[1]+ETER[3])/2,y=max(resCont[i,])*0.92, "ETER",adj=0.5)
 	text(x=ETER[3],y=max(resCont[i,])*0.92, "Median + ETER",pos=3)
+
 	##plot(y=Energies.o,x=cumsum(cont/sum(cont)),xlim=c(0,1))
 	##abline(v=c(0.08,0.5,0.92))
 	##abline(h=interp.ETER(c(0.08,0.5,0.92)))
@@ -295,10 +301,15 @@ HF.final.high <- interp.HF.high(Rates[,1])
 
 ## Plot the HF and, scaled HF, and interpolated HF to check it all went well!
 layout(matrix(c(1:2), 2, 1, byrow=TRUE))
-ylim <- range(c(Rates[,2],HF[,2:5]))
+cut <- T > TMatch.ETER
+cut[length(cut)-(2+sum(cut))] <- TRUE
+cut.HF <- HF[,1] > TMatch.ETER
+cut.HF[length(cut.HF)-(2+sum(cut.HF))] <- TRUE
+##ylim <- range(c(Rates[,2],HF[,2]))
+ylim <- range(c(Rates[cut,2],HF.final.med[cut],HF[cut.HF,2]))
 
-plot(Rates[,1], Rates[,3], type='l', ylim=ylim,
-     xlab="Temperature", ylab="Rate", col=cols[1], log="",
+plot(Rates[,1], Rates[,3], type='l', ylim=ylim,xlim=range(T[cut]),
+     xlab="Temperature", ylab="Rate", col=cols[1], log="y",
      xaxs='i',main=paste("TMatch = ",format(TMatch.ETER,digits=2,nsmall=2),"GK"))
 abline(v=TMatch.ETER,lty=3,col="grey")
 lines(HF[,1],HF[,2],col=cols[2],lty=2)
@@ -323,9 +334,11 @@ Rates.final <- rbind(Rates.final,
 			   rep(Rates[cut.length,5],acut.length)))
 
 ## Plot the final rate in a nice simple figure
-ylim <- range(Rates.final[,2:4])
-plot(Rates[,1], Rates[,3], type='l', ylim=ylim,
-     xlab="Temperature", ylab="Rate", col=cols[1], log="",
+cut <- T > TMatch.ETER
+cut[length(cut)-(2+sum(cut))] <- TRUE
+ylim <- range(Rates.final[cut,2:4])
+plot(Rates[,1], Rates[,3], type='l', ylim=ylim,xlim=range(T[cut]),
+     xlab="Temperature", ylab="Rate", col=cols[1], log="xy",
      xaxs='i')
 abline(v=TMatch.ETER,lty=3,col="grey")
 lines(Rates.final[,1], Rates.final[,2], lwd=1, col=cols[3])
@@ -363,7 +376,8 @@ OP.Low  <- formatC(Rates.final[cut,2],"E",width=8, digits=3,flag="#")
 OP.Med  <- formatC(Rates.final[cut,3],"E",width=8, digits=3,flag="#")
 OP.High <- formatC(Rates.final[cut,4],"E",width=8, digits=3,flag="#")
 OP.fu   <- formatC(Rates.final[cut,5],"E",width=8, digits=3,flag="#")
-OP.above <- cbind(OP.T, "  (", OP.Low, ")", "       (", OP.Med,")", "     (", OP.High, ")","      (", OP.fu,")")
+##OP.above <- cbind(OP.T, "  (", OP.Low, ")", "       (", OP.Med,")", "     (", OP.High, ")","      (", OP.fu,")")
+OP.above <- cbind(OP.T, "   ", OP.Low, "       ", OP.Med, "       ", OP.High, " ","       ", OP.fu," ")
 LaTeX.above <- cbind(OP.T, " &   (", OP.Low, ") &       (", OP.Med, ") &\n", "           ",
 		     "(",OP.High, ") &       (", OP.fu, ")   \\\\")
 write.table(OP.above,OutputFile,col.names=FALSE, row.names=FALSE, quote=FALSE, append=TRUE, sep="")
