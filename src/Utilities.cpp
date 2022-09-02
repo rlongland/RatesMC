@@ -54,7 +54,9 @@ std::ofstream contribfile;
 std::ofstream outfile;
 std::ofstream outfullfile;
 //File for investigating integration algorithms 
-std::ofstream integfile;
+std::ofstream LarsFile;
+
+
 std::ofstream latexfile;
 std::ofstream testfile;
 int NSamples;
@@ -152,7 +154,7 @@ void readNonResonant(std::ifstream &infile, Reaction &R, int part){
   // Return to saved position in file
   infile.seekg(place);
   
-  int ne = countEntries(infile);
+  //int ne = countEntries(infile);
   //std::cout << "There are " << ne << " entries\n";
   // if(ne != 5){
   //   std::cout << "  ERROR: There should be 5 numbers in the non-resonant input lines\n";
@@ -1077,11 +1079,26 @@ void writeRateSamples(std::vector<double> RateSample, double Temp){
 
 void writeInteg(double fast, double slow)
 {
-  char buffer[100];
-  sprintf(buffer,"Fast: %e || Slow: %e ", fast, slow);
-  integfile << buffer << std::endl;
+  char buffer2[100];
+  sprintf(buffer2,"%e %e ", fast, slow);
+  
+  LarsFile << buffer2 << std::endl;
+
   return;
 }
+
+
+void writeRange(gsl_function F, int n, double a, double b)
+{
+  int y = 0;
+  for (size_t i = 0; i < n; i++)
+  {
+    double x = i*((b-a)/n+a);
+    y = (*((F).function))(x,(F).params);
+  }
+  
+}
+
 
 //----------------------------------------------------------------------
 void summarizeErrors(double Temp){

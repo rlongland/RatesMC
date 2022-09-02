@@ -65,7 +65,7 @@ int main(int argc, char** argv){
   }
   outfile.open(ofilename);
   outfullfile.open(ofullfilename);
-  integfile.open(ointegname);
+  LarsFile.open("RatesMC.Lars");
   
   // Open log file
   logfile.open("RatesMC.log");

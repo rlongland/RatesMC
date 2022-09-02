@@ -55,7 +55,7 @@ double FastResult = -32;
 double SlowResult = -32;
 
 
-
+bool debug = true;
 
 // Ugly-ass hack
 Resonance *ResonancePtr;
@@ -790,7 +790,7 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
                                      E_min,   // Where known singularity is
                                      E_max,   // number of singularities
                                      1e-100,   // absolute error
-                                     1e-6,    // relative error
+                                     1e-6,     // relative error
                                      w,       // workspace
                                      &result, // The result
                                      &error, &nevals);
@@ -891,14 +891,14 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
 
 	}
   
-  // if (FastResult==INFINITY)
-  // {
-  //     std::cout << "\n" << "Res #| "<< index+1 <<" Energy| "<< E << " Gamma 1,2,3| " << G0 <<" "<<G1<< " " << G2 << std::endl;
-  //     std::cout << " Fast: " << FastResult<<std::endl;
-  //     std::cout << " Slow: "<< SlowResult<<std::endl;
-  //     std::cout <<"Function: "<< F.function<<std::endl;
+  if (debug)
+  {
+      std::cout << "\n" << "Res #| "<< index+1 <<" Tempurature "<< T << " Gamma 1,2,3| " << G0 <<" "<<G1<< " " << G2 << std::endl;
+      std::cout << " Fast: " << FastResult<<std::endl;
+      std::cout << " Slow: "<< SlowResult<<std::endl;
+      std::cout <<"Function: "<< F.function<<std::endl;
 
-  // }
+  }
   
 
   

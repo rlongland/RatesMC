@@ -1,4 +1,4 @@
-/* RatesMC: Monte Carlo reaction rate code
+ /* RatesMC: Monte Carlo reaction rate code
  *
  * Copyright (C) 2022  Richard Longland
  *
@@ -61,7 +61,7 @@ extern std::ofstream sampfile;
 extern std::ofstream contribfile;
 extern std::ofstream outfile;
 extern std::ofstream outfullfile;
-extern std::ofstream integfile;
+extern std::ofstream LarsFile;
 extern std::ofstream latexfile;
 extern std::ofstream testfile;
 
