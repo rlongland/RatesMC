@@ -1125,9 +1125,23 @@ int Resonance::rhs (double x, const double y[], double dydx[], void *params){
 //}
 
 //----------------------------------------------------------------------
-double Resonance::getSFactor(double E){
+double Resonance::getSFactor(double E, int samp){
 
 	if(!isBroad)return 0.0;
+
+	// Pass samp=-1 to use the central values, or samp>=0 to use MC samples
+	double E_cm_samp;
+	double G_samp[3];
+	if(samp == -1){
+		E_cm_samp = E_cm;
+		G_samp[0] = G[0];
+		G_samp[1] = G[1];
+		G_samp[2] = G[2];
+	} else {
+		E_cm_samp = E_sample[samp];
+		for(int i=0;i<3;i++)
+			G_samp[i] = G_sample[i][samp];
+	}
 	
   //double PEK = 6.56618216E-1 / mue; // a correction factor
   double P = PenFactor(E, L[0], M0, M1, Z0, Z1, R);
@@ -1142,7 +1156,7 @@ double Resonance::getSFactor(double E){
 	
   //  The penetration factor at the resonance energy (the "true" PF)
   if (E_cm > 0.0) {
-    Pr = PenFactor(E_cm, L[0], M0, M1, Z0, Z1, R);
+    Pr = PenFactor(E_cm_samp, L[0], M0, M1, Z0, Z1, R);
   } else {
     Pr = 0.0;
   }
@@ -1150,16 +1164,16 @@ double Resonance::getSFactor(double E){
   // Calculate the exit particle energy, depends on if it is spectator
   if (Reac.getGamma_index() == 2) {
     // if exit particle is observed decay, take final excitation into account
-    Pr_exit = PenFactor(E_cm + Reac.Q - Reac.Qexit - Exf, L[1], M0 + M1 - M2, M2,
+    Pr_exit = PenFactor(E_cm_samp + Reac.Q - Reac.Qexit - Exf, L[1], M0 + M1 - M2, M2,
                         Z0 + Z1 - Z2, Z2, R);
   } else if (Reac.getGamma_index() == 1 && NChannels == 3) {
     // ignore spectator final excitation if it is spectator
-    Pr_exit = PenFactor(E_cm + Reac.Q - Reac.Qexit, L[2], M0 + M1 - M2, M2,
+    Pr_exit = PenFactor(E_cm_samp + Reac.Q - Reac.Qexit, L[2], M0 + M1 - M2, M2,
                         Z0 + Z1 - Z2, Z2, R);
   }
 
 	// Entrance particle scale
-  if (E_cm > 0.0) {
+  if (E_cm_samp > 0.0) {
     Scale[0] = P / Pr;
   } else {
     Scale[0] = 2.0 * P * 41.80161396 / (mue * gsl_pow_2(R));
@@ -1169,13 +1183,13 @@ double Resonance::getSFactor(double E){
 
 	// Exit and spectator scales
   for (int i = 1; i < 3; i++) {
-    if (G[i] > 0.0) {
+    if (G_samp[i] > 0.0) {
       if (i == Reac.getGamma_index()) {
         if (i == 1)
           Scale[i] =
-              pow((Reac.Q + E - Exf) / (Reac.Q + E_cm - Exf), (2. * L[i] + 1.0));
+              pow((Reac.Q + E - Exf) / (Reac.Q + E_cm_samp - Exf), (2. * L[i] + 1.0));
         if (i == 2)
-          Scale[i] = pow((Reac.Q + E) / (Reac.Q + E_cm), (2. * L[i] + 1.0));
+          Scale[i] = pow((Reac.Q + E) / (Reac.Q + E_cm_samp), (2. * L[i] + 1.0));
       } else {
         if (i == 1)
           E_exit = Reac.Q + E - Reac.Qexit - Exf;
@@ -1196,9 +1210,9 @@ double Resonance::getSFactor(double E){
 
 	double Consts = 0.6566/mue;   // pi*hbar^2/(2*mu) in MeV.b
 	double S1 = exp(eta);
-  double S2 = omega * Scale[0] * G[0] * Scale[1] * G[1];
-  double S3 = gsl_pow_2(E_cm - E) +
-              0.25 * gsl_pow_2(G[0] * Scale[0] + G[1] * Scale[1] + G[2] * Scale[2]);
+  double S2 = omega * Scale[0] * G_samp[0] * Scale[1] * G_samp[1];
+  double S3 = gsl_pow_2(E_cm_samp - E) +
+              0.25 * gsl_pow_2(G_samp[0] * Scale[0] + G_samp[1] * Scale[1] + G_samp[2] * Scale[2]);
 
 	//	std::cout << omega << " " << G[0] << " " << G[1] << " ";
 	//	std::cout << Scale[0] << " " << Scale[1] << " " << Scale[2] << "\n";

@@ -773,19 +773,35 @@ int Interference::rhs (double x, const double y[], double dydx[], void *params){
 //}
 
 //----------------------------------------------------------------------
-double Interference::getSFactor(double E, int sign){
+double Interference::getSFactor(double E, int sign, int samp){
 
   //double PEK = 6.56618216E-1 / mue; // a correction factor
 
+	
+	
 	double SFactorPart[3], delta[3];
 	
 	for(int iRes=0; iRes<2; iRes++){
+
+		double E_cm_samp;
+		double G0; 
+		double G1; 
+		double G2; 
+		if(samp == -1){
+			E_cm_samp = E_cm[iRes];
+			G0 = Res[iRes]->getG(0);
+			G1 = Res[iRes]->getG(1);
+			G2 = Res[iRes]->getG(2);
+		} else {
+			E_cm_samp = Res[iRes]->getESample(samp);
+			G0 = Res[iRes]->getGSample(0,samp);
+			G1 = Res[iRes]->getGSample(1,samp);
+			G2 = Res[iRes]->getGSample(2,samp);
+			sign = sign_sample[samp];
+		}
 		double P = PenFactor(E, L[iRes][0], M0, M1, Z0, Z1, R);
 		double Pr, Pr_exit;
 		double P_exit, E_exit = 0.;
-		double G0 = Res[iRes]->getG(0);
-		double G1 = Res[iRes]->getG(1);
-		double G2 = Res[iRes]->getG(2);
 		double omega = (2. * Jr[iRes] + 1.) / ((2. * J0 + 1.) * (2. * J1 + 1.));
 
 		double Scale[3];
@@ -794,8 +810,8 @@ double Interference::getSFactor(double E, int sign){
 
 	
 		//  The penetration factor at the resonance energy (the "true" PF)
-		if (E_cm[iRes] > 0.0) {
-			Pr = PenFactor(E_cm[iRes], L[iRes][0], M0, M1, Z0, Z1, R);
+		if (E_cm_samp > 0.0) {
+			Pr = PenFactor(E_cm_samp, L[iRes][0], M0, M1, Z0, Z1, R);
 			Scale[0] = P / Pr;
 		} else {
 			//Scale[0] = 1.0;
@@ -805,11 +821,12 @@ double Interference::getSFactor(double E, int sign){
 		// Calculate the exit particle energy, depends on if it is spectator
 		if (Reac.getGamma_index() == 2) {
 			// if exit particle is observed decay, take final excitation into account
-			Pr_exit = PenFactor(E_cm[iRes] + Reac.Q - Reac.Qexit - Exf[iRes], L[iRes][1], M0 + M1 - M2, M2,
+			Pr_exit = PenFactor(E_cm_samp + Reac.Q - Reac.Qexit - Exf[iRes],
+													L[iRes][1], M0 + M1 - M2, M2,
 													Z0 + Z1 - Z2, Z2, R);
 		} else if (Reac.getGamma_index() == 1 && NChannels[iRes] == 3) {
 			// ignore spectator final excitation if it is spectator
-			Pr_exit = PenFactor(E_cm[iRes] + Reac.Q - Reac.Qexit, L[iRes][2], M0 + M1 - M2, M2,
+			Pr_exit = PenFactor(E_cm_samp + Reac.Q - Reac.Qexit, L[iRes][2], M0 + M1 - M2, M2,
 													Z0 + Z1 - Z2, Z2, R);
 		}
 
@@ -820,9 +837,9 @@ double Interference::getSFactor(double E, int sign){
 				if (i == Reac.getGamma_index()) {
 					if (i == 1)
 						Scale[i] =
-              pow((Reac.Q + E - Exf[iRes]) / (Reac.Q + E_cm[iRes] - Exf[iRes]), (2. * L[iRes][i] + 1.0));
+              pow((Reac.Q + E - Exf[iRes]) / (Reac.Q + E_cm_samp - Exf[iRes]), (2. * L[iRes][i] + 1.0));
 					if (i == 2)
-						Scale[i] = pow((Reac.Q + E) / (Reac.Q + E_cm[iRes]), (2. * L[iRes][i] + 1.0));
+						Scale[i] = pow((Reac.Q + E) / (Reac.Q + E_cm_samp), (2. * L[iRes][i] + 1.0));
 				} else {
 					if (i == 1)
 						E_exit = Reac.Q + E - Reac.Qexit - Exf[iRes];
@@ -843,7 +860,7 @@ double Interference::getSFactor(double E, int sign){
 
 		double S1 = exp(eta);
 		double S2 = omega * Scale[0] * G0 * Scale[1] * G1;
-		double S3 = gsl_pow_2(E_cm[iRes] - E) +
+		double S3 = gsl_pow_2(E_cm_samp - E) +
 			0.25 * gsl_pow_2(G0 * Scale[0] + G1 * Scale[1] + G2 * Scale[2]);
 
 		//		std::cout << Scale[0] << " " << Scale[1] << " " << Scale[2] << "\n";
@@ -851,7 +868,7 @@ double Interference::getSFactor(double E, int sign){
 	
 		SFactorPart[iRes] = S1 * S2 / S3; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
 		delta[iRes] = atan( (G0*Scale[0] + G1*Scale[1] +
-												 G2*Scale[2])/(2.0*(E - E_cm[iRes])));
+												 G2*Scale[2])/(2.0*(E - E_cm_samp)));
 		if(delta[iRes] < 0.0)delta[iRes]+=M_PI;
 	}
 

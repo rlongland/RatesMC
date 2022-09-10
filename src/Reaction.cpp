@@ -678,7 +678,8 @@ void Reaction::writeSFactor(){
 		// Collect S-factor for each resonance
 		for(Resonance &Res : Resonances){
 			//std::cout << "\nRes " << Res.getIndex() << "\n";
-			sfactorfile << Res.getSFactor(E) << "  ";
+			// Pass -1 to get the sfactor with recommended input values
+			sfactorfile << Res.getSFactor(E,-1) << "  ";
 		}
 
 		// Same for interferences
@@ -686,14 +687,14 @@ void Reaction::writeSFactor(){
 			//std::cout << "\nInt " << Inter.getIndex() << "\n";
 			switch(Inter.getSign()){
 			case(1):
-				sfactorfile << Inter.getSFactor(E, 1) << "  ";
+				sfactorfile << Inter.getSFactor(E, 1, -1) << "  ";
 				break;
 			case(-1):
-				sfactorfile << Inter.getSFactor(E, -1) << "  ";
+				sfactorfile << Inter.getSFactor(E, -1, -1) << "  ";
 				break;
 			default:
-				sfactorfile << Inter.getSFactor(E, 1) << "  ";
-				sfactorfile << Inter.getSFactor(E, -1) << "  ";
+				sfactorfile << Inter.getSFactor(E, 1, -1) << "  ";
+				sfactorfile << Inter.getSFactor(E, -1, -1) << "  ";
 			}
 		}
 		sfactorfile << std::endl;
@@ -701,6 +702,55 @@ void Reaction::writeSFactor(){
 
 	sfactorfile.close();
 
+
+	// Make another s-factor file to save the MC total S-factor curve
+	std::ofstream mcsfactorfile;
+	mcsfactorfile.open("RatesMC.mcsfact");
+
+	// Loop through energies on a defined grid. At each energy, find the
+	// S-factor of each resonance and analytical contribution
+		
+	for(double E=EMin; E<10.0; E+=0.001){
+
+		// Write the energy
+		mcsfactorfile << std::scientific << std::setprecision(3) << E << "   ";
+
+		for(int samp=0; samp<std::min(1000,NSamples); samp++){
+		
+			double sfactorSum = 0.0;
+			
+			
+			// Analytical parts
+			for(int i=0; i<2; i++){
+				double Si = S[i]/1000.0;
+				double Spi = Sp[i];
+				double Sppi = Spp[i]*1000.0;
+				double Ssum = Si + Spi*E + Sppi*E*E;
+				if(E > (CutoffE[i]/1000.0))Ssum=0.0;
+				double mu,sigma;
+				logNormalize(Ssum,dS[i]*Ssum,mu,sigma);
+				double Ssum_samp = gsl_ran_lognormal(r,mu,sigma);
+				// Ignore the non-resonant part for now
+				// sfactorSum += Ssum_samp;
+			}
+			
+			// Collect S-factor for each resonance
+			for(Resonance &Res : Resonances){
+				//std::cout << "\nRes " << Res.getIndex() << "\n";
+				sfactorSum += Res.getSFactor(E,samp);
+			}
+
+			// Same for interferences
+			for (Interference &Inter : Interferences) {
+				// std::cout << "\nInt " << Inter.getIndex() << "\n";
+				sfactorSum += Inter.getSFactor(E, 1, samp);
+			}
+
+			mcsfactorfile << sfactorSum << "  ";
+		}
+
+		mcsfactorfile << "\n";
+	}
 }
 
 //----------------------------------------------------------------------

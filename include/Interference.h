@@ -66,7 +66,7 @@ class Interference {
 	void putRateSample(int s, double rate){Rate_sample[s] = rate;}
   double getRateSample(int s){return Rate_sample[s];}
 
-	double getSFactor(double E, int sign);
+	double getSFactor(double E, int sign, int samp);
 	
   // Function to integrate a broad resonance
   double NumericalRate(double T,  double E_sample[2], double G_sample[2][3],

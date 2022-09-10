@@ -92,7 +92,7 @@ class Resonance {
 	void putRateSample(int s, double rate){Rate_sample[s] = rate;}
   double getRateSample(int s){return Rate_sample[s];}
 
-	double getSFactor(double E);
+	double getSFactor(double E, int samp);
 	
   // Rate for a single narrow resonance
   double singleNarrow(double wg, double E, double T);
