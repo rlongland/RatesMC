@@ -167,6 +167,48 @@ void readNonResonant(std::ifstream &infile, Reaction &R, int part){
   
 }
 
+// Read tabulated non-resonant part of the astrophysical S-factor
+void readNonResonantTable(std::ifstream &infile, Reaction &R) {
+
+	std::string line, cell;
+	std::vector<double>SFactorE;
+	std::vector<double> SFactorS;
+	std::vector<double> SFactordS;
+
+	// Get the first line
+	getline(infile, line);
+	
+	std::stringstream lineStream(line);
+	//	std::cout << lineStream << "\n";
+	while(getline(lineStream, cell, ',')){
+		SFactorE.push_back(stod(cell));
+	}
+	
+	getline(infile, line);
+	lineStream.str("");
+	lineStream.clear();
+	lineStream << line;
+	//	std::cout << line << "\n";
+	while(getline(lineStream, cell, ',')){
+		SFactorS.push_back(stod(cell));
+	}
+
+	getline(infile, line);
+	lineStream.str("");
+	lineStream.clear();
+	lineStream << line;
+	//	std::cout << line << "\n";
+	while(getline(lineStream, cell, ',')){
+		SFactordS.push_back(stod(cell));
+	}
+
+	// for(int i=0; i<SFactorE.size(); i++)
+	// 	std::cout << SFactorE[i] << " " << SFactorS[i] << " " << SFactordS[i]  << "\n ";
+	// std::cout << "\n";
+
+	R.setNonResonantTable(SFactorE, SFactorS, SFactordS);
+}
+
 /* 
    This is where Victor need to work on reading all of the "standard" resonances
    1) Start by just reading 5 of them
@@ -839,6 +881,12 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   
   // Non-resonant line 2
   readNonResonant(infile, *R, 1);
+
+  // Skip 3 lines
+  skipLines(infile, 3);
+
+	// Read Tabulated non-resonant table
+	readNonResonantTable(infile, *R);
 
   // Skip 5 lines
   skipLines(infile, 5);

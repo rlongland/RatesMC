@@ -68,6 +68,16 @@ void Reaction::setNonResonant(double s, double sp, double spp, double ds, double
   ARate.push_back(A);
 }
 
+void Reaction::setNonResonantTable(std::vector<double> SE,
+																	 std::vector<double> SS,
+																	 std::vector<double> SdS){
+
+	SFactorE = SE;
+	SFactorS = SS;
+	SFactordS = SdS;
+
+}
+
 void Reaction::
     addResonance(int i, double E_cm, double dE_cm, double wg, double dwg, double Jr,
 														double G1, double dG1, int L1, double PT1, double dPT1,
@@ -190,6 +200,12 @@ void Reaction::writeReaction(){
   logfile << " Part 1: " << S[0] << "  " << Sp[0] << "  " << Spp[0] << "  " << dS[0] << "  " << CutoffE[0] << "\n";
   logfile << " Part 2: " << S[1] << "  " << Sp[1] << "  " << Spp[1] << "  " << dS[1] << "  " << CutoffE[1] << "\n";
   logfile << "\n";
+
+	logfile << " Tabulated Direct Capture part     \n";
+  logfile << "      E         S           dS  \n";
+	for(int i=0; i<SFactorE.size(); i++)
+	 	logfile << SFactorE[i] << "    " << SFactorS[i] << "    " << SFactordS[i]  << "\n ";
+	logfile << "\n";
 
   logfile << "--------------------------------------------------" << "\n";
   logfile << " Resonances:\n";

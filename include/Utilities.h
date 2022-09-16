@@ -81,6 +81,8 @@ void skipLines(std::ifstream &in, int n);
 int countEntries(std::ifstream &in);
 // Read a non-resonant line
 void readNonResonant(std::ifstream &in, Reaction &R, int part);
+// Read a non-resonant table
+void readNonResonantTable(std::ifstream &in, Reaction &R);
 // Read all of the standard resonances
 void readResonanceBlock(std::ifstream &in, Reaction &R, bool isUpperlimit);
 // Read interfering resonances

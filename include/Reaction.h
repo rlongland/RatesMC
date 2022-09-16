@@ -47,6 +47,7 @@ class Reaction{
   void setR0(double r0){R0=r0;}
   void setGammaIndex(int gindex){Gamma_index = gindex;}
   void setNonResonant(double, double, double, double, double, int);
+  void setNonResonantTable(std::vector<double>, std::vector<double>, std::vector<double>);
   void addResonance(int, double, double, double, double, double,
 										double, double, int, double, double,
 										double, double, int, double, double,
@@ -102,6 +103,11 @@ class Reaction{
   std::string Name;
   double S[2],Sp[2],Spp[2],dS[2],CutoffE[2];
   int Gamma_index;
+
+	// Tabulated S-factor
+	std::vector<double> SFactorE;
+	std::vector<double> SFactorS;
+	std::vector<double> SFactordS;
 
   std::vector<Resonance> Resonances;
 	std::vector<Interference> Interferences;
