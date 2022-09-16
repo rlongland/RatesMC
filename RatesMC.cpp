@@ -105,7 +105,7 @@ int main(int argc, char** argv){
   Reac -> writeReaction();
 
 	// Before we write anything long, write the astrophysical S-factor
-	Reac -> writeSFactor();
+	Reac -> writeSFactor(false);
 
   // Write all samples to a file for later analysis
   Reac -> writeSamples();

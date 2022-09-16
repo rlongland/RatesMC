@@ -65,7 +65,7 @@ class Reaction{
   double NonResonantIntegrand(double x, void * params);
   void prepareSamples();
   void writeSamples();
-  void writeSFactor();
+  void writeSFactor(bool MCSamples);
   void setupSFactorHeader(std::ofstream &sfactorfile);
 
 	void CombineResonancePossibilities();

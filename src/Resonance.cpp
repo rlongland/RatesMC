@@ -1155,7 +1155,7 @@ double Resonance::getSFactor(double E, int samp){
 
 	
   //  The penetration factor at the resonance energy (the "true" PF)
-  if (E_cm > 0.0) {
+  if (E_cm_samp > 0.0) {
     Pr = PenFactor(E_cm_samp, L[0], M0, M1, Z0, Z1, R);
   } else {
     Pr = 0.0;

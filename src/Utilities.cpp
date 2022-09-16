@@ -124,7 +124,7 @@ int countEntries(std::ifstream &infile){
     //    std::cout << entry << "  ";
     entries.push_back(entry);
   }
-
+	//	std::cout << "\n";
   // Return to saved position in file
   infile.seekg(place);
 
