@@ -887,17 +887,16 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
 
     //write fast and slow results onto txt file
     writeInteg(FastResult, SlowResult);
+    
+
+
   
 
 	}
   
-  if (debug)
+  if (status != 0)
   {
-      std::cout << "\n" << "Res #| "<< index+1 <<" Tempurature "<< T << " Gamma 1,2,3| " << G0 <<" "<<G1<< " " << G2 << std::endl;
-      std::cout << " Fast: " << FastResult<<std::endl;
-      std::cout << " Slow: "<< SlowResult<<std::endl;
-      std::cout <<"Function: "<< F.function<<std::endl;
-
+    writePoints(F, 100, E_min, E_max);
   }
   
 

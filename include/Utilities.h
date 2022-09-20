@@ -26,6 +26,14 @@
 #include "Reaction.h"
 #include <gsl/gsl_rng.h>
 
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_sf_log.h>
+#include <gsl/gsl_sf_exp.h>
+#include <gsl/gsl_sf_coulomb.h>
+#include <gsl/gsl_statistics.h>
+#include <gsl/gsl_vector.h>
+
 extern std::string VersionNumber;
 extern std::string VersionDate;
 
@@ -62,6 +70,7 @@ extern std::ofstream contribfile;
 extern std::ofstream outfile;
 extern std::ofstream outfullfile;
 extern std::ofstream LarsFile;
+extern std::ofstream LarsFile2;
 extern std::ofstream latexfile;
 extern std::ofstream testfile;
 
@@ -112,7 +121,9 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate, double H
 // Write the sample file
 void writeRateSamples(std::vector<double> RateSample, double Temp);
 //write integration results for both algorithms
-void writeInteg(double fast, double slow);
+void writeInteg(double fast, double slow/*, const gsl_odeiv2_step_type * T*/);
+//log points for the failing functions
+void writePoints(gsl_function F, int n, double a, double b);
 // Write a summary of all errors at this temperature to the log file
 void summarizeErrors(double Temp);
 

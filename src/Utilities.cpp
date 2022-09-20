@@ -55,6 +55,8 @@ std::ofstream outfile;
 std::ofstream outfullfile;
 //File for investigating integration algorithms 
 std::ofstream LarsFile;
+//File For graphing failing integrations
+std::ofstream LarsFile2;
 
 
 std::ofstream latexfile;
@@ -1080,7 +1082,7 @@ void writeRateSamples(std::vector<double> RateSample, double Temp){
 void writeInteg(double fast, double slow)
 {
   char buffer2[100];
-  sprintf(buffer2,"%e %e ", fast, slow);
+  sprintf(buffer2,"%e %e", fast, slow/* , T */);
   
   LarsFile << buffer2 << std::endl;
 
@@ -1088,13 +1090,18 @@ void writeInteg(double fast, double slow)
 }
 
 
-void writeRange(gsl_function F, int n, double a, double b)
+void writePoints(gsl_function F, int n, double a, double b)
 {
-  int y = 0;
+  char buffer3[100];
+  double y = 0;
   for (size_t i = 0; i < n; i++)
   {
-    double x = i*((b-a)/n+a);
+    double x = (i+1)*((b-a)/n+a);
+/*     std::cout << std::endl;
+    std::cout<< " a: "<< a << " b: "<< b <<" x: " << x <<std::endl; */
     y = (*((F).function))(x,(F).params);
+    sprintf(buffer3,"%e ", y);
+    LarsFile2 << buffer3; 
   }
   
 }
