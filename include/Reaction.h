@@ -63,7 +63,9 @@ class Reaction{
   double calcResonant(double Temp);
   double calcNonResonant(double Temp, int j);
   double calcNonResonantIntegrated(double Temp, int j);
+  double calcNonResonantTabulated(double Temp, int j);
   double NonResonantIntegrand(double x, void * params);
+  double NonResonantTabulatedIntegrand(double x, void * params);
   void prepareSamples();
   void writeSamples();
   void writeSFactor(bool MCSamples);

@@ -157,7 +157,10 @@ int main(int argc, char** argv){
       // New method of simply integrating the astrophysical s-factor
       ADRate[j] = Reac -> calcNonResonantIntegrated(T, j);
     }
-    
+		// Calculate the non-resonant rate from a tabulated S-factor
+		// For now, put it in the second ADRate entry
+		ADRate[1] = Reac -> calcNonResonantTabulated(T,1);
+		
     // Calculate the resonant rate
     double ResRate = Reac -> calcResonant(T);
 

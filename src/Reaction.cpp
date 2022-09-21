@@ -38,6 +38,7 @@
 #include <gsl/gsl_sf_exp.h>
 #include <gsl/gsl_sf_log.h>
 #include <gsl/gsl_integration.h>
+#include <gsl/gsl_spline.h>
 
 #include "Resonance.h"
 #include "Reaction.h"
@@ -448,6 +449,12 @@ double NonResonantIntegrandWrapper(double x, void *params)
 {
   return ReactionPtr->NonResonantIntegrand(x, params);
 }
+struct my_f_params { double mue; double T; double Z0Z1;
+	gsl_spline *Sspline; gsl_interp_accel *facc;};
+double NonResonantTabulatedWrapper(double x, void *params)
+{
+  return ReactionPtr->NonResonantTabulatedIntegrand(x, params);
+}
 // end ugly-ass hack
 double Reaction::calcNonResonantIntegrated(double Temp, int j){
 
@@ -564,6 +571,130 @@ double Reaction::NonResonantIntegrand(double x, void * params){
   //  std::cout << index << " " << mue << " " << T << std::endl;
   //  std::cout << S << std::endl;
   double Ssum = S + Sp*x + 0.5*Spp*x*x;
+
+  //  std::cout << "Ssum = " << Ssum << std::endl;
+  
+  double eta = 0.989510*Z0Z1*sqrt(mue/x);
+  double Sommerfeld = gsl_sf_exp(-eta);
+  double Boltzmann = gsl_sf_exp(-11.605*x/T);
+  
+  double integrand = Ssum*Sommerfeld*Boltzmann;
+
+  return integrand;
+}
+
+//----------------------------------------------------------------------
+// Calculate the reaction rate by integrating a tabulated
+// astrophysical s-factor
+double Reaction::calcNonResonantTabulated(double Temp, int j){
+
+  //  std::cout << Temp << " " << j << "\n";
+  double mue = M0*M1/(M0+M1);
+  //  double mu, sigma;
+
+  double ADRate,mu,sigma;
+
+  // Calculate the rate first and then sample at the end.
+  double E_min = 0.0;
+  double E_max = SFactorE[SFactorE.size()-1];
+  //  std::cout << E_max << std::endl;
+
+	// Create an interpolation routine
+	gsl_interp_accel *acc = gsl_interp_accel_alloc();
+	gsl_spline *Sspline = gsl_spline_alloc (gsl_interp_linear, SFactorE.size());
+	gsl_spline_init(Sspline, SFactorE.data(), SFactorS.data(), SFactorE.size());
+	
+  // GSL Integration functions
+  double result, error;
+  
+  // Define integration limits
+  //double x = E_min, x1 = E_max;
+
+  // The array that needs to be passed to the integration function
+	struct my_f_params params = {mue, Temp, (double)(Z0*Z1), Sspline, acc};
+
+  // Turn off the error handler
+  gsl_set_error_handler_off();
+
+  gsl_integration_workspace * w = gsl_integration_workspace_alloc(1000);
+  gsl_function F;
+  // Can't use Integrand directly because GSL is shit
+  F.function = &NonResonantTabulatedWrapper;
+  //  F.function = &Integrand;
+  F.params = &params;
+
+  int status = gsl_integration_qag(&F,      // Function to be integrated
+																	 E_min,   // Start of integration
+																	 E_max,   // End of integration
+																	 0,       // absolute error
+																	 1e-3,    // relative error
+																	 1000,    // max number of steps (cannot exceed size of workspace
+																	 6,       // key - (6=61 point Gauss-Kronrod rules)
+																	 w,       // workspace
+																	 &result, // The result
+																	 &error);
+
+	if(status != 0){
+		std::cout << "ERROR: Problem integrating non-resonant input\n";
+		exit(EXIT_FAILURE);
+	}
+	
+  gsl_set_error_handler(NULL);
+
+  ADRate = result*(3.7318e10/(sqrt(mue)*pow(Temp,1.5)));
+
+  //std::cout << "AD Rate = " << ADRate << std::endl;
+  
+
+  // If ADRate is negative, set to zero, this is unphysical
+  if(ADRate < 0.){
+    ErrorFlag = true;
+    logfile << "\tWARNING: The non-resonant part caused a negative rate, \n\t\tsetting to zero." << std::endl;
+    ADRate = 0.0;
+    for(int i=0;i<NSamples;i++){
+      ARate[j][i]=0.0;
+    }
+  } else {
+    // Either use the fractional uncertainty in S
+    if(dS[j] >= 0){
+      logNormalize(ADRate,dS[j]*ADRate,mu,sigma);
+      // Or interpret it as a factor uncertainty
+    } else {
+      mu = gsl_sf_log(ADRate);
+      sigma = gsl_sf_log(-dS[j]);
+    }
+    // if mu and sigma return as zero, the rate is zero (very small)
+    if((mu==0. && sigma==0.)){
+      ADRate=0.0;
+      for(int i=0;i<NSamples;i++){
+				ARate[j][i]=0.0;
+      }
+    } else {
+      for(int i=0;i<NSamples;i++){
+				ARate[j][i] = gsl_ran_lognormal(r,mu,sigma);///(1.5399e11/pow(mue*Temp,1.5));
+				//	std::cout << ARate[j][i] << "\n";
+      }
+    }
+  }
+
+	gsl_integration_workspace_free(w);
+  //ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
+  
+  return ADRate;
+}
+
+double Reaction::NonResonantTabulatedIntegrand(double x, void * params){
+
+	struct my_f_params * p = (struct my_f_params *)params;
+	double mue = (p->mue);
+	double T = (p->T);
+	double Z0Z1 = (p->Z0Z1);
+	gsl_spline *Sspline = (p->Sspline);
+	gsl_interp_accel *facc = (p->facc);
+
+	//  std::cout << index << " " << mue << " " << T << std::endl;
+  //  std::cout << S << std::endl;
+  double Ssum = gsl_spline_eval(Sspline, x, facc);
 
   //  std::cout << "Ssum = " << Ssum << std::endl;
   
