@@ -235,6 +235,8 @@ void readNonResonantTable(std::ifstream &infile, Reaction &R, int part) {
 	//		SFactordS.push_back(stod(cell));
 	//	}
 	while(lineStream >> entry){
+		if(entry < 0)
+			entry = gsl_sf_log(-entry);
 		SFactordS.push_back(entry);
 	}
 

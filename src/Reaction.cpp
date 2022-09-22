@@ -612,6 +612,8 @@ double Reaction::calcNonResonantTabulated(double Temp, int j){
 	if(isZero(E_max))
 		 return 0.0;
 		 
+	gsl_interp_accel *acc = gsl_interp_accel_alloc();
+	gsl_spline *Sspline = gsl_spline_alloc (gsl_interp_linear, SFactorE[j].size());
 
 	// Now integrate the S-factor for each sample
 	for(int s=0; s<=NSamples; s++){
@@ -620,15 +622,17 @@ double Reaction::calcNonResonantTabulated(double Temp, int j){
 
 		
 		for(size_t k=0; k<SFactorE[j].size(); k++){
-			SFac[k] = SFactorS[j][k]*gsl_sf_exp(SScale_sample[j][s] * SFactordS[j][k]);
+			//			if(SFactordS[j][k] > 0){
+				SFac[k] = SFactorS[j][k]*gsl_sf_exp(SScale_sample[j][s] * SFactordS[j][k]);
+				//} else {
+				//SFac[k] = SFactorS[j][k] * SScale_sample[j][s] * SFactordS[j][k];
+				//}
 		}
-
+		
 		// The very last one should be the "classical" result
 		if(s == NSamples)SFac = SFactorS[j];
 
 		// Create an interpolation routine
-		gsl_interp_accel *acc = gsl_interp_accel_alloc();
-		gsl_spline *Sspline = gsl_spline_alloc (gsl_interp_linear, SFactorE[j].size());
 		gsl_spline_init(Sspline, SFactorE[j].data(), SFac.data(),
 										SFactorE[j].size());
 
@@ -686,12 +690,13 @@ double Reaction::calcNonResonantTabulated(double Temp, int j){
 		if(s<NSamples)
 			ARate[j][s] = ADRate;
 
-		gsl_spline_free (Sspline);
-		gsl_interp_accel_free (acc);
 		gsl_integration_workspace_free(w);
 		//ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
 	}
-	
+
+	gsl_spline_free (Sspline);
+	gsl_interp_accel_free (acc);
+
 	
   return ADRate;
 }
