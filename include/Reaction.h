@@ -47,7 +47,9 @@ class Reaction{
   void setR0(double r0){R0=r0;}
   void setGammaIndex(int gindex){Gamma_index = gindex;}
   void setNonResonant(double, double, double, double, double, int);
-  void setNonResonantTable(std::vector<double>, std::vector<double>, std::vector<double>);
+  void setNonResonantTable(std::vector<double>, std::vector<double>,
+													 std::vector<double>);
+	void setCutoffE(double EMax, int part){CutoffE[part] = EMax;}
   void addResonance(int, double, double, double, double, double,
 										double, double, int, double, double,
 										double, double, int, double, double,

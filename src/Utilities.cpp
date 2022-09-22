@@ -181,7 +181,7 @@ void readNonResonantTable(std::ifstream &infile, Reaction &R) {
 	std::stringstream lineStream(line);
 	//	std::cout << lineStream << "\n";
 	while(getline(lineStream, cell, ',')){
-		SFactorE.push_back(stod(cell));
+		SFactorE.push_back(stod(cell)/1000.0);
 	}
 	
 	getline(infile, line);
@@ -190,7 +190,7 @@ void readNonResonantTable(std::ifstream &infile, Reaction &R) {
 	lineStream << line;
 	//	std::cout << line << "\n";
 	while(getline(lineStream, cell, ',')){
-		SFactorS.push_back(stod(cell));
+		SFactorS.push_back(stod(cell)/1000.0);
 	}
 
 	getline(infile, line);
@@ -202,6 +202,7 @@ void readNonResonantTable(std::ifstream &infile, Reaction &R) {
 		SFactordS.push_back(stod(cell));
 	}
 
+	R.setCutoffE(1000.0*SFactorE[SFactorE.size()-1],1);
 	// for(int i=0; i<SFactorE.size(); i++)
 	// 	std::cout << SFactorE[i] << " " << SFactorS[i] << " " << SFactordS[i]  << "\n ";
 	// std::cout << "\n";

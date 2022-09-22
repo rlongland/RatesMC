@@ -204,7 +204,7 @@ void Reaction::writeReaction(){
 
 	logfile << " Tabulated Direct Capture part     \n";
   logfile << "      E         S           dS  \n";
-	for(int i=0; i<SFactorE.size(); i++)
+	for(size_t i=0; i<SFactorE.size(); i++)
 	 	logfile << SFactorE[i] << "    " << SFactorS[i] << "    " << SFactordS[i]  << "\n ";
 	logfile << "\n";
 
@@ -467,7 +467,7 @@ double Reaction::calcNonResonantIntegrated(double Temp, int j){
   // Calculate the rate first and then sample at the end.
   double E_min = 0.0;
   double E_max = CutoffE[j]/1000.0;
-  //  std::cout << E_max << std::endl;
+	//std::cout << "E_max = " << E_max << std::endl;
 	// GSL Integration functions
   double result, error;
   
@@ -596,8 +596,9 @@ double Reaction::calcNonResonantTabulated(double Temp, int j){
 
   // Calculate the rate first and then sample at the end.
   double E_min = 0.0;
-  double E_max = SFactorE[SFactorE.size()-1];
-  //  std::cout << E_max << std::endl;
+  double E_max = CutoffE[j]/1000.0;
+	//  double E_max = SFactorE[SFactorE.size()-1];
+	//std::cout << "E_max = " << E_max << std::endl;
 
 	// Create an interpolation routine
 	gsl_interp_accel *acc = gsl_interp_accel_alloc();
@@ -638,12 +639,16 @@ double Reaction::calcNonResonantTabulated(double Temp, int j){
 		std::cout << "ERROR: Problem integrating non-resonant input\n";
 		exit(EXIT_FAILURE);
 	}
+
+	gsl_spline_free (Sspline);
+	gsl_interp_accel_free (acc);
+
 	
   gsl_set_error_handler(NULL);
 
   ADRate = result*(3.7318e10/(sqrt(mue)*pow(Temp,1.5)));
 
-  //std::cout << "AD Rate = " << ADRate << std::endl;
+	//  std::cout << "AD Rate = " << ADRate << std::endl;
   
 
   // If ADRate is negative, set to zero, this is unphysical
@@ -694,8 +699,9 @@ double Reaction::NonResonantTabulatedIntegrand(double x, void * params){
 
 	//  std::cout << index << " " << mue << " " << T << std::endl;
   //  std::cout << S << std::endl;
+	//testfile << x << " ";
   double Ssum = gsl_spline_eval(Sspline, x, facc);
-
+	//testfile << Ssum << "\n";
   //  std::cout << "Ssum = " << Ssum << std::endl;
   
   double eta = 0.989510*Z0Z1*sqrt(mue/x);
@@ -802,6 +808,12 @@ void Reaction::writeSFactor(bool MCSamples=false){
 	sfactorfile.open("RatesMC.sfact");
 
 	setupSFactorHeader(sfactorfile);
+
+	// Create an interpolation routine
+	gsl_interp_accel *acc = gsl_interp_accel_alloc();
+	gsl_spline *Sspline = gsl_spline_alloc (gsl_interp_linear, SFactorE.size());
+	gsl_spline_init(Sspline, SFactorE.data(), SFactorS.data(), SFactorE.size());
+
 	
 	// Loop through energies on a defined grid. At each energy, find the
 	// S-factor of each resonance and analytical contribution
@@ -817,11 +829,17 @@ void Reaction::writeSFactor(bool MCSamples=false){
 			double Si = S[i]/1000.0;
 			double Spi = Sp[i];
 			double Sppi = Spp[i]*1000.0;
-			double Ssum = Si + Spi*E + Sppi*E*E;
+			double Ssum = Si + Spi*E + 0.5*Sppi*E*E;
 			if(E > (CutoffE[i]/1000.0))Ssum=0.0;
 			sfactorfile << Ssum << "   ";
 		}
 
+		// Tabulated S-factor
+		double Ssum = 0.0;
+		if(E < (CutoffE[1]/1000.0))
+			Ssum = gsl_spline_eval(Sspline, E, acc);
+		sfactorfile << Ssum << "   ";
+		
 		// Collect S-factor for each resonance
 		for(Resonance &Res : Resonances){
 			//std::cout << "\nRes " << Res.getIndex() << "\n";
