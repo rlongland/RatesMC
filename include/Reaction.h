@@ -123,7 +123,7 @@ class Reaction{
   // Reaction-wide Monte Carlo
   std::vector<std::vector<double> > Ref_sample;
 	std::vector<std::vector<double> > ARate;
-  
+	std::vector<std::vector<double> > SScale_sample;
   
 };
 

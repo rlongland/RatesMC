@@ -196,6 +196,7 @@ void readNonResonant(std::ifstream &infile, Reaction &R, int part){
 void readNonResonantTable(std::ifstream &infile, Reaction &R, int part) {
 
 	std::string line, cell;
+	double entry;
 	std::vector<double>SFactorE;
 	std::vector<double> SFactorS;
 	std::vector<double> SFactordS;
@@ -204,9 +205,13 @@ void readNonResonantTable(std::ifstream &infile, Reaction &R, int part) {
 	getline(infile, line);
 	
 	std::stringstream lineStream(line);
+
 	//	std::cout << lineStream << "\n";
-	while(getline(lineStream, cell, ',')){
-		SFactorE.push_back(stod(cell)/1000.0);
+	//while(getline(lineStream, cell, ',')){
+	//	SFactorE.push_back(stod(cell)/1000.0);
+	//}
+	while(lineStream >> entry){
+		SFactorE.push_back(entry/1000.0);
 	}
 	
 	getline(infile, line);
@@ -214,17 +219,23 @@ void readNonResonantTable(std::ifstream &infile, Reaction &R, int part) {
 	lineStream.clear();
 	lineStream << line;
 	//	std::cout << line << "\n";
-	while(getline(lineStream, cell, ',')){
-		SFactorS.push_back(stod(cell)/1000.0);
+	while(lineStream >> entry){
+		SFactorS.push_back(entry/1000.0);
 	}
+	//	while(getline(lineStream, cell, ',')){
+	//		SFactorS.push_back(stod(cell)/1000.0);
+	//	}
 
 	getline(infile, line);
 	lineStream.str("");
 	lineStream.clear();
 	lineStream << line;
 	//	std::cout << line << "\n";
-	while(getline(lineStream, cell, ',')){
-		SFactordS.push_back(stod(cell));
+	//	while(getline(lineStream, cell, ',')){
+	//		SFactordS.push_back(stod(cell));
+	//	}
+	while(lineStream >> entry){
+		SFactordS.push_back(entry);
 	}
 
 	R.setCutoffE(1000.0*SFactorE[SFactorE.size()-1], part);

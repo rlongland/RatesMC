@@ -600,113 +600,98 @@ double Reaction::calcNonResonantTabulated(double Temp, int j){
   double mue = M0*M1/(M0+M1);
   //  double mu, sigma;
 
-  double ADRate,mu,sigma;
+  double ADRate;
 
   // Calculate the rate first and then sample at the end.
   double E_min = 0.0;
   double E_max = CutoffE[j]/1000.0;
 	//  double E_max = SFactorE[SFactorE.size()-1];
-	//	std::cout << "E_max = " << E_max << std::endl;
+	//std::cout << "E_max = " << E_max << std::endl;
 
 	// If there is no s-factor, return zero!
 	if(isZero(E_max))
 		 return 0.0;
 		 
-	// Create an interpolation routine
-	gsl_interp_accel *acc = gsl_interp_accel_alloc();
-	gsl_spline *Sspline = gsl_spline_alloc (gsl_interp_linear, SFactorE[j].size());
-	gsl_spline_init(Sspline, SFactorE[j].data(),
-									SFactorS[j].data(),
-									SFactorE[j].size());
 
-	/*
-	for(size_t i=0; i<SFactorE[j].size(); i++){
-		std::cout << SFactorE[j].data()[i] << " " << SFactorS[j].data()[i] << "\n";
+	// Now integrate the S-factor for each sample
+	for(int s=0; s<=NSamples; s++){
+		std::vector<double> SFac;
+		SFac.resize(SFactorE[j].size());
+
+		
+		for(size_t k=0; k<SFactorE[j].size(); k++){
+			SFac[k] = SFactorS[j][k]*gsl_sf_exp(SScale_sample[j][s] * SFactordS[j][k]);
+		}
+
+		// The very last one should be the "classical" result
+		if(s == NSamples)SFac = SFactorS[j];
+
+		// Create an interpolation routine
+		gsl_interp_accel *acc = gsl_interp_accel_alloc();
+		gsl_spline *Sspline = gsl_spline_alloc (gsl_interp_linear, SFactorE[j].size());
+		gsl_spline_init(Sspline, SFactorE[j].data(), SFac.data(),
+										SFactorE[j].size());
+
+		/*
+			for(size_t i=0; i<SFactorE[j].size(); i++){
+			std::cout << SFactorE[j].data()[i] << " " <<
+			SFactorS[j].data()[i] << "\n";
+			}
+		*/
+		
+		// GSL Integration functions
+		double result, error;
+		
+		// Define integration limits
+		// double x = E_min, x1 = E_max;
+		
+		// The array that needs to be passed to the integration function
+		struct my_f_params params = {mue, Temp, (double)(Z0 * Z1),
+			Sspline, acc};
+
+		// Turn off the error handler
+		gsl_set_error_handler_off();
+		
+		gsl_integration_workspace *w =
+			gsl_integration_workspace_alloc(1000);
+		gsl_function F;
+		// Can't use Integrand directly because GSL is shit
+		F.function = &NonResonantTabulatedWrapper;
+		//  F.function = &Integrand;
+		F.params = &params;
+
+		int status = gsl_integration_qag(
+												 &F,      // Function to be integrated
+												 E_min,   // Start of integration
+												 E_max,   // End of integration
+												 0,       // absolute error
+												 1e-3,    // relative error
+												 1000,    // max number of steps
+												          // (cannot exceed size of workspace
+												 6,       // key - (6=61 point Gauss-Kronrod rules)
+												 w,       // workspace
+												 &result, // The result
+												 &error);
+
+		if (status != 0) {
+			std::cout
+				<< "ERROR: Problem integrating non-resonant input\n";
+			exit(EXIT_FAILURE);
+		}
+
+		gsl_set_error_handler(NULL);
+
+		ADRate = result*(3.7318e10/(sqrt(mue)*pow(Temp,1.5)));
+
+		if(s<NSamples)
+			ARate[j][s] = ADRate;
+
+		gsl_spline_free (Sspline);
+		gsl_interp_accel_free (acc);
+		gsl_integration_workspace_free(w);
+		//ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
 	}
-	*/
 	
-  // GSL Integration functions
-  double result, error;
-  
-  // Define integration limits
-  //double x = E_min, x1 = E_max;
-
-  // The array that needs to be passed to the integration function
-	struct my_f_params params = {mue, Temp, (double)(Z0*Z1), Sspline, acc};
-
-  // Turn off the error handler
-  gsl_set_error_handler_off();
-
-  gsl_integration_workspace * w = gsl_integration_workspace_alloc(1000);
-  gsl_function F;
-  // Can't use Integrand directly because GSL is shit
-  F.function = &NonResonantTabulatedWrapper;
-  //  F.function = &Integrand;
-  F.params = &params;
-
-  int status = gsl_integration_qag(&F,      // Function to be integrated
-																	 E_min,   // Start of integration
-																	 E_max,   // End of integration
-																	 0,       // absolute error
-																	 1e-3,    // relative error
-																	 1000,    // max number of steps (cannot exceed size of workspace
-																	 6,       // key - (6=61 point Gauss-Kronrod rules)
-																	 w,       // workspace
-																	 &result, // The result
-																	 &error);
-
-	if(status != 0){
-		std::cout << "ERROR: Problem integrating non-resonant input\n";
-		exit(EXIT_FAILURE);
-	}
-
-	gsl_spline_free (Sspline);
-	gsl_interp_accel_free (acc);
-
-	
-  gsl_set_error_handler(NULL);
-
-  ADRate = result*(3.7318e10/(sqrt(mue)*pow(Temp,1.5)));
-
-	//std::cout << "AD Rate = " << ADRate << std::endl;
-  
-	std::cout << "Doing uncertainties\n";
-	
-  // If ADRate is negative, set to zero, this is unphysical
-  if(ADRate < 0.){
-    ErrorFlag = true;
-    logfile << "\tWARNING: The non-resonant part caused a negative rate, \n\t\tsetting to zero." << std::endl;
-    ADRate = 0.0;
-    for(int i=0;i<NSamples;i++){
-      ARate[j][i]=0.0;
-    }
-  } else {
-    // Either use the fractional uncertainty in S
-    if(dS[j] >= 0){
-      logNormalize(ADRate,dS[j]*ADRate,mu,sigma);
-      // Or interpret it as a factor uncertainty
-    } else {
-      mu = gsl_sf_log(ADRate);
-      sigma = gsl_sf_log(-dS[j]);
-    }
-    // if mu and sigma return as zero, the rate is zero (very small)
-    if((mu==0. && sigma==0.)){
-      ADRate=0.0;
-      for(int i=0;i<NSamples;i++){
-				ARate[j][i]=0.0;
-      }
-    } else {
-      for(int i=0;i<NSamples;i++){
-				ARate[j][i] = gsl_ran_lognormal(r,mu,sigma);///(1.5399e11/pow(mue*Temp,1.5));
-				//	std::cout << ARate[j][i] << "\n";
-      }
-    }
-  }
-
-	gsl_integration_workspace_free(w);
-  //ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
-
-	std::cout << "Done\n";
 	
   return ADRate;
 }
@@ -765,6 +750,17 @@ void Reaction::prepareSamples(){
     cout << "\n";
 		}
   */
+
+	// Next some more standard normals for the non-resonant part
+  // These are stored by [row][column] where each column is a sample
+	row.resize(NSamples);
+	for(int j=0; j<2; j++){
+		for(int s=0; s<NSamples; s++){
+			row[s] = gsl_ran_gaussian(r,1.0);
+		}
+		SScale_sample.push_back(row);
+	}
+
   // For each resonance, go through and calculate all random samples
   for(Resonance &Res : Resonances){
     //std::cout << Res.getIndex() << "\n";
@@ -834,14 +830,19 @@ void Reaction::writeSFactor(bool MCSamples=false){
 
 	gsl_interp_accel *acc0, *acc1;
 	gsl_spline *Sspline0, *Sspline1;
+
 	if(bTabulatedNonResonant){
 		// Create an interpolation routine
-		acc0 = gsl_interp_accel_alloc();
-		Sspline0 = gsl_spline_alloc (gsl_interp_linear, SFactorE[0].size());
-		gsl_spline_init(Sspline0, SFactorE[0].data(), SFactorS[0].data(), SFactorE[0].size());
-		acc1 = gsl_interp_accel_alloc();
-		Sspline1 = gsl_spline_alloc (gsl_interp_linear, SFactorE[1].size());
-		gsl_spline_init(Sspline1, SFactorE[1].data(), SFactorS[1].data(), SFactorE[1].size());
+		if(CutoffE[0] > 0){
+			acc0 = gsl_interp_accel_alloc();
+			Sspline0 = gsl_spline_alloc (gsl_interp_linear, SFactorE[0].size());
+			gsl_spline_init(Sspline0, SFactorE[0].data(), SFactorS[0].data(), SFactorE[0].size());
+		}
+		if(CutoffE[1] > 0){
+			acc1 = gsl_interp_accel_alloc();
+			Sspline1 = gsl_spline_alloc (gsl_interp_linear, SFactorE[1].size());
+			gsl_spline_init(Sspline1, SFactorE[1].data(), SFactorS[1].data(), SFactorE[1].size());
+		}
 	}
 
 	// Loop through energies on a defined grid. At each energy, find the
@@ -858,6 +859,7 @@ void Reaction::writeSFactor(bool MCSamples=false){
 			double Ssum = 0.0;
 			if(E < (CutoffE[0]/1000.0))
 				Ssum = gsl_spline_eval(Sspline0, E, acc0);
+			sfactorfile << Ssum << "   ";
 			Ssum = 0.0;
 			if(E < (CutoffE[1]/1000.0))
 				Ssum = gsl_spline_eval(Sspline1, E, acc1);
