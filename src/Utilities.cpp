@@ -62,7 +62,8 @@ int NTemps;
 bool ErrorFlag = false;
 std::vector<double> Temp;
 
-bool bEnergyCorrelations=false, bPartialWidthCorrelations=false;
+bool bEnergyCorrelations = false, bPartialWidthCorrelations = false;
+bool bTabulatedNonResonant = false;
 
 // counters
 int PenZeroCount=0, IntegratedCount=0, SubSampledPosCount=0, SampledNegCount=0,
@@ -102,7 +103,31 @@ void skipLines(std::ifstream &infile, int nlines){
     infile >> dummy;
     infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
   }
-  
+}
+int countLines(std::ifstream &infile){
+
+	// First save position
+  int place=infile.tellg();
+
+	int nlines = 0;
+	while(true){
+		// Get a line
+		std::string line;
+		std::getline(infile, line);
+		// Look for '***', which signifies the end of resonance input
+    std::size_t found;
+    found = line.find("***");
+    if (found!=std::string::npos){
+      logfile << "Found end of non-resonant section\n";
+      break;
+    }
+		nlines++;
+	}
+
+	// Rewind back
+	infile.seekg(place);
+
+	return nlines;
 }
 
 // Count the number of entries on a line
@@ -168,7 +193,7 @@ void readNonResonant(std::ifstream &infile, Reaction &R, int part){
 }
 
 // Read tabulated non-resonant part of the astrophysical S-factor
-void readNonResonantTable(std::ifstream &infile, Reaction &R) {
+void readNonResonantTable(std::ifstream &infile, Reaction &R, int part) {
 
 	std::string line, cell;
 	std::vector<double>SFactorE;
@@ -202,12 +227,12 @@ void readNonResonantTable(std::ifstream &infile, Reaction &R) {
 		SFactordS.push_back(stod(cell));
 	}
 
-	R.setCutoffE(1000.0*SFactorE[SFactorE.size()-1],1);
+	R.setCutoffE(1000.0*SFactorE[SFactorE.size()-1], part);
 	// for(int i=0; i<SFactorE.size(); i++)
 	// 	std::cout << SFactorE[i] << " " << SFactorS[i] << " " << SFactordS[i]  << "\n ";
 	// std::cout << "\n";
 
-	R.setNonResonantTable(SFactorE, SFactorS, SFactordS);
+	R.setNonResonantTable(SFactorE, SFactorS, SFactordS, part);
 }
 
 /* 
@@ -877,19 +902,25 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   // Skip 2 lines
   skipLines(infile, 2);
 
-  // Non-resonant line 1
-  readNonResonant(infile, *R, 0);
-  
-  // Non-resonant line 2
-  readNonResonant(infile, *R, 1);
+	// Count the number of non-resonant input lines.
+	// If it's 2, it's old style parameterization
+	// It it's 3, it's a tabular input
+	int nLines = countLines(infile);
 
-  // Skip 3 lines
-  skipLines(infile, 3);
+	if(nLines == 2){
+		// Non-resonant line 1
+		readNonResonant(infile, *R, 0);
+  		// Non-resonant line 2
+		readNonResonant(infile, *R, 1);
+	} else if(nLines == 6){
+		std::cout << "We have a new tabulated S-factor input!\n";
+		// Read Tabulated non-resonant table
+		readNonResonantTable(infile, *R, 0);
+		readNonResonantTable(infile, *R, 1);
+		bTabulatedNonResonant = true;
+	}
 
-	// Read Tabulated non-resonant table
-	readNonResonantTable(infile, *R);
-
-  // Skip 5 lines
+	// Skip 5 lines
   skipLines(infile, 5);
 
   // Read all of the resonances 

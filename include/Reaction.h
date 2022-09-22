@@ -25,6 +25,7 @@
 
 #include <iostream>
 #include <vector>
+#include <array>
 #include "Resonance.h"
 #include "Interference.h"
 
@@ -48,7 +49,7 @@ class Reaction{
   void setGammaIndex(int gindex){Gamma_index = gindex;}
   void setNonResonant(double, double, double, double, double, int);
   void setNonResonantTable(std::vector<double>, std::vector<double>,
-													 std::vector<double>);
+													 std::vector<double>, int);
 	void setCutoffE(double EMax, int part){CutoffE[part] = EMax;}
   void addResonance(int, double, double, double, double, double,
 										double, double, int, double, double,
@@ -109,15 +110,19 @@ class Reaction{
   int Gamma_index;
 
 	// Tabulated S-factor
-	std::vector<double> SFactorE;
-	std::vector<double> SFactorS;
-	std::vector<double> SFactordS;
+	// std::vector<std::array<double, 2> > SFactorE;
+	// std::vector<std::array<double, 2> > SFactorS;
+	// std::vector<std::array<double, 2> > SFactordS;
+	std::array<std::vector<double>, 2> SFactorE;
+	std::array<std::vector<double>, 2> SFactorS;
+	std::array<std::vector<double>, 2> SFactordS;
 
   std::vector<Resonance> Resonances;
 	std::vector<Interference> Interferences;
 
   // Reaction-wide Monte Carlo
-  std::vector<std::vector<double> > Ref_sample;  std::vector<std::vector<double> > ARate;
+  std::vector<std::vector<double> > Ref_sample;
+	std::vector<std::vector<double> > ARate;
   
   
 };

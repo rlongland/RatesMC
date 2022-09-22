@@ -71,11 +71,16 @@ void Reaction::setNonResonant(double s, double sp, double spp, double ds, double
 
 void Reaction::setNonResonantTable(std::vector<double> SE,
 																	 std::vector<double> SS,
-																	 std::vector<double> SdS){
+																	 std::vector<double> SdS,
+																	 int part){
 
-	SFactorE = SE;
-	SFactorS = SS;
-	SFactordS = SdS;
+	SFactorE[part] = SE;
+	SFactorS[part] = SS;
+	SFactordS[part] = SdS;
+
+	std::vector<double> A(NSamples);
+  ARate.push_back(A);
+
 
 }
 
@@ -204,8 +209,11 @@ void Reaction::writeReaction(){
 
 	logfile << " Tabulated Direct Capture part     \n";
   logfile << "      E         S           dS  \n";
-	for(size_t i=0; i<SFactorE.size(); i++)
-	 	logfile << SFactorE[i] << "    " << SFactorS[i] << "    " << SFactordS[i]  << "\n ";
+	for(size_t i=0; i<SFactorE[0].size(); i++)
+	 	logfile << SFactorE[0][i] << "    " << SFactorS[0][i] << "    " << SFactordS[0][i]  << "\n ";
+	logfile << "-----------------\n";
+	for(size_t i=0; i<SFactorE[1].size(); i++)
+	 	logfile << SFactorE[1][i] << "    " << SFactorS[1][i] << "    " << SFactordS[1][i]  << "\n ";
 	logfile << "\n";
 
   logfile << "--------------------------------------------------" << "\n";
@@ -598,12 +606,24 @@ double Reaction::calcNonResonantTabulated(double Temp, int j){
   double E_min = 0.0;
   double E_max = CutoffE[j]/1000.0;
 	//  double E_max = SFactorE[SFactorE.size()-1];
-	//std::cout << "E_max = " << E_max << std::endl;
+	//	std::cout << "E_max = " << E_max << std::endl;
 
+	// If there is no s-factor, return zero!
+	if(isZero(E_max))
+		 return 0.0;
+		 
 	// Create an interpolation routine
 	gsl_interp_accel *acc = gsl_interp_accel_alloc();
-	gsl_spline *Sspline = gsl_spline_alloc (gsl_interp_linear, SFactorE.size());
-	gsl_spline_init(Sspline, SFactorE.data(), SFactorS.data(), SFactorE.size());
+	gsl_spline *Sspline = gsl_spline_alloc (gsl_interp_linear, SFactorE[j].size());
+	gsl_spline_init(Sspline, SFactorE[j].data(),
+									SFactorS[j].data(),
+									SFactorE[j].size());
+
+	/*
+	for(size_t i=0; i<SFactorE[j].size(); i++){
+		std::cout << SFactorE[j].data()[i] << " " << SFactorS[j].data()[i] << "\n";
+	}
+	*/
 	
   // GSL Integration functions
   double result, error;
@@ -648,9 +668,10 @@ double Reaction::calcNonResonantTabulated(double Temp, int j){
 
   ADRate = result*(3.7318e10/(sqrt(mue)*pow(Temp,1.5)));
 
-	//  std::cout << "AD Rate = " << ADRate << std::endl;
+	//std::cout << "AD Rate = " << ADRate << std::endl;
   
-
+	std::cout << "Doing uncertainties\n";
+	
   // If ADRate is negative, set to zero, this is unphysical
   if(ADRate < 0.){
     ErrorFlag = true;
@@ -684,7 +705,9 @@ double Reaction::calcNonResonantTabulated(double Temp, int j){
 
 	gsl_integration_workspace_free(w);
   //ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
-  
+
+	std::cout << "Done\n";
+	
   return ADRate;
 }
 
@@ -809,12 +832,18 @@ void Reaction::writeSFactor(bool MCSamples=false){
 
 	setupSFactorHeader(sfactorfile);
 
-	// Create an interpolation routine
-	gsl_interp_accel *acc = gsl_interp_accel_alloc();
-	gsl_spline *Sspline = gsl_spline_alloc (gsl_interp_linear, SFactorE.size());
-	gsl_spline_init(Sspline, SFactorE.data(), SFactorS.data(), SFactorE.size());
+	gsl_interp_accel *acc0, *acc1;
+	gsl_spline *Sspline0, *Sspline1;
+	if(bTabulatedNonResonant){
+		// Create an interpolation routine
+		acc0 = gsl_interp_accel_alloc();
+		Sspline0 = gsl_spline_alloc (gsl_interp_linear, SFactorE[0].size());
+		gsl_spline_init(Sspline0, SFactorE[0].data(), SFactorS[0].data(), SFactorE[0].size());
+		acc1 = gsl_interp_accel_alloc();
+		Sspline1 = gsl_spline_alloc (gsl_interp_linear, SFactorE[1].size());
+		gsl_spline_init(Sspline1, SFactorE[1].data(), SFactorS[1].data(), SFactorE[1].size());
+	}
 
-	
 	// Loop through energies on a defined grid. At each energy, find the
 	// S-factor of each resonance and analytical contribution
 	for(double E=EMin; E<10.0; E+=0.001){
@@ -824,21 +853,27 @@ void Reaction::writeSFactor(bool MCSamples=false){
 		// Write the energy
 		sfactorfile << std::scientific << std::setprecision(3) << E << "   ";
 
-		// Analytical parts
-		for(int i=0; i<2; i++){
-			double Si = S[i]/1000.0;
-			double Spi = Sp[i];
-			double Sppi = Spp[i]*1000.0;
-			double Ssum = Si + Spi*E + 0.5*Sppi*E*E;
-			if(E > (CutoffE[i]/1000.0))Ssum=0.0;
+		if(bTabulatedNonResonant){
+			// Tabulated S-factor
+			double Ssum = 0.0;
+			if(E < (CutoffE[0]/1000.0))
+				Ssum = gsl_spline_eval(Sspline0, E, acc0);
+			Ssum = 0.0;
+			if(E < (CutoffE[1]/1000.0))
+				Ssum = gsl_spline_eval(Sspline1, E, acc1);
 			sfactorfile << Ssum << "   ";
-		}
 
-		// Tabulated S-factor
-		double Ssum = 0.0;
-		if(E < (CutoffE[1]/1000.0))
-			Ssum = gsl_spline_eval(Sspline, E, acc);
-		sfactorfile << Ssum << "   ";
+		} else {
+			// Analytical parts
+			for(int i=0; i<2; i++){
+				double Si = S[i]/1000.0;
+				double Spi = Sp[i];
+				double Sppi = Spp[i]*1000.0;
+				double Ssum = Si + Spi*E + 0.5*Sppi*E*E;
+				if(E > (CutoffE[i]/1000.0))Ssum=0.0;
+				sfactorfile << Ssum << "   ";
+			}
+		}
 		
 		// Collect S-factor for each resonance
 		for(Resonance &Res : Resonances){

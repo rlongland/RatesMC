@@ -45,6 +45,9 @@ extern double AMU;
 extern bool bPartialWidthCorrelations;
 extern bool bEnergyCorrelations;
 
+// Is the non-resonant part tabulated?
+extern bool bTabulatedNonResonant;
+
 // Counters
 extern int PenZeroCount,IntegratedCount,SubSampledPosCount,SampledNegCount,
   NANCount,InfCount,BelowIntLimit,IntfNANCount, LogZeroCount;
@@ -77,12 +80,14 @@ int readInt(std::ifstream &in);
 double readDouble(std::ifstream &in);
 // Skip n lines
 void skipLines(std::ifstream &in, int n);
+// Count the number of lines until '***'
+int countLines(std::ifstream &in);
 // Count entries in a line
 int countEntries(std::ifstream &in);
 // Read a non-resonant line
 void readNonResonant(std::ifstream &in, Reaction &R, int part);
 // Read a non-resonant table
-void readNonResonantTable(std::ifstream &in, Reaction &R);
+void readNonResonantTable(std::ifstream &in, Reaction &R, int part);
 // Read all of the standard resonances
 void readResonanceBlock(std::ifstream &in, Reaction &R, bool isUpperlimit);
 // Read interfering resonances
