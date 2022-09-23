@@ -466,7 +466,7 @@ double NonResonantTabulatedWrapper(double x, void *params)
 // end ugly-ass hack
 double Reaction::calcNonResonantIntegrated(double Temp, int j){
 
-  //  std::cout << Temp << " " << j << "\n";
+	//std::cout << Temp << " " << j << "\n";
   double mue = M0*M1/(M0+M1);
   //  double mu, sigma;
 
@@ -524,7 +524,7 @@ double Reaction::calcNonResonantIntegrated(double Temp, int j){
 
   ADRate = result*(3.7318e10/(sqrt(mue)*pow(Temp,1.5)));
 
-  //std::cout << "AD Rate = " << ADRate << std::endl;
+	//  std::cout << "AD Rate = " << ADRate << std::endl;
   
 
   // If ADRate is negative, set to zero, this is unphysical
@@ -548,16 +548,18 @@ double Reaction::calcNonResonantIntegrated(double Temp, int j){
     if((mu==0. && sigma==0.)){
       ADRate=0.0;
       for(int i=0;i<NSamples;i++){
-				ARate[j][i]=0.0;
+				//				std::cout << "j=" << j << " i = " << i << "\n";
+        ARate[j][i]=0.0;
       }
     } else {
       for(int i=0;i<NSamples;i++){
 				ARate[j][i] = gsl_ran_lognormal(r,mu,sigma);///(1.5399e11/pow(mue*Temp,1.5));
-				//	std::cout << ARate[j][i] << "\n";
+				//std::cout << ARate[j][i] << "\n";
       }
     }
   }
 
+	
 	gsl_integration_workspace_free(w);
   //ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
   
@@ -840,6 +842,8 @@ void Reaction::writeSFactor(bool MCSamples=false){
 
 	setupSFactorHeader(sfactorfile);
 
+	double E_min = EMin;
+	
 	gsl_interp_accel *acc0, *acc1;
 	gsl_spline *Sspline0, *Sspline1;
 
@@ -855,12 +859,12 @@ void Reaction::writeSFactor(bool MCSamples=false){
 			Sspline1 = gsl_spline_alloc (gsl_interp_linear, SFactorE[1].size());
 			gsl_spline_init(Sspline1, SFactorE[1].data(), SFactorS[1].data(), SFactorE[1].size());
 		}
+		// Use the minimum tabulated energies to start the integration (so
+		// we're not extrapolating)
+		E_min = std::max(EMin, SFactorE[0][0]);
+		E_min = std::max(E_min, SFactorE[1][0]);
 	}
 
-	// Use the minimum tabulated energies to start the integration (so
-	// we're not extrapolating)
-	double E_min = std::max(EMin, SFactorE[0][0]);
-	E_min = std::max(E_min, SFactorE[1][0]);
 
 	// Loop through energies on a defined grid. At each energy, find the
 	// S-factor of each resonance and analytical contribution
