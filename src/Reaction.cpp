@@ -473,7 +473,7 @@ double Reaction::calcNonResonantIntegrated(double Temp, int j){
   double ADRate,mu,sigma;
 
   // Calculate the rate first and then sample at the end.
-  double E_min = 0.0;
+  double E_min = EMin;
   double E_max = CutoffE[j]/1000.0;
 	//std::cout << "E_max = " << E_max << std::endl;
 	// GSL Integration functions
@@ -603,14 +603,21 @@ double Reaction::calcNonResonantTabulated(double Temp, int j){
   double ADRate;
 
   // Calculate the rate first and then sample at the end.
-  double E_min = 0.0;
+  double E_min = EMin;
   double E_max = CutoffE[j]/1000.0;
 	//  double E_max = SFactorE[SFactorE.size()-1];
+	//std::cout << "E_min = " << E_min << std::endl;
 	//std::cout << "E_max = " << E_max << std::endl;
 
 	// If there is no s-factor, return zero!
 	if(isZero(E_max))
 		 return 0.0;
+
+	// If the lowest energy grid point is greater than EMin, throw an error
+	if(SFactorE[j][0] > EMin){
+		std::cout << "\nERROR: Your first non-resonant tabulated energy is greater than EMin!\n";
+		abort();
+	}
 		 
 	gsl_interp_accel *acc = gsl_interp_accel_alloc();
 	gsl_spline *Sspline = gsl_spline_alloc (gsl_interp_linear, SFactorE[j].size());
@@ -850,9 +857,14 @@ void Reaction::writeSFactor(bool MCSamples=false){
 		}
 	}
 
+	// Use the minimum tabulated energies to start the integration (so
+	// we're not extrapolating)
+	double E_min = std::max(EMin, SFactorE[0][0]);
+	E_min = std::max(E_min, SFactorE[1][0]);
+
 	// Loop through energies on a defined grid. At each energy, find the
 	// S-factor of each resonance and analytical contribution
-	for(double E=EMin; E<10.0; E+=0.001){
+	for(double E=E_min; E<10.0; E+=0.001){
 
 		//std::cout << "E = " << E << "\n";
           
@@ -937,7 +949,7 @@ void Reaction::writeSFactor(bool MCSamples=false){
 						Ssum = 0.0;
 					double mu, sigma;
 					logNormalize(Ssum, dS[i] * Ssum, mu, sigma);
-					double Ssum_samp = gsl_ran_lognormal(r, mu, sigma);
+					//					double Ssum_samp = gsl_ran_lognormal(r, mu, sigma);
 					// Ignore the non-resonant part for now
 					// sfactorSum += Ssum_samp;
 				}

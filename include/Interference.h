@@ -109,7 +109,7 @@ class Interference {
 	std::vector<int> sign_sample;
 	  
   // The rate from this interfering pair
-  double classicalRate;
+  //double classicalRate;
   std::vector<double> Rate_sample;   // length is number of samples
   double MeanRate, MedianRate, RateMu, RateSigma;
 
