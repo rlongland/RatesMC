@@ -65,6 +65,8 @@ int rhsWrapper(double x, const double y[], double dydt[], void *params_ptr){
 	return GSL_SUCCESS;
 }
 // end
+// a third ugly-ass hack but this one is Phil's fault :)
+double GlobalT9 = 0; //this is a global variable in which to store the temperature in order to write it out to the integration-checking output file
 
 Resonance::Resonance(Reaction &R, int index, double E_cm, double dE_cm,
                      double wg, double dwg, double Jr, double G[3],
@@ -465,6 +467,8 @@ void Resonance::writeSamples(std::ofstream &samplefile, int s) {
 // Function to numerically integrate broad resonances
 double Resonance::calcBroad(double T) {
 
+    GlobalT9 = T;//set the global value for the temperature
+    
   double classicalRate = 0.0; //, ARate;
 
   // Calculate the rate samples
@@ -486,6 +490,7 @@ double Resonance::calcBroad(double T) {
   // And the central value, which is the classical rate
 	// Write the integrand to a file
   classicalRate = NumericalRate(T, E_cm, G[0], G[1], G[2], 1.0, 1.0, 1.0, true);
+  std::cout << "T = " << T << std::endl; //PA Sep 26th 2022 - to see if the T is the temperature - it is
 	integrandfile << std::endl;
 
   return classicalRate;
@@ -1021,7 +1026,7 @@ double Resonance::Integrand(double x, void *params) {
   // Write the integrand to a file if requested
 	//	std::cout << writeIntegrand << " ";
 	if (writeIntegrand){
-		integrandfile << std::scientific << std::setprecision(9) << x << " " << integrand
+		integrandfile << std::scientific << std::setprecision(9) << GlobalT9 << " " << x << " " << integrand
 									<< " " << sfactor << " " << P << std::endl;
 	}
 	
