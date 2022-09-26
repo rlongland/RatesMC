@@ -919,7 +919,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 	// If it's 2, it's old style parameterization
 	// It it's 3, it's a tabular input
 	int nLines = countLines(infile);
-	std::cout << "Counted " << nLines << " lines!\n";
+	//	std::cout << "Counted " << nLines << " lines!\n";
 
 	if(nLines == 2){
 		// Non-resonant line 1
