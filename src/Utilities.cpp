@@ -146,7 +146,7 @@ int countEntries(std::ifstream &infile){
   // Use c++ stringstream to grab separated elements from the line and
   // put them in a vector of strings
   while( ss >> entry ){
-    //    std::cout << entry << "  ";
+		//	std::cout << entry << "  ";
     entries.push_back(entry);
   }
 	//	std::cout << "\n";
@@ -288,7 +288,8 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     //std::cout << "Upper limit resonances\n";
     if(nEnt == 17){
       std::cout << "WARNING: It looks like you're using an old version of RatesMC input without DPT\n";
-    } else if (nEnt == 20) {
+    } else if (nEnt == 20 || nEnt == 21) {
+			// Fine
     } else {
       std::cout << "ERROR! The number of columns in the upper limit resonance section is wrong\n";
       std::cout << "       Expect N=17 or 20; Got N=" << nEnt << "\n";
@@ -570,7 +571,7 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
 	//std::cout << "Reading interfering resonances:\n";
   //std::cout << "There are " << countEntries(infile) << " entries in this section\n";
 	if(!(nEnt == 19 )){
-		std::cout << "ERROR! The number of columns in the resonance section is wrong\n";
+		std::cout << "ERROR! The number of columns in the interfering resonance section is wrong\n";
 		std::cout << "       Expect N=19; Got N=" << nEnt << "\n";
 	}
 
