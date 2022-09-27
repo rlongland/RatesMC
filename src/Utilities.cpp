@@ -292,7 +292,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 			// Fine
     } else {
       std::cout << "ERROR! The number of columns in the upper limit resonance section is wrong\n";
-      std::cout << "       Expect N=17 or 20; Got N=" << nEnt << "\n";
+      std::cout << "       Expect N=17, 20, or 21; Got N=" << nEnt << "\n";
     }
   }
      
@@ -403,7 +403,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 							 >> G3 >> dG3 >> L3 >> PT3
 							 >> Exf >> isBroad;
 				fin >> CorString;
-				//std::cout << CorString << "\n";
+				//std::cout << "CorString = " << CorString << "\n";
 				// Make CorString lowercase
 				std::transform(CorString.begin(), CorString.end(), CorString.begin(),
 											 [](unsigned char c){ return std::tolower(c); });
@@ -425,7 +425,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 				
       }
       // New style with DPT
-      else if(nEnt == 20){
+      else if(nEnt == 20 || nEnt == 21){
 				// First check whether the energy uncertainty has a correlation tag
 				//fin >> data;
 				//isECorrelated = (data.find("c")!=std::string::npos);
@@ -436,7 +436,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 							 >> Exf >> isBroad;
 
 				fin >> CorString;
-				//std::cout << CorString << "\n";
+				//std::cout << "CorString = " << CorString << "\n";
 				// Make CorString lowercase
 				std::transform(CorString.begin(), CorString.end(), CorString.begin(),
 											 [](unsigned char c){ return std::tolower(c); });
