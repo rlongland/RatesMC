@@ -21,8 +21,8 @@ extrafilename <- "testing.dat" #"Tmatch.HF"
 pal <- c("#BDD7E7", "#6BAED6", "#2171B5")
 
 ## Temeprature range to plot
-TMin <- 0.01
-TMax <- 10
+TMin <- 1
+TMax <- 6
 ## Y-axis range
 YRangeUser <- NULL ##c(0.1e-10,1e10)
 
@@ -249,7 +249,7 @@ aX <- c(-2,-1,0,1,2)
 ## y-axis ticks
 minBase10 <- floor(log10(YRange[1]))
 maxBase10 <- ceiling(log10(YRange[2]))
-aY <- pretty(seq(minBase10,maxBase10,length.out=maxBase10-minBase10))
+aY <- pretty(seq(minBase10,maxBase10,length.out=1+maxBase10-minBase10),high.u.bias = 10)
 
 
 Temps <- MyRate[,1]
