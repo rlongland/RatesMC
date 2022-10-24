@@ -94,6 +94,29 @@ scripts below:
   Porter-Thomas samples. Use for diagnostics only
 
 # New features
+* **Non-resonant Contributions**  
+  Previously non-resonance contributions could be added to the
+  reaction rate calculation by including them as a parameterized list
+  of `S(0)`, `S'(0)`, and `S''(0)` as explained in Eqn. 3.102 of
+  Iliadis' Nuclear Physics of Stars (2nd ed.). However, that requires
+  a fit to the astrophysical S-factor. Now, I've included the option
+  to include the S-factor directly as a table.   
+  There is space for two parts. Each part contains 3 lines:
+  1. Energy (in keV)
+  2. S (keV.b)
+  3. Fractional uncertainty of S-factor (enter a negative value for
+  factor uncertainty)  
+  For example:  
+  ```
+  Non-resonant table  
+  Enter comma-separated energies (keV) on 1st line, S-factors (keV.b) on 2nd line, and fractional uncertainties on 3rd line
+  0      2      4      6      8      10     20     40     60     80     100    200    400    600    800    1000   1500   2000   2500
+  10.92  10.81  10.69  10.59  10.48  10.38  9.92   9.15   8.56   8.07   7.67   6.39   5.21   4.65   4.35   4.13   3.76   3.56   3.42
+  -1.04  -1.04  -1.04  -1.04  -1.04  -1.04  -1.04  -1.04  -1.04  -1.04  -1.04  -1.04  -1.04  -1.04  -1.04  -1.04  -1.04  -1.04  -1.04
+  0  0
+  0  0
+  0  0
+  ```
 * **Interfering Resonances**  
   Interferences now work like in the old version of RatesMC. Be warned
   that this feature is still under testing and there is not a lot of
