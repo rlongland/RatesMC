@@ -21,6 +21,10 @@ ReadCont         <- FALSE
 ## (see Newton paper, Eqn. 3)
 n.Gamow          <- 1
 
+## Constant scale of HF, or assume HF is correct at 10 GK and
+## extrapolate to there?
+extrapolateHF <- TRUE
+
 ######################################################################
 ## You shouldn't need to touch anything below this line...
 library("RColorBrewer")
@@ -285,10 +289,31 @@ Norm.med  <- Rates.MatchT.med/HF.MatchT
 Norm.low  <- Rates.MatchT.low/HF.MatchT
 Norm.high <- Rates.MatchT.high/HF.MatchT
 
-## Now the matched HF rate!
-HF.matched.med  <- HF[,2]*Norm.med
-HF.matched.low  <- HF[,2]*Norm.low
-HF.matched.high <- HF[,2]*Norm.high
+cat("The scaling factor to apply to HF: N =",Norm.med,"at",TMatch.ETER,"GK\n")
+
+## Construct a normalization vector over the length of HF[T>TMatch]
+if(extrapolateHF){
+    Norm.med.v <- rep(Norm.med,length(HF[,2]))
+    Norm.low.v <- rep(Norm.low,length(HF[,2]))
+    Norm.high.v <- rep(Norm.high,length(HF[,2]))
+    cut <- HF[,1]>TMatch.ETER
+    Norm.med.v[cut] <- approx(x=c(TMatch.ETER,10),y=c(Norm.med,1),
+			      xout=HF[HF[,1]>TMatch.ETER,1])$y
+    Norm.low.v[cut] <- approx(x=c(TMatch.ETER,10),y=c(Norm.low,Norm.low/Norm.med),
+			      xout=HF[HF[,1]>TMatch.ETER,1])$y
+    Norm.high.v[cut] <- approx(x=c(TMatch.ETER,10),y=c(Norm.high,Norm.high/Norm.med),
+			       xout=HF[HF[,1]>TMatch.ETER,1])$y
+
+
+    ## Now the matched HF rate!
+    HF.matched.med  <- HF[,2]*Norm.med.v
+    HF.matched.low  <- HF[,2]*Norm.low.v
+    HF.matched.high <- HF[,2]*Norm.high.v
+} else {
+    HF.matched.med  <- HF[,2]*Norm.med
+    HF.matched.low  <- HF[,2]*Norm.low
+    HF.matched.high <- HF[,2]*Norm.high
+}
 HF <- cbind(HF, HF.matched.low, HF.matched.med, HF.matched.high)
 
 ## We need to interpolate the matched HF rate at the RatesMC temperatures
@@ -338,7 +363,7 @@ cut <- T > TMatch.ETER
 cut[length(cut)-(2+sum(cut))] <- TRUE
 ylim <- range(Rates.final[cut,2:4])
 plot(Rates[,1], Rates[,3], type='l', ylim=ylim,xlim=range(T[cut]),
-     xlab="Temperature", ylab="Rate", col=cols[1], log="xy",
+     xlab="Temperature", ylab="Rate", col=cols[1], log="y",
      xaxs='i')
 abline(v=TMatch.ETER,lty=3,col="grey")
 lines(Rates.final[,1], Rates.final[,2], lwd=1, col=cols[3])
