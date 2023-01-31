@@ -335,7 +335,8 @@ ylim <- range(c(Rates[cut,2],HF.final.med[cut],HF[cut.HF,2]))
 
 plot(Rates[,1], Rates[,3], type='l', ylim=ylim,xlim=range(T[cut]),
      xlab="Temperature", ylab="Rate", col=cols[1], log="y",
-     xaxs='i',main=paste("TMatch = ",format(TMatch.ETER,digits=2,nsmall=2),"GK"))
+     xaxs='i',main=paste("TMatch = ",format(TMatch.ETER,digits=2,nsmall=2),"GK\n",
+			 "Scale at TMatch = ",format(Norm.med,digits=2,nsmall=2)))
 abline(v=TMatch.ETER,lty=3,col="grey")
 lines(HF[,1],HF[,2],col=cols[2],lty=2)
 lines(HF[,1],HF[,4],col=cols[3],lty=1)
