@@ -23,14 +23,14 @@ pal <- c("#BDD7E7", "#6BAED6", "#2171B5")
 ## Temeprature range to plot
 TMin <- 0.01
 TMax <- 10
-## Y-axis range
-YRangeUser <- c(0.1,10)
+## Y-axis range (set to NULL for automatic plotting)
+YRangeUser <- NULL
 
 ## Control to change the axis and tick label scales
 axislabelscale <- 1.0
 ticklabelscale <- 1.0
 
-drawGrid <- TRUE
+drawGrid <- FLASE
 
 ######################################################
 # Function to print the displayed 2D curve to a file
