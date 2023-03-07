@@ -33,7 +33,7 @@ layout.show(6)
 settings <- par(mar=c(2.1,5.1,2.1,1.1))
 
 ## Read and format the reaction name
-ReacName = as.character(read.table(outputfile,skip=0,header=FALSE,nrows=1)$V1)
+ReacName = as.character(read.table(name,skip=0,header=FALSE,nrows=1)$V1)
 # Make superscripts, subscripts etc
 ReacName <- sub(",g\\)",",gamma\\)",ReacName)
 ReacName <- sub("\\(g,","\\(gamma,",ReacName)
