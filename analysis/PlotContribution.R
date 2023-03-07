@@ -66,9 +66,16 @@ ReacName <- sub(",","*','*",ReacName)
 ReacName <- sub("\\)","\\)*",ReacName)
 ReacName <- gsub("([[:digit:]]+)", "phantom()^{\\1}*", ReacName)
 
+## Find the beginning of the resonances
+skip <- 29
+while(substr(x <- try(unlist(read.table(RatesMCFile,skip=skip,nrows=1)[1]
+			     )),1,3) != "Ecm"){
+				 skip <- skip+1
+			     }
+
 ## Read in the resonance energies.
 ## This procedure should read in all resonance energies without erroring!
-skip <- 29
+skip <- skip+1
 Energies <- numeric()
 while(
   ## Try to read a line and see if an actual number was read.
@@ -156,7 +163,7 @@ oldpar <- par(mar=c(4,5,2.5,1)+0.1)
 maxy <- 1.3
 plot(range(logT),c(0,maxy),type="n",
      ylim=c(0,maxy),xaxt='n',xaxs='i',yaxs='i',
-     xlab="",ylab="Contribution")
+     xlab="",ylab="Fractional contribution")
 
 abline(h=1,lty=2)
 

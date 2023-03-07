@@ -240,8 +240,10 @@ plot(1,1,type='n',
      xaxs='i',
      log='xy',
      yaxt='n',xaxt='n',
-     xlab="Temperature (GK)", ylab="Reaction Rate Ratio",
+     xlab="", ylab="Reaction Rate Ratio",
      cex.lab=par("cex.lab")*axislabelscale)
+
+title(xlab="Temperature (GK)",line=2.5)
 
 ## x-axis ticks
 aX <- c(-2,-1,0,1,2)
@@ -321,7 +323,7 @@ box()
 
 ## The reaction name
 xx <- grconvertX(0.88,from="nfc",to="user")
-yy <- grconvertY(0.88,from="nfc",to="user")
+yy <- grconvertY(0.87,from="nfc",to="user")
 text(parse(text=ReacName),x=xx,y=yy,cex=1.7,adj=c(1,1))
 
 dev.off()
