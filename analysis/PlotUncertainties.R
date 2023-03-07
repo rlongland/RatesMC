@@ -30,7 +30,7 @@ YRangeUser <- NULL
 axislabelscale <- 1.0
 ticklabelscale <- 1.0
 
-drawGrid <- FLASE
+drawGrid <- FALSE
 
 ######################################################
 # Function to print the displayed 2D curve to a file
