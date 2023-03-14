@@ -234,12 +234,26 @@ void Reaction::writeReaction(){
 		interf->write();
 	}
   logfile << "--------------------------------------------------" << "\n";
-	logfile << " The smallest dE value = " << smallestdE << "\n";
-	logfile << " The smallest dwg/wg value = " << smallestdwg << "\n";
-	logfile << " The smallest dG1/G1 value = " << smallestdG[0] << "\n";
-	logfile << " The smallest dG2/G2 value = " << smallestdG[1] << "\n";
-	logfile << " The smallest dG3/G3 value = " << smallestdG[2] << "\n";
-	
+	logfile << " Correlations:\n";
+	if(!bEnergyCorrelations){
+		logfile << "No energy correlations are being used\n";
+	} else {
+		logfile << " The smallest dE value = " << smallestdE << 
+			" for resonance at " << EofSmallestdE << " MeV\n";
+	}
+	if(!bPartialWidthCorrelations){
+		logfile << "No width correlations are being used\n";
+	} else {
+	logfile << " The smallest dwg/wg value = " << smallestdwg   <<
+		" for resonance at " << EofSmallestdwg << " MeV\n";
+	logfile << " The smallest dG1/G1 value = " << smallestdG[0] <<
+		" for resonance at " << EofSmallestdG[0] << " MeV\n";
+	logfile << " The smallest dG2/G2 value = " << smallestdG[1] <<
+		" for resonance at " << EofSmallestdG[1] << " MeV\n";
+	logfile << " The smallest dG3/G3 value = " << smallestdG[2] <<
+		" for resonance at " << EofSmallestdG[2] << " MeV\n";
+	}
+	logfile << std::endl;
 }
 
 //----------------------------------------------------------------------

@@ -371,13 +371,19 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 			fin >> Jr 
 						 >> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
 						 >> Exf >> isBroad;
+
 			fin >> CorString;
 			//std::cout << "CorString = " << CorString << "\n";
 			// Make CorString lowercase
 			std::transform(CorString.begin(), CorString.end(), CorString.begin(),
 										 [](unsigned char c){ return std::tolower(c); });
-			isECorrelated = (CorString.find("e")!=std::string::npos);
-			isWidthCorrelated = (CorString.find("w")!=std::string::npos);
+			// Read correlation flags if they're wanted
+			isECorrelated=false;
+			isWidthCorrelated=false;
+			if(bEnergyCorrelations)
+				isECorrelated = (CorString.find("e")!=std::string::npos);
+			if(bPartialWidthCorrelations)
+				isWidthCorrelated = (CorString.find("w")!=std::string::npos);
 
 			// If this is a resonance possibility, try to read the probability
 			//if(CorresRes != i){
@@ -407,9 +413,14 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 				// Make CorString lowercase
 				std::transform(CorString.begin(), CorString.end(), CorString.begin(),
 											 [](unsigned char c){ return std::tolower(c); });
-				isECorrelated = (CorString.find("e")!=std::string::npos);
-				isWidthCorrelated = (CorString.find("w")!=std::string::npos);
-
+				// Read correlation flags if they're wanted
+				isECorrelated=false;
+				isWidthCorrelated=false;
+				if(bEnergyCorrelations)
+					isECorrelated = (CorString.find("e")!=std::string::npos);
+				if(bPartialWidthCorrelations)
+					isWidthCorrelated = (CorString.find("w")!=std::string::npos);
+				
 				// If this is a resonance possibility, try to
 				// read the probability
 				//if (CorresRes != i) {
@@ -440,8 +451,12 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 				// Make CorString lowercase
 				std::transform(CorString.begin(), CorString.end(), CorString.begin(),
 											 [](unsigned char c){ return std::tolower(c); });
-				isECorrelated =  (CorString.find("e")!=std::string::npos);
-				isWidthCorrelated = (CorString.find("w")!=std::string::npos);
+				isECorrelated=false;
+				isWidthCorrelated=false;
+				if(bEnergyCorrelations)
+					isECorrelated = (CorString.find("e")!=std::string::npos);
+				if(bPartialWidthCorrelations)
+					isWidthCorrelated = (CorString.find("w")!=std::string::npos);
 
 				// If this is a resonance possibility, try to read the probability
 				//if(CorresRes != i){
@@ -490,46 +505,65 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 
 		// If we care about energy correlations
 		if(bEnergyCorrelations && isECorrelated)
-			if(dE_cm < R.smallestdE || isZero(R.smallestdE))R.smallestdE = dE_cm;
+			if(dE_cm < R.smallestdE || isZero(R.smallestdE)){
+				R.smallestdE = dE_cm;
+				R.EofSmallestdE = E_cm;
+			}
 		
 		if(bPartialWidthCorrelations && !isUpperLimit && isWidthCorrelated){
 			if(!isZero(wg)){
 				if(dwg > 0.0){
-					if(dwg/wg < R.smallestdwg || isZero(R.smallestdwg))
+					if(dwg/wg < R.smallestdwg || isZero(R.smallestdwg)){
 						R.smallestdwg = dwg/wg;
+						R.EofSmallestdwg = E_cm;
+					}					
 				} else {
-					if( ((-dwg)-1.0) < R.smallestdwg || isZero(R.smallestdwg))
+					if( ((-dwg)-1.0) < R.smallestdwg || isZero(R.smallestdwg)){
 						R.smallestdwg = (-dwg)-1.0;
+						R.EofSmallestdwg = E_cm;
+					}
 				}
 			}
 			
 			if(!isZero(G1)){
 				if(dG1 > 0.0){
-					if(dG1/G1 < R.smallestdG[0] || isZero(R.smallestdG[0]))
+					if(dG1/G1 < R.smallestdG[0] || isZero(R.smallestdG[0])){
 						R.smallestdG[0] = dG1/G1;
+						R.EofSmallestdG[0] = E_cm;
+					}
 				} else {
-					if( ((-dG1)-1.0) < R.smallestdG[0] || isZero(R.smallestdG[0]))
+					if( ((-dG1)-1.0) < R.smallestdG[0] || isZero(R.smallestdG[0])){
 						R.smallestdG[0] = (-dG1)-1.0;
+						R.EofSmallestdG[0] = E_cm;
+					}
 				}
 			}
 
 			if(!isZero(G2)){
 				if(dG2 > 0.0){
-					if(dG2/G2 < R.smallestdG[1] || isZero(R.smallestdG[1]))
+					if(dG2/G2 < R.smallestdG[1] || isZero(R.smallestdG[1])){
 						R.smallestdG[1] = dG2/G2;
+						R.EofSmallestdG[1] = E_cm;
+					}
 				} else {
-					if( ((-dG2)-1.0) < R.smallestdG[1] || isZero(R.smallestdG[1]))
+					if( ((-dG2)-1.0) < R.smallestdG[1] || isZero(R.smallestdG[1])){
 						R.smallestdG[1] = (-dG2)-1.0;
+						R.EofSmallestdG[1] = E_cm;
+					}
 				}
 			}
 
 			if(!isZero(G3)){
 				if(dG3 > 0.0){
-					if(dG3/G3 < R.smallestdG[2] || isZero(R.smallestdG[2]))
+					if(dG3/G3 < R.smallestdG[2] || isZero(R.smallestdG[2])){
 						R.smallestdG[2] = dG3/G3;
+						R.EofSmallestdG[2] = E_cm;
+					}
 				} else {
-					if( ((-dG3)-1.0) < R.smallestdG[2] || isZero(R.smallestdG[2]))
+					if( ((-dG3)-1.0) < R.smallestdG[2] || isZero(R.smallestdG[2])){
 						R.smallestdG[2] = (-dG3)-1.0;
+						R.EofSmallestdG[2] = E_cm;
+					}
 				}
 			}
 		}

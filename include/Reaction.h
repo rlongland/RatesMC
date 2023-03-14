@@ -99,9 +99,9 @@ class Reaction{
   double M0,M1,M2,J0,J1,J2,Q,dQ,Qexit,dQexit,R0;
   int Z0,Z1,Z2;
 
-	double smallestdE;
-  double smallestdwg;
-  double smallestdG[3];
+	double smallestdE, EofSmallestdE;
+  double smallestdwg, EofSmallestdwg;
+  double smallestdG[3], EofSmallestdG[3];
 
  private:
 
