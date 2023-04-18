@@ -11,6 +11,9 @@ RatesMCOutput    <- "RatesMC.out"
 ContributionFile <- "RatesMC.cont"
 HFFile           <- "Tmatch.HF"
 
+massfile         <- "mass_1.mas20"
+nubasefile       <- "nubase_3.mas20"
+
 OutputFile       <- "TMatch.out"
 LaTeXFile        <- "TMatch.latex"
 
@@ -74,24 +77,111 @@ ReacName <- sub(",","*','*",ReacName)
 ReacName <- sub("\\)","\\)*",ReacName)
 ReacName <- gsub("([[:digit:]]+)", "phantom()^{\\1}*", ReacName)
 
+## Attempt to read the mass table. If unsuccessful, write a message
+masses <- try(read.fortran(massfile,
+			   skip=37,
+			   format=c("4X","3I5","A3","84X","I3","I7","1X","I5"),
+			   col.names=c("N","Z","A","El","Mass1","Mass2","Mass3")),
+	      silent=TRUE)
+if(!inherits(masses,"try-error")){
+    ## If last digits don't exist, just make it zero
+    masses$Mass3[is.na(masses$Mass3)] <- 0
+    ## Calculate the total mass by combining the masses in the table
+    masses$Mass <- masses$Mass1+masses$Mass2*1e-6+masses$Mass3*1e-11
+    masses$El <- gsub(" ", "", masses$El)
+} else {
+    cat("\n",
+	"WARNING: Mass file:",massfile,"not found\n")
+}
+
+spins <- try(read.fortran(nubasefile,
+			  skip=25,
+			  format=c("10X","A6","72X","A5"),
+			  col.names=c("iso","Jpi")),
+	     silent=TRUE)
+if(!inherits(spins,"try-error")){
+    spins$iso <- gsub(" ","",spins$iso)
+    spins$Jpi <- gsub(" ","",spins$Jpi)
+    spins$Jpi <- gsub("[#+-]","",spins$Jpi)
+    spins$Jpi <- gsub("[*]","",spins$Jpi)
+    spins$Jpi <- gsub("[(]","",spins$Jpi)
+    spins$Jpi <- gsub("[)]","",spins$Jpi)
+} else {
+    cat("\n",
+	"WARNING: NuBase file:",nubasefile,"not found\n")
+}
+
+
 ## Read the masses and charges
-Z0 <- scan(RatesMCFile,what=numeric(),skip=2,n=1,quiet=TRUE)
-Z1 <- scan(RatesMCFile,what=numeric(),skip=3,n=1,quiet=TRUE)
-M0 <- scan(RatesMCFile,what=numeric(),skip=5,n=1,quiet=TRUE)
-M1 <- scan(RatesMCFile,what=numeric(),skip=6,n=1,quiet=TRUE)
-J0 <- scan(RatesMCFile,what=numeric(),skip=8,n=1,quiet=TRUE)
-J1 <- scan(RatesMCFile,what=numeric(),skip=9,n=1,quiet=TRUE)
+getZ <- function(Read){
+    A <- as.numeric(gsub("[^0-9.-]", "", Read))
+    El <- gsub("[^A-Z,a-z]", "", Read)
+    
+    Z <- masses[masses$El==El,'Z'][1]
+    Z
+}
+getM <- function(Read){
+    A <- as.numeric(gsub("[^0-9.-]", "", Read))
+    El <- gsub("[^A-Z,a-z]", "", Read)
+    
+    M <- masses[((masses$El==El) & (masses$A==A)),'A'][1]
+    M
+}
+getJ <- function(Read){
+    Jpi <- spins[spins$iso == Read,'Jpi']
+    return <- NA
+    if(length(grep("/",Jpi))>0){
+	return <- sapply(strsplit(Jpi, split="/"),
+	       function(x)as.numeric(x[1])/as.numeric(x[2]))
+    } else {
+	return <- as.numeric(Jpi)
+    }
+    return[1]
+}
+
+Read <- scan(RatesMCFile,what=character(),skip=2,n=1,quiet=TRUE)
+Z0 <- suppressWarnings(as.double(Read))
+if(is.na(Z0))Z0 <- getZ(Read)
+Read <- scan(RatesMCFile,what=character(),skip=3,n=1,quiet=TRUE)
+Z1 <- suppressWarnings(as.double(Read))
+if(is.na(Z1))Z1 <- getZ(Read)
+Read <- scan(RatesMCFile,what=character(),skip=5,n=1,quiet=TRUE)
+M0 <- suppressWarnings(as.double(Read))
+if(is.na(M0))M0 <- getM(Read)
+Read <- scan(RatesMCFile,what=character(),skip=6,n=1,quiet=TRUE)
+M1 <- suppressWarnings(as.double(Read))
+if(is.na(M1))M1 <- getM(Read)
+Read <- scan(RatesMCFile,what=character(),skip=8,n=1,quiet=TRUE)
+J0 <- suppressWarnings(as.double(Read))
+if(is.na(J0))J0 <- getJ(Read)
+Read <- scan(RatesMCFile,what=character(),skip=9,n=1,quiet=TRUE)
+J1 <- suppressWarnings(as.double(Read))
+if(is.na(J1))J1 <- getJ(Read)
+
 mu <- M0*M1/(M0+M1)
+
+## Quit if masses of Jpi are NA
+if(is.na(Z0) | is.na(Z1) | is.na(M0) | is.na(M1) | is.na(J0) | is.na(J1)){
+    stop("Unfortunately the AME/NuBase inputs could not be read properly.\nPlease enter the masses, spins, and J by hand into RatesMC.in\n")
+}
+cat("\nIf you're using AME Mass or Nubase inputs,",
+    "\nplease double-check the following:\n")
+cat("Z0, M0, J0 = ",Z0,",",M0,",",J0,"\n")
+cat("Z1, M1, J1 = ",Z1,",",M1,",",J1,"\n")
+
 
 ## The RatesMC rates
 Rates <- read.table(RatesMCOutput,skip=4)
 T <- Rates[,1]
 
+## Find the start of the resonances section
+lines <- readLines(RatesMCFile)
+skip <- grep("Resonant Contribution",lines)+3
 
 if(ReadCont){
     ## Read in the resonance energies.
     ## This procedure should read in all resonance energies without erroring!
-    skip <- 29
+    skip <- skip
     Energies <- numeric()
     while(
 	## Try to read a line and see if an actual number was read.
@@ -127,7 +217,7 @@ if(ReadCont){
 
     ## Read all resonances from the RatesMC input file
     data <- numeric()
-    skip <- 30
+    skip <- skip
     ## Keep looping until we're done
     while(TRUE){
 	## Read a line
@@ -264,11 +354,16 @@ cat("TMatch from Gamow peak method: ",TMatch.Gamow,"\n")
 
 ## Then ETER method
 ## Cut out low temperatures
-cut <- T>0.1
-interp.ETER <- splinefun(x=ETER.array[cut], y=T[cut])
+cut <- T>0.1 & !is.na(ETER.array)
+interp.ETER <- approxfun(x=ETER.array[cut],
+			 y=T[cut])
 TMatch.ETER <- interp.ETER(maxE)
 cat("TMatch from ETER method:       ",TMatch.ETER,"\n")
 
+if(is.na(TMatch.ETER)){
+    dev.off()
+    stop("Something went wrong finding the ETER matching T!\nCheck TMatch.pdf.")
+}
 
 ######################################################################
 ## Now match the HF rate
