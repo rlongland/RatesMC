@@ -166,7 +166,8 @@ mu <- M0*M1/(M0+M1)
 
 ## Quit if masses of Jpi are NA
 if(is.na(Z0) | is.na(Z1) | is.na(M0) | is.na(M1) | is.na(J0) | is.na(J1)){
-    stop("Unfortunately the AME/NuBase inputs could not be read properly.\nPlease enter the masses, spins, and J by hand into RatesMC.in\n")
+    cat(paste0(redtext,"Unfortunately the AME/NuBase inputs could not be read properly.\nPlease enter the masses, spins, and J by hand into RatesMC.in\n",normtext))
+    stop()
 }
 cat("\nIf you're using AME Mass or Nubase inputs,",
     "\nplease double-check the following:\n")
