@@ -26,12 +26,16 @@ n.Gamow          <- 1
 
 ## Constant scale of HF, or assume HF is correct at 10 GK and
 ## extrapolate to there?
-extrapolateHF <- TRUE
+extrapolateHF <- TRUE    ## TRUE="assume HF is correct at 10 GK
 
 ######################################################################
 ## You shouldn't need to touch anything below this line...
 library("RColorBrewer")
 cols <- brewer.pal(4,"Dark2")
+
+## For warning messages
+redtext <- "\033[0;31m"
+normtext <- "\033[0m"
 
 ## Add an alpha value to a colour
 add.alpha <- function(col, alpha=1){
@@ -361,8 +365,13 @@ TMatch.ETER <- interp.ETER(maxE)
 cat("TMatch from ETER method:       ",TMatch.ETER,"\n")
 
 if(is.na(TMatch.ETER)){
-    dev.off()
-    stop("Something went wrong finding the ETER matching T!\nCheck TMatch.pdf.")
+##    dev.off()
+    cat(paste0(redtext,
+	       "\nSomething went wrong finding the ETER matching T!\nCheck TMatch.pdf\n",
+	       normtext))
+    cat("Using Gamow window matching temperature\n\n")
+    ##    stop()
+    TMatch.ETER <- TMatch.Gamow
 }
 
 ######################################################################
@@ -392,12 +401,23 @@ if(extrapolateHF){
     Norm.low.v <- rep(Norm.low,length(HF[,2]))
     Norm.high.v <- rep(Norm.high,length(HF[,2]))
     cut <- HF[,1]>TMatch.ETER
+    ## Using experimental uncertainty at TMatch
+    ##Norm.med.v[cut] <- approx(x=c(TMatch.ETER,10),y=c(Norm.med,1),
+    ##			      xout=HF[HF[,1]>TMatch.ETER,1])$y
+    ##Norm.low.v[cut] <- approx(x=c(TMatch.ETER,10),y=c(Norm.low,Norm.low/Norm.med),
+    ##			      xout=HF[HF[,1]>TMatch.ETER,1])$y
+    ##Norm.high.v[cut] <- approx(x=c(TMatch.ETER,10),y=c(Norm.high,Norm.high/Norm.med),
+    ##			       xout=HF[HF[,1]>TMatch.ETER,1])$y
+
+    ## Assuming HF is correct at 10 GK with a factor of 10 uncertainty
     Norm.med.v[cut] <- approx(x=c(TMatch.ETER,10),y=c(Norm.med,1),
 			      xout=HF[HF[,1]>TMatch.ETER,1])$y
-    Norm.low.v[cut] <- approx(x=c(TMatch.ETER,10),y=c(Norm.low,Norm.low/Norm.med),
-			      xout=HF[HF[,1]>TMatch.ETER,1])$y
-    Norm.high.v[cut] <- approx(x=c(TMatch.ETER,10),y=c(Norm.high,Norm.high/Norm.med),
-			       xout=HF[HF[,1]>TMatch.ETER,1])$y
+    Norm.low.v[cut] <- Norm.med.v[cut]*approx(x=c(TMatch.ETER,10),
+					       y=c(Norm.low/Norm.med,0.1),
+			xout=HF[HF[,1]>TMatch.ETER,1])$y
+    Norm.high.v[cut] <- Norm.med.v[cut]*approx(x=c(TMatch.ETER,10),
+					       y=c(Norm.high/Norm.med,10),
+			xout=HF[HF[,1]>TMatch.ETER,1])$y
 
 
     ## Now the matched HF rate!
@@ -412,9 +432,9 @@ if(extrapolateHF){
 HF <- cbind(HF, HF.matched.low, HF.matched.med, HF.matched.high)
 
 ## We need to interpolate the matched HF rate at the RatesMC temperatures
-interp.HF.low  <- splinefun(HF[,1], HF[,3])
-interp.HF.med  <- splinefun(HF[,1], HF[,4])
-interp.HF.high <- splinefun(HF[,1], HF[,5])
+interp.HF.low  <- approxfun(HF[,1], HF[,3])
+interp.HF.med  <- approxfun(HF[,1], HF[,4])
+interp.HF.high <- approxfun(HF[,1], HF[,5])
 HF.final.low  <- interp.HF.low(Rates[,1])
 HF.final.med  <- interp.HF.med(Rates[,1])
 HF.final.high <- interp.HF.high(Rates[,1])
@@ -429,7 +449,7 @@ cut.HF[length(cut.HF)-(2+sum(cut.HF))] <- TRUE
 ylim <- range(c(Rates[cut,2],HF.final.med[cut],HF[cut.HF,2]))
 
 plot(Rates[,1], Rates[,3], type='l', ylim=ylim,xlim=range(T[cut]),
-     xlab="Temperature", ylab="Rate", col=cols[1], log="y",
+     xlab="Temperature", ylab="Rate", col=cols[1], log="xy",
      xaxs='i',main=paste("TMatch = ",format(TMatch.ETER,digits=2,nsmall=2),"GK\n",
 			 "Scale at TMatch = ",format(Norm.med,digits=2,nsmall=2)))
 abline(v=TMatch.ETER,lty=3,col="grey")
@@ -448,18 +468,21 @@ cut.length <- sum(cut)
 acut <- T >= TMatch.ETER
 acut.length <- sum(acut)
 
+fu <- rowMeans(cbind(HF.final.med/HF.final.low,HF.final.high/HF.final.med))
+
+
 Rates.final <- Rates[cut,]
 Rates.final <- rbind(Rates.final,
 		     cbind(Rates[acut,1],
 			   HF.final.low[acut], HF.final.med[acut], HF.final.high[acut],
-			   rep(Rates[cut.length,5],acut.length)))
+			   fu[acut]))
 
 ## Plot the final rate in a nice simple figure
 cut <- T > TMatch.ETER
 cut[length(cut)-(2+sum(cut))] <- TRUE
 ylim <- range(Rates.final[cut,2:4])
 plot(Rates[,1], Rates[,3], type='l', ylim=ylim,xlim=range(T[cut]),
-     xlab="Temperature", ylab="Rate", col=cols[1], log="y",
+     xlab="Temperature", ylab="Rate", col=cols[1], log="xy",
      xaxs='i')
 abline(v=TMatch.ETER,lty=3,col="grey")
 lines(Rates.final[,1], Rates.final[,2], lwd=1, col=cols[3])
