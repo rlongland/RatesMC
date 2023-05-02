@@ -591,6 +591,7 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
     G3, dG3, PT3=0.0, DPT3=0.0, Exf;
   int L1, L2, L3;
 	int count=0;
+	bool isUpperLimit=false;
 	std::string CorString, dummy;
 
 
@@ -677,7 +678,13 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
 					>> G1 >> dG1 >> L1 >> PT1 >> DPT1 >> G2 >> dG2 >> L2 >> PT2 >> DPT2
 					>> G3 >> dG3 >> L3 >> PT3 >> DPT3 >> Exf;
 
+			if(G1>0.0 && fabs(dG1)==0.0)isUpperLimit=true;	
+			if(G2>0.0 && fabs(dG2)==0.0)isUpperLimit=true;
+			if(G3>0.0 && fabs(dG3)==0.0)isUpperLimit=true;
 
+			if(isUpperLimit)std::cout << "This resonance is an upper limit!"
+																<< std::endl;
+			
 			// Convert to correct units
 			E_cm  *= 1.0e-3;   // keV to MeV
 			dE_cm *= 1.0e-3;   // keV to MeV
@@ -710,7 +717,7 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
 																	 G1, dG1, L1, PT1, DPT1,
 																	 G2, dG2, L2, PT2, DPT2,
 																	 G3, dG3, L3, PT3, DPT3,
-																	 Exf, i);
+																	 Exf, isUpperLimit, i);
 			/*
 				R.addInterference(count, E_cm, dE_cm, Jr,
 				G1, dG1, L1, PT1, DPT1,

@@ -84,6 +84,10 @@ void Interference::makeSamples(std::vector<std::vector<double> > Ref_sample,
 	// Make sure the Rate vector is the right size
   Rate_sample.resize(NSamples);
 
+	
+	Res[0]->makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
+	Res[1]->makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
+
 	M0 = Res[0]->getM0();
 	M1 = Res[0]->getM1();
 	M2 = Res[0]->getM2();
@@ -106,12 +110,10 @@ void Interference::makeSamples(std::vector<std::vector<double> > Ref_sample,
 		}
 		Exf[iRes] = Res[iRes]->getExf();
 		NChannels[iRes] = Res[iRes]->getNChannels();
+		//std::cout << "MakeSamples: Exf[" << iRes << "] = " << Res[iRes]->getExf() << std::endl;
 	}
 	
 	
-	Res[0]->makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
-	Res[1]->makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
-
 	// get the interference sign
 	switch(IntfSign){
 	case -1:
@@ -276,7 +278,7 @@ double Interference::NumericalRate(double T, double E_sample[2],
 			ErrorFlag = true;
 			SampledNegCount++;
 			G_sample[iRes][0] = mue * gsl_pow_2(R) * G_sample[iRes][0] /
-				(2.0 * 41.80161396 * PenFactor(E_sample[iRes], L[iRes][0], M0, M1, Z0, Z1, R));
+				(2.0 * 41.80161396 * PenFactor(E_cm[iRes], L[iRes][0], M0, M1, Z0, Z1, R));
 			//std::cout << "Positive resonance went negative!\n";
 			//std::cout << "E_cm = " << E_cm << "E_sample = " << E_sample[iRes] << "G[0] = " <<
 			//	G[0]	<< " G_sample = " << G_sample[iRes][0] << std::endl;
@@ -340,15 +342,15 @@ double Interference::NumericalRate(double T, double E_sample[2],
   alpha[1] = Pr[0];
   alpha[2] = Pr[1];
   alpha[3] = Pr_exit[0];
-  alpha[4] = Pr_exit[0];
+  alpha[4] = Pr_exit[1];
   alpha[5] = E_sample[0];
   alpha[6] = E_sample[1];
   alpha[7] = G_sample[0][0];
-  alpha[8] = G_sample[0][1];
-  alpha[9] = G_sample[1][0];
+  alpha[8] = G_sample[1][0];
+  alpha[9] = G_sample[0][1];
   alpha[10] = G_sample[1][1];
-  alpha[11] = G_sample[2][0];
-  alpha[12] = G_sample[2][1];
+  alpha[11] = G_sample[0][2];
+  alpha[12] = G_sample[1][2];
   alpha[13] = sign_sample;
   alpha[14] = T;
 
@@ -428,7 +430,7 @@ double Interference::NumericalRate(double T, double E_sample[2],
 	//status = -1;
   // If the integration errored, use the slower ODE method
   if (status != 0) {
-	//	std::cout << "Integration error = " << gsl_strerror(status) << "\n";
+		//std::cout << "Integration error = " << gsl_strerror(status) << "\n";
     //result = std::numeric_limits<double>::quiet_NaN();
 	
 		// OK so the fast integration failed. Go back to the old method
@@ -573,11 +575,44 @@ double Interference::Integrand(double x, void *params) {
 		if (Er[iRes] > 0.0) {
 			Scale[0] = P / Pr[iRes];
 		} else {
-			Scale[0] = 1.0;
-			G0[iRes] = 2.0 * P * G0[iRes] * 41.80161396 / (mue * gsl_pow_2(R));
+		  Pr[iRes]=0.0;
+			Scale[0] = 2.0 * P * 41.80161396 / (mue * gsl_pow_2(R));
 		}
 
-		// TODO from here!
+		// Exit channel scale
+		if(G1[iRes] > 0.0){
+			if (Reac.getGamma_index() == 1){
+				//std::cout << Exf[iRes] << " " << L[iRes][1] << std::endl;
+				Scale[1] = pow((Reac.Q + x - Exf[iRes]) / (Reac.Q + Er[iRes] - Exf[iRes]), (2. * L[iRes][1] + 1.0));
+			} else {
+				E_exit = Reac.Q + x - Reac.Qexit - Exf[iRes];
+        if (E_exit > 0.0) {
+          P_exit =
+              PenFactor(E_exit, L[iRes][1], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
+          Scale[1] = P_exit / Pr_exit[iRes];
+				}
+			}
+		} else {
+			Scale[1] = 1.0;
+		}
+
+				// Spectator scale (no excitation energy in final state)
+		if(G2[iRes] > 0.0){
+			if (Reac.getGamma_index() == 2){
+				Scale[2] = pow((Reac.Q + x) / (Reac.Q + Er[iRes]), (2. * L[iRes][2] + 1.0));
+			} else {
+				E_exit = Reac.Q + x - Reac.Qexit;
+        if (E_exit > 0.0) {
+          P_exit =
+              PenFactor(E_exit, L[iRes][2], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
+          Scale[2] = P_exit / Pr_exit[iRes];
+				}
+			}
+		} else {
+			Scale[2] = 1.0;
+		}
+
+		/*		// TODO from here!
 		for (int i = 1; i < 3; i++) {
 			if (G1[iRes] > 0.0) {
 				if (i == Reac.getGamma_index()) {
@@ -603,11 +638,22 @@ double Interference::Integrand(double x, void *params) {
 				Scale[i] = 1;
 			}
 		}
+		*/
 
+		/*
+		std::cout << iRes << "   " << x << " Scale[0]=" << Scale[0] << " Scale[1]=" << Scale[1]
+							<< " Scale[2]=" << Scale[2] << std::endl;
+		std::cout << "       " << " G0=" << G0[iRes] << " G1=" << G1[iRes]
+							<< " G2=" << G2[iRes] << std::endl;
+		*/
+		
 		double S1 = PEK * omega * Scale[0] * G0[iRes] * Scale[1] * G1[iRes];
 		double S2 = gsl_pow_2(Er[iRes] - x) +
 			0.25 * gsl_pow_2(G0[iRes] * Scale[0] + G1[iRes] * Scale[1] + G2[iRes] * Scale[2]);
 		double S3 = exp(-11.605 * x / Temp);
+
+//		std::cout << "            " << "S1=" << S1 << " S2=" << S2 << "S3=" << S3 << std::endl;
+
 
 		double integrand = S1 * S3 / S2; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
 		
@@ -704,6 +750,41 @@ int Interference::rhs (double x, const double y[], double dydx[], void *params){
 			G0[iRes] = 2.0 * P * G0[iRes] * 41.80161396 / (mue * gsl_pow_2(R));
 		}
 
+		
+		// Exit channel scale
+		if(G1[iRes] > 0.0){
+			if (Reac.getGamma_index() == 1){
+				//std::cout << Exf << " " << L[iRes][1] << std::endl;
+				Scale[1] = pow((Reac.Q + x - Exf[iRes]) / (Reac.Q + Er[iRes] - Exf[iRes]), (2. * L[iRes][1] + 1.0));
+			} else {
+				E_exit = Reac.Q + x - Reac.Qexit - Exf[iRes];
+        if (E_exit > 0.0) {
+          P_exit =
+              PenFactor(E_exit, L[iRes][1], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
+          Scale[1] = P_exit / Pr_exit[iRes];
+				}
+			}
+		} else {
+			Scale[1] = 1.0;
+		}
+
+				// Spectator scale (no excitation energy in final state)
+		if(G2[iRes] > 0.0){
+			if (Reac.getGamma_index() == 2){
+				Scale[2] = pow((Reac.Q + x) / (Reac.Q + Er[iRes]), (2. * L[iRes][2] + 1.0));
+			} else {
+				E_exit = Reac.Q + x - Reac.Qexit;
+        if (E_exit > 0.0) {
+          P_exit =
+              PenFactor(E_exit, L[iRes][2], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
+          Scale[2] = P_exit / Pr_exit[iRes];
+				}
+			}
+		} else {
+			Scale[2] = 1.0;
+		}
+
+		/*
 		// TODO from here!
 		for (int i = 1; i < 3; i++) {
 			if (G1[iRes] > 0.0) {
@@ -730,7 +811,8 @@ int Interference::rhs (double x, const double y[], double dydx[], void *params){
 				Scale[i] = 1;
 			}
 		}
-
+		*/
+		
 		double S1 = PEK * omega * Scale[0] * G0[iRes] * Scale[1] * G1[iRes];
 		double S2 = gsl_pow_2(Er[iRes] - x) +
 			0.25 * gsl_pow_2(G0[iRes] * Scale[0] + G1[iRes] * Scale[1] + G2[iRes] * Scale[2]);
@@ -786,12 +868,14 @@ double Interference::getSFactor(double E, int sign, int samp){
 		double E_cm_samp;
 		double G0; 
 		double G1; 
-		double G2; 
+		double G2;
+		double Exf;
 		if(samp == -1){
 			E_cm_samp = E_cm[iRes];
 			G0 = Res[iRes]->getG(0);
 			G1 = Res[iRes]->getG(1);
 			G2 = Res[iRes]->getG(2);
+			Exf = Res[iRes]->getExf();
 		} else {
 			E_cm_samp = Res[iRes]->getESample(samp);
 			G0 = Res[iRes]->getGSample(0,samp);
@@ -808,29 +892,73 @@ double Interference::getSFactor(double E, int sign, int samp){
 
 		double eta = 0.989510*Z0*Z1*sqrt(mue/E);
 
-	
+		/*
+			std::cout << iRes << " " << E << " " << G0 << " "
+							<< G1 << " " << G2 << "P=" << P << std::endl;
+		std::cout << "E_cm_samp=" << E_cm_samp << " Reac.Q=" << Reac.Q
+							<< "Reac.Qexit=" << Reac.Qexit << std::endl;
+		*/
+		
 		//  The penetration factor at the resonance energy (the "true" PF)
 		if (E_cm_samp > 0.0) {
 			Pr = PenFactor(E_cm_samp, L[iRes][0], M0, M1, Z0, Z1, R);
 			Scale[0] = P / Pr;
 		} else {
 			//Scale[0] = 1.0;
+			Pr = 0.0;
 			Scale[0] = 2.0 * P * 41.80161396 / (mue * gsl_pow_2(R));
 		}
-
+		
 		// Calculate the exit particle energy, depends on if it is spectator
 		if (Reac.getGamma_index() == 2) {
 			// if exit particle is observed decay, take final excitation into account
-			Pr_exit = PenFactor(E_cm_samp + Reac.Q - Reac.Qexit - Exf[iRes],
+			Pr_exit = PenFactor(E_cm_samp + Reac.Q - Reac.Qexit - Exf,
 													L[iRes][1], M0 + M1 - M2, M2,
 													Z0 + Z1 - Z2, Z2, R);
 		} else if (Reac.getGamma_index() == 1 && NChannels[iRes] == 3) {
 			// ignore spectator final excitation if it is spectator
+			//			std::cout << E << " E_cm_samp + Reac.Q - Reac.Qexit = " << E_cm_samp + Reac.Q - Reac.Qexit
+			//								<< std::endl;
 			Pr_exit = PenFactor(E_cm_samp + Reac.Q - Reac.Qexit, L[iRes][2], M0 + M1 - M2, M2,
 													Z0 + Z1 - Z2, Z2, R);
 		}
+		//std::cout << iRes << "   " << E << " Pr=" << Pr << " Pr_exit=" << Pr_exit << std::endl;
+		//std::cout << iRes << "   " << E << " Scale[0]=" << Scale[0] << std::endl;
+		//		std::cout << Reac.getGamma_index() << std::endl;
+		// Exit scale
+		if(G1 > 0.0){
+			if (Reac.getGamma_index() == 1){
+				//std::cout << Exf << " " << L[iRes][1] << std::endl;
+				Scale[1] = pow((Reac.Q + E - Exf) / (Reac.Q + E_cm_samp - Exf), (2. * L[iRes][1] + 1.0));
+			} else {
+				E_exit = Reac.Q + E - Reac.Qexit - Exf;
+        if (E_exit > 0.0) {
+          P_exit =
+              PenFactor(E_exit, L[iRes][1], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
+          Scale[1] = P_exit / Pr_exit;
+				}
+			}
+		} else {
+			Scale[1] = 1.0;
+		}
+		
+		// Spectator scale (no excitation energy in final state)
+		if(G2 > 0.0){
+			if (Reac.getGamma_index() == 2){
+				Scale[2] = pow((Reac.Q + E) / (Reac.Q + E_cm_samp), (2. * L[iRes][2] + 1.0));
+			} else {
+				E_exit = Reac.Q + E - Reac.Qexit;
+        if (E_exit > 0.0) {
+          P_exit =
+              PenFactor(E_exit, L[iRes][2], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
+          Scale[2] = P_exit / Pr_exit;
+				}
+			}
+		} else {
+			Scale[2] = 1.0;
+		}
 
-
+		/*
 		// Exit and spectator scales
 		for (int i = 1; i < 3; i++) {
 			if (G[iRes][i] > 0.0) {
@@ -857,12 +985,18 @@ double Interference::getSFactor(double E, int sign, int samp){
 				Scale[i] = 1;
 			}
 		}
-
+		*/
 		double S1 = exp(eta);
 		double S2 = omega * Scale[0] * G0 * Scale[1] * G1;
 		double S3 = gsl_pow_2(E_cm_samp - E) +
 			0.25 * gsl_pow_2(G0 * Scale[0] + G1 * Scale[1] + G2 * Scale[2]);
 
+		/*
+		std::cout << iRes << "   " << E << " Scale[0]=" << Scale[0] << " Scale[1]=" << Scale[1]
+							<< " Scale[2]=" << Scale[2] << std::endl;
+		std::cout << "       " << " G0=" << G0 << " G1=" << G1
+							<< " G3=" << G2 << std::endl;
+		*/
 		//		std::cout << Scale[0] << " " << Scale[1] << " " << Scale[2] << "\n";
 		//std::cout << S1 << " " << S2 << " " << S3 << "\n";
 	

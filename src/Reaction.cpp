@@ -124,7 +124,7 @@ void Reaction::addResonanceToInterference(int index, double E_cm,	double dE_cm, 
 																					double PT2, double dPT2,
 																					double G3, double dG3, int L3,
 																					double PT3, double dPT3,
-																					double Exf, int i) {
+																					double Exf, bool bUpperLimit, int i) {
 
   double G[3] = {G1, G2, G3};
   double dG[3] = {dG1, dG2, dG3};
@@ -134,7 +134,7 @@ void Reaction::addResonanceToInterference(int index, double E_cm,	double dE_cm, 
 
 	// Make a resonance
   Resonance *Res = new Resonance(*this, i, E_cm, dE_cm, 0.0, 0.0, Jr,
-								G, dG, L, PT, dPT, Exf, true, false,
+								G, dG, L, PT, dPT, Exf, true, bUpperLimit,
 								false, false, index, 1.0);
 
 	// Add this resonance to the interference

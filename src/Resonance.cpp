@@ -1152,7 +1152,6 @@ double Resonance::getSFactor(double E, int samp){
 	double Scale[3];
 
   double eta = 0.989510*Z0*Z1*sqrt(mue/E);
-
 	
   //  The penetration factor at the resonance energy (the "true" PF)
   if (E_cm_samp > 0.0) {
@@ -1171,6 +1170,7 @@ double Resonance::getSFactor(double E, int samp){
     Pr_exit = PenFactor(E_cm_samp + Reac.Q - Reac.Qexit, L[2], M0 + M1 - M2, M2,
                         Z0 + Z1 - Z2, Z2, R);
   }
+	//std::cout << "res " << E << " Pr=" << Pr << " Pr_exit=" << Pr_exit << std::endl;
 
 	// Entrance particle scale
   if (E_cm_samp > 0.0) {
@@ -1180,6 +1180,8 @@ double Resonance::getSFactor(double E, int samp){
 		//Scale[0] = 1.0;
     //		G0 = 2.0 * P * G0 * 41.80161396 / (mue * gsl_pow_2(R));
   }
+	
+	//std::cout << "res " << E << " Scale[0]=" << Scale[0] << std::endl;
 
 	// Exit and spectator scales
   for (int i = 1; i < 3; i++) {
@@ -1188,6 +1190,7 @@ double Resonance::getSFactor(double E, int samp){
         if (i == 1)
           Scale[i] =
               pow((Reac.Q + E - Exf) / (Reac.Q + E_cm_samp - Exf), (2. * L[i] + 1.0));
+				//std::cout << Exf << " " << L[1] << std::endl;
         if (i == 2)
           Scale[i] = pow((Reac.Q + E) / (Reac.Q + E_cm_samp), (2. * L[i] + 1.0));
       } else {
@@ -1213,6 +1216,9 @@ double Resonance::getSFactor(double E, int samp){
   double S2 = omega * Scale[0] * G_samp[0] * Scale[1] * G_samp[1];
   double S3 = gsl_pow_2(E_cm_samp - E) +
               0.25 * gsl_pow_2(G_samp[0] * Scale[0] + G_samp[1] * Scale[1] + G_samp[2] * Scale[2]);
+
+	//std::cout << "res " << E << " Scale[1]=" << Scale[1]
+	//					<< " Scale[2]=" << Scale[2] << std::endl;
 
 	//	std::cout << omega << " " << G[0] << " " << G[1] << " ";
 	//	std::cout << Scale[0] << " " << Scale[1] << " " << Scale[2] << "\n";
