@@ -683,8 +683,6 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
 			if(G2>0.0 && fabs(dG2)==0.0)isUpperLimit=true;
 			if(G3>0.0 && fabs(dG3)==0.0)isUpperLimit=true;
 
-			if(isUpperLimit)std::cout << "This resonance is an upper limit!"
-																<< std::endl;
 			
 			// Convert to correct units
 			E_cm  *= 1.0e-3;   // keV to MeV
