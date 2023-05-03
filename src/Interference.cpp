@@ -72,7 +72,7 @@ Interference::Interference(Reaction &R, int i, int isign)
 Interference::~Interference() {}
 
 void Interference::addResonance(Resonance* R, int index) {
-	std::cout << "Adding resonance to part " << index << "\n"; 
+//	std::cout << "Adding resonance to part " << index << "\n"; 
 	Res[index] = R;
 	
 }
@@ -419,8 +419,8 @@ double Interference::NumericalRate(double T, double E_sample[2],
   int status = gsl_integration_cquad(&F,      // Function to be integrated
                                      E_min,   // Where known singularity is
                                      E_max,   // number of singularities
-                                     1e-100,   // absolute error
-                                     1e-6,    // relative error
+                                     1e-200,   // absolute error
+                                     1e-8,    // relative error
                                      w,       // workspace
                                      &result, // The result
                                      &error, &nevals);
@@ -849,7 +849,13 @@ int Interference::rhs (double x, const double y[], double dydx[], void *params){
 	//	double totalSFactor = SFactorPart[0] + SFactorPart[1] - SFactorPart[2];
 
 	dydx[0] = totalIntegrand;
-	
+
+/*	
+	if (writeIntegrand){
+		integrandfile << std::scientific << std::setprecision(9) << x << " " << totalIntegrand
+									<< " " << totalIntegrand << std::endl;
+	}
+*/
 	return GSL_SUCCESS;
 }
 //}

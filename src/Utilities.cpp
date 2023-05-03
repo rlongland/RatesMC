@@ -483,6 +483,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     dG2   *= 1.0e-6;   // eV to MeV
     G3    *= 1.0e-6;   // eV to MeV
     dG3   *= 1.0e-6;   // eV to MeV
+		Exf   */ 1.0e-3    // keV to MeV
 
     // if E_cm is negative, G1 is actually unitless, so undo the unit operation above
     if(E_cm < 0){
@@ -694,6 +695,7 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
 			dG2 *= 1.0e-6;     // eV to MeV
 			G3 *= 1.0e-6;      // eV to MeV
 			dG3 *= 1.0e-6;     // eV to MeV
+			Exf *= 1.0e-3      // keV to MeV
 			
 			// if E_cm is negative, G1 is actually unitless, so undo
 			// the unit operation above
