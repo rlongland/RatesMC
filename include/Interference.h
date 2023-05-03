@@ -76,7 +76,9 @@ class Interference {
   double Integrand(double x, void * params);
 	int rhs(double x, const double y[], double dydx[], void * params);
   //}
-  
+
+  void writeSamples(std::ofstream& samplefile, int s);
+	
   // print a summary of the resonance
   void print();
   void write();

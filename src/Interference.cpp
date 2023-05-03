@@ -1023,6 +1023,12 @@ double Interference::getSFactor(double E, int sign, int samp){
 }
 
 
+void Interference::writeSamples(std::ofstream &samplefile, int s) {
+
+	Res[0]->writeSamples(samplefile, s);
+	Res[1]->writeSamples(samplefile, s);
+
+}
 
 void Interference::print() {
 

@@ -40,6 +40,7 @@
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_spline.h>
 
+#include "Interference.h"
 #include "Resonance.h"
 #include "Reaction.h"
 #include "Utilities.h"
@@ -824,6 +825,9 @@ void Reaction::writeSamples(){
   for(std::size_t i=0; i < Resonances.size(); i++){// &Res : Resonances){
     samplefile << " |           E         wg         G1         G2         G3";
   }
+  for(std::size_t i=0; i < (2*Interferences.size()); i++){
+    samplefile << " |           E         wg         G1         G2         G3";
+  }
   samplefile << std::endl;
   
   // Now the samples
@@ -838,7 +842,13 @@ void Reaction::writeSamples(){
     for(Resonance &Res: Resonances){
       Res.writeSamples(samplefile, s);
     }
-    
+
+    // Now the Interferences
+    for(Interference &Inter: Interferences){
+      Inter.writeSamples(samplefile, s);
+    }
+
+		
     samplefile << "\n";
   }
 
