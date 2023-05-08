@@ -4,7 +4,7 @@
 
 outputfile <- "RatesMC.out"
 fullfile    <- "RatesMC.full"
-litfilename <- "~/code/RatesMC-V1/datafiles/29Si-pg/2021/RatesMC.out"
+litfilename <- "/home/longland/code/RatesMC-V1/datafiles/17Opg/RatesMC2Testing/RatesMC.out"
 headerskip <- 4  ## 3 for RatesMC type files
                  ## 4 for RatesMC2 type files
 headerskip.lit <- 3  ## 3 for RatesMC type files
@@ -14,6 +14,9 @@ RateColor <- "gray"  # colour for the error region shade
 RateTrans <- 0.8     # transparancy of error region (1 is fully opaque)
 CompColor <- "blue"  # colour for the comparison shade
 CompTrans <- 0.3     # transparancy of comparison
+
+## Show New/Old rather than Old/New
+NewOverLiterature <- FALSE
 
 ######################################################
 # Function to print the displayed 2D curve to a file
@@ -190,13 +193,22 @@ if(length(LitData[1,]) > 2){
 ##                  MyRate[matchlist1,3]/LitData[matchlist2,reccol],
 ##                  MyRate[matchlist1,4]/LitData[matchlist2,reccol],
 ##                  MyRate[matchlist1,5],MyRate[matchlist1,6])
+if(NewOverLiterature){
+RateComp <- cbind(MyRate[matchlist1,1],
+                  MyRate[matchlist1,2]/LitData[matchlist2,3],
+                  MyRate[matchlist1,3]/LitData[matchlist2,3],
+                  MyRate[matchlist1,4]/LitData[matchlist2,3],
+                  fulldata[matchlist1,9],fulldata[matchlist1,10])
+} else {
 RateComp <- cbind(MyRate[matchlist1,1],
                   LitData[matchlist2,2]/MyRate[matchlist1,3],
                   LitData[matchlist2,3]/MyRate[matchlist1,3],
                   LitData[matchlist2,4]/MyRate[matchlist1,3],
                   fulldata[matchlist1,9],fulldata[matchlist1,10])
+}
 cYAxisLims <- range(RateComp[,c(2:4)])
 YAxisLims <- range(c(cYAxisLims,YAxisLims))
+##YAxisLims <- c(1e-1,1e1)
 minBase10 <- floor(log10(YAxisLims[1]))
 maxBase10 <- ceiling(log10(YAxisLims[2]))
 
@@ -220,8 +232,14 @@ aY <- 10^seq(from=minBase10,to=maxBase10,by=1)
 axis(4,at=aY,labels=FALSE)
 
 # Plot the low and high rate polygon
-polygon(poly(T=CompRate[,1],low=CompRate[,2],high=CompRate[,3]),
-        col=add.alpha(RateColor,RateTrans),lty=0)
+if(NewOverLiterature){
+    polygon(poly(T=RateComp[,1],low=RateComp[,2],high=RateComp[,4]),
+	    col=add.alpha(CompColor,CompTrans),lty=0)
+} else {
+    polygon(poly(T=CompRate[,1],low=CompRate[,2],high=CompRate[,3]),
+	    col=add.alpha(RateColor,RateTrans),lty=0)
+}
+    
 # add line for upper rate
 lines(RateComp[,1],RateComp[,3],lwd=2)
 # Add lines for the literature uncertainty bands if present
@@ -269,9 +287,13 @@ axis(4,at=minory,labels=FALSE,tcl=0.4)
 ## maxBase10 <- ceiling(log10(max(RateComp[,2:4])))
 ## 
 ## # plot the lower rate
-polygon(poly(T=RateComp[,1],low=RateComp[,2],high=RateComp[,4]),
-        col=add.alpha(CompColor,CompTrans),lty=0)
-##lines(RateComp[,1],RateComp[,3],lwd=1,lty=2)
+if(NewOverLiterature){
+    polygon(poly(T=LitCompRate[,1],low=LitCompRate[,2],high=LitCompRate[,3]),
+	    col=add.alpha(RateColor,RateTrans),lty=0)
+} else {
+    polygon(poly(T=RateComp[,1],low=RateComp[,2],high=RateComp[,4]),
+	    col=add.alpha(CompColor,CompTrans),lty=0)
+}##lines(RateComp[,1],RateComp[,3],lwd=1,lty=2)
 
 ## Add the axis labels
 xpos <- grconvertX(0.5,from="npc",to="user")
