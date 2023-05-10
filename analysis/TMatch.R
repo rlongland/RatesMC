@@ -365,6 +365,15 @@ interp.ETER <- approxfun(x=ETER.array[cut],
 TMatch.ETER <- interp.ETER(maxE)
 cat("TMatch from ETER method:       ",TMatch.ETER,"\n")
 
+if(ETER.array[length(ETER.array)] < maxE){
+    cat(paste0(redtext,
+	       "\nExperimental rate looks good up to 10 GK!\nCheck TMatch.pdf\n",
+	       normtext))
+    TMatch.ETER <- 11
+##    dev.off()
+##    stop()
+}
+
 if(is.na(TMatch.ETER)){
 ##    dev.off()
     cat(paste0(redtext,
@@ -397,7 +406,7 @@ Norm.high <- Rates.MatchT.high/HF.MatchT
 cat("The scaling factor to apply to HF: N =",Norm.med,"at",TMatch.ETER,"GK\n")
 
 ## Construct a normalization vector over the length of HF[T>TMatch]
-if(extrapolateHF){
+if(extrapolateHF & TMatch.ETER<10){
     Norm.med.v <- rep(Norm.med,length(HF[,2]))
     Norm.low.v <- rep(Norm.low,length(HF[,2]))
     Norm.high.v <- rep(Norm.high,length(HF[,2]))
