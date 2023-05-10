@@ -11,8 +11,8 @@ IntegrandFile <- "RatesMC.integ"
 SFactorFile   <- "RatesMC.sfact"
 
 ## Set limits to NA for auto plotting
-xlim <- c(0,1.5)
-ylim <- c(1e-10,1e15)
+xlim <- c(0,1.2)
+ylim <- c(1e-10,1e20)
 
 ######################################################################
 myX11 <- function(...) 
@@ -26,23 +26,87 @@ myX11 <- function(...)
         tcl=0.5,
         mgp=c(3,0.5,0)) 
 }
+mypdf <- function(file="output.pdf",...)
+  {
+    grDevices::pdf(file=file,...)
+    par(cex.axis=1.3, cex.lab=1.5,   # Font sizes
+        las=1,                       # Always horisontal text
+        lwd=2,                       # Line width
+        mar=c(5,5,3,2)+0.1,          # Margins
+        pch=19,                      # Point type (solid circles)
+        tcl=0.5,
+        mgp=c(3,0.5,0))     
+  }
+
+## Read and format the reaction name
+ReacName = as.character(read.table(RatesMCFile,skip=0,header=FALSE,nrows=1)$V1)
+# Make superscripts, subscripts etc
+ReacName <- sub(",g\\)",",gamma\\)",ReacName)
+ReacName <- sub("\\(g,","\\(gamma,",ReacName)
+ReacName <- sub(",a\\)",",alpha\\)",ReacName)
+ReacName <- sub("\\(a,","\\(alpha,",ReacName)
+ReacName <- sub(",","*','*",ReacName)
+##ReacName <- sub("\\(a*","\\(alpha",ReacName)
+ReacName <- sub("\\)","\\)*",ReacName)
+ReacName <- gsub("([[:digit:]]+)", "phantom()^{\\1}*", ReacName)
+
+## Find the beginning of the resonances
+skip <- 29
+while(substr(x <- try(unlist(read.table(RatesMCFile,skip=skip,nrows=1)[1]
+			     )),1,3) != "Ecm"){
+				 skip <- skip+1
+			     }
+
+## Read in the resonance energies.
+## This procedure should read in all resonance energies without erroring!
+skip <- skip+1
+Energies <- numeric()
+while(
+  ## Try to read a line and see if an actual number was read.
+  substr(x <- try(unlist(read.table(RatesMCFile,skip=skip,nrows=1)[1]
+                             )),1,2) != "**"){
+  ## append the resonance energy list and skip to the next line
+  skip <- skip+1
+  if(is.numeric(x))
+    Energies <- c(Energies,x)
+}
+is.UL <- rep(0,length(Energies))
+
+## Now read the upper limit resonances in the same way
+skip <- skip+5
+while(
+  substr(x <- try(unlist(read.table(RatesMCFile,skip=skip,nrows=1)[1]
+                             )),1,2) != "**"){
+  skip <- skip+1
+  if(is.numeric(x))
+    Energies <- c(Energies,x)
+}
+Energies <- format(Energies,digits=1,trim=TRUE)
+is.UL <- c(is.UL,rep(1,length(Energies)-length(is.UL)))
+
+
 ## Read the proper s-factor file
 data <- read.table("RatesMC.sfact",header=TRUE)
 
+## Cut out the data to only include s-factors
+is.good <- !apply(data,2,function(x)all(x == 0))
+data <- data[,is.good]
+is.UL.good <- is.UL[is.good[4:(3+length(Energies))]]
+Energies <- Energies[is.good[4:(3+length(Energies))]]
 nparts <- dim(data)[2]-1
+
 
 ## The list of colours
 lc <- nparts
-hue <- c(seq(from=0,to=1-2/lc,length.out=floor(lc/2)),
-         seq(from=1/lc,to=1-1/lc,length.out=ceiling(lc/2)))
+hue <- seq(from=0,to=1-1/lc,length.out=lc)
 sat <- 0.8
 val <- 0.7
 col <- hsv(hue,sat,val,alpha=1)
 icol <- 1
 
-while(dev.cur()>1)dev.off()
-myX11()
-
+##while(dev.cur()>1)dev.off()
+##myX11(width=8,height=6)
+mypdf("GraphSFactor.pdf",width=8,height=6)
 
 ## First make the plotting pane
 ylim.default <- range(data[,2:dim(data)[2]])
@@ -51,7 +115,10 @@ xlim.default <- c(0,10)
 if(is.na(xlim[1]))xlim <- xlim.default
  
 plot(xlim,ylim,ylim=ylim,type='n',log='y',
-     xlab="E (MeV)", ylab="SFactor (MeV b)")
+     xlab="E (MeV)", ylab="SFactor (MeV b)",
+     yaxt='n',xaxs='i')
+aY <- axTicks(2)
+axis(2,at=aY,labels=axTexpr(2,at=aY))
  
 for(i in 1:nparts){
 
@@ -59,78 +126,14 @@ for(i in 1:nparts){
     icol <- icol+1
 }
 
-leg <- c("Non-res-1",
-	 "Non-res-2",
-	 paste("Res",1:(nparts-2)))
+aRate.lab <- c("Non-res-1","Non-res-2")[is.good[2:3]]
+ULstring <- ifelse(is.UL.good,"(UL)","")
+leg <- c(aRate.lab,
+	 ##paste("Res",1:(nparts-2)))
+	 paste(Energies,"keV",ULstring),
+	 paste("Intf",1:2))
 
-legend(x="topright",legend=leg,col=col,lty=1)
+legend(x="topright",legend=leg,col=col,lty=1, bg="white")
 
-
-## Pick a temperature. This doesn't affect the astrophysical s-factor,
-## but does affect the integration routines that produce the data
-## file. Thus, pick a good representative energy
-##Temp <- 0.3
-
-##   ## Read all lines to look for temperature
-##   lines <- readLines(IntegrandFile)
-##   TLines <- grep("Temp",lines)
-##   ## Which temperature entry is the one we want 
-##   Tentry <- which(read.table(text=lines[TLines])[,3] == Temp)
-##   ## and corresponds to line:
-##   goodTLine <- TLines[Tentry]
-##   ## The next temperature entry is
-##   nextTLine <- TLines[Tentry+1]
-##   
-##   if(nextTLine - goodTLine == 2){
-##       stop("There is no broad resonances!!")
-##   }
-##   
-##   ## The list of lines with integrand data
-##   ilines <- (goodTLine+1):(nextTLine-2)
-##   
-##   ## Now each resonance is separated by spaces
-##   isep <- c(1,grep("^$",lines[ilines]))
-##   ## Now we can read the integrand for each resonance we encounter
-##   integ <- lapply(2:length(isep), function(x){
-##       data <- read.table(text=lines[ilines[isep[x - 1]:(isep[x]-1)]])
-##       data
-##   })
-##   
-##   ## Close any open windows
-##   while(dev.cur()>1)dev.off()
-##   myX11()
-##   
-##   ## First make the plotting pane
-##   ylim.default <- range(unlist(lapply(integ, function(x)range(x[,3]))))
-##   if(is.na(ylim[1]))ylim <- ylim.default
-##   xlim.default <- c(0,10)
-##   if(is.na(xlim[1]))xlim <- xlim.default
-##   
-##   plot(xlim,ylim,ylim=ylim,type='n',log='y',
-##        xlab="E (MeV)", ylab="SFactor (arb. units)")
-##   
-##   ## The list of colours
-##   lc <- length(integ)
-##   hue <- c(seq(from=0,to=1-2/lc,length.out=floor(lc/2)),
-##            seq(from=1/lc,to=1-1/lc,length.out=ceiling(lc/2)))
-##   sat <- 0.8
-##   val <- 0.7
-##   col <- hsv(hue,sat,val,alpha=1)
-##   icol <- 1
-##   
-##   ## Plot each line
-##   t <- lapply(integ, function(data){
-##       ## Sort data by energy
-##       ord <- order(data[,1])
-##       T9 <- data[ord,1]
-##       y <- data[ord,3]
-##       ## Finally plot
-##       lines(T9,y,col=col[icol])
-##       icol <<- icol+1
-##       y
-##   })
-##   
-##   legend(x="topright",legend=paste("Res",1:length(integ)),col=col,lty=1)
-
-
+dev.off()
 ##----------------------------------------------------------------------
