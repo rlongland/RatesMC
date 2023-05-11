@@ -11,8 +11,11 @@ IntegrandFile <- "RatesMC.integ"
 SFactorFile   <- "RatesMC.sfact"
 
 ## Set limits to NA for auto plotting
-xlim <- c(0,1.2)
-ylim <- c(1e-10,1e20)
+xlim <- NA  ## Use NA for 0-1 MeV or enter range c(xmin,xmax) in MeV
+ylim <- NA  ## Use NA for auto scaling or enter range c(1e-10,1e20)
+
+## Draw the narrow resonances?
+drawNarrow <- TRUE
 
 ######################################################################
 myX11 <- function(...) 
@@ -88,6 +91,9 @@ is.UL <- c(is.UL,rep(1,length(Energies)-length(is.UL)))
 ## Read the proper s-factor file
 data <- read.table("RatesMC.sfact",header=TRUE)
 
+## Extract the narrow resonance energies
+Energies.narrow <- as.double(Energies[!is.good[4:(3+length(Energies))]])/1000
+
 ## Cut out the data to only include s-factors
 is.good <- !apply(data,2,function(x)all(x == 0))
 data <- data[,is.good]
@@ -107,33 +113,64 @@ icol <- 1
 ##while(dev.cur()>1)dev.off()
 ##myX11(width=8,height=6)
 mypdf("GraphSFactor.pdf",width=8,height=6)
+oldpar <- par(mar=0.1+c(5,5,1,1))
 
 ## First make the plotting pane
 ylim.default <- range(data[,2:dim(data)[2]])
 if(is.na(ylim[1]))ylim <- ylim.default
-xlim.default <- c(0,10)
+ylim[1] <- max(ylim[1],1e-10)
+xlim.default <- c(0,1)
 if(is.na(xlim[1]))xlim <- xlim.default
- 
+
+
+
 plot(xlim,ylim,ylim=ylim,type='n',log='y',
      xlab="E (MeV)", ylab="SFactor (MeV b)",
      yaxt='n',xaxs='i')
 aY <- axTicks(2)
 axis(2,at=aY,labels=axTexpr(2,at=aY))
- 
-for(i in 1:nparts){
 
+
+## Draw all narrow resonances
+if(drawNarrow){
+    abline(v=Energies.narrow,lty=2,col="grey")
+    yy <- grconvertY(0.9,from="npc",to="user")
+    text(x=Energies.narrow,y=yy,
+	 labels=paste(Energies.narrow*1000,"keV"),srt=90,pos=3)
+}
+
+
+## Draw all broad resonance
+for(i in 1:nparts){
     lines(data[,1],data[,i+1],col=col[icol])
     icol <- icol+1
 }
 
 aRate.lab <- c("Non-res-1","Non-res-2")[is.good[2:3]]
 ULstring <- ifelse(is.UL.good,"(UL)","")
+
+## Make the interference labels
+iInter <- grep("Int",names(data))
+InterNumber <- as.double(substr(names(data)[iInter],4,6))
+Inter.lab <- paste("Intf",InterNumber)
+
 leg <- c(aRate.lab,
 	 ##paste("Res",1:(nparts-2)))
 	 paste(Energies,"keV",ULstring),
-	 paste("Intf",1:2))
+	 Inter.lab)
 
-legend(x="topright",legend=leg,col=col,lty=1, bg="white")
+if(drawNarrow){
+    leg <- c(leg,"Narrow res.")
+    legend(x="topright",legend=leg,
+	   col=c(col,"grey"),lty=c(rep(1,length(col)),2),
+	   bg="white")
+} else {
+    legend(x="topright",legend=leg,
+	   col=col,lty=1,
+	   bg="white")
+}
+
+box()
 
 dev.off()
 ##----------------------------------------------------------------------
