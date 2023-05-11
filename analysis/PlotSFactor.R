@@ -91,11 +91,13 @@ is.UL <- c(is.UL,rep(1,length(Energies)-length(is.UL)))
 ## Read the proper s-factor file
 data <- read.table("RatesMC.sfact",header=TRUE)
 
+## Cut out the data to only include s-factors
+is.good <- !apply(data,2,function(x)all(x == 0))
+
 ## Extract the narrow resonance energies
 Energies.narrow <- as.double(Energies[!is.good[4:(3+length(Energies))]])/1000
 
-## Cut out the data to only include s-factors
-is.good <- !apply(data,2,function(x)all(x == 0))
+## Cut the broad resonance data, Energies, and count
 data <- data[,is.good]
 is.UL.good <- is.UL[is.good[4:(3+length(Energies))]]
 Energies <- Energies[is.good[4:(3+length(Energies))]]
@@ -125,7 +127,7 @@ if(is.na(xlim[1]))xlim <- xlim.default
 
 
 plot(xlim,ylim,ylim=ylim,type='n',log='y',
-     xlab="E (MeV)", ylab="SFactor (MeV b)",
+     xlab="Energy (MeV)", ylab="Astrophysical S-factor (MeV b)",
      yaxt='n',xaxs='i')
 aY <- axTicks(2)
 axis(2,at=aY,labels=axTexpr(2,at=aY))

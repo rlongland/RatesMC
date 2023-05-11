@@ -2,7 +2,7 @@
 # A script to batch run RatesMC and main analysis R scripts
 
 ## Run RatesMC
-./RatesMC
+(trap 'kill 0' SIGINT; ./RatesMC & (sleep 5; Rscript PlotSFactor.R) & wait)
 
 ## Do the HF matching
 Rscript TMatch.R
@@ -21,5 +21,4 @@ Rscript PlotPanel6.R
 Rscript PlotPanelall.R
 
 ## Astrophysical S-Factor
-##Rscript PlotSFactor.R
-
+Rscript PlotSFactor.R
