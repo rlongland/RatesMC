@@ -129,6 +129,7 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
   mue = M0 * M1 / (M0 + M1);
   // std::cout << "mue = " << mue << "\n";
   R = Reac.R0 * (pow(M0, (1. / 3.)) + pow(M1, (1. / 3.)));
+	R_exit = Reac.R0 * (pow((M0+M1-M2), (1. / 3.)) + pow(M2, (1. / 3.)));
   // std::cout << "R = " << R << "\n";
 
   double meanPen, meanPex;
@@ -671,12 +672,12 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   if (Reac.getGamma_index() == 2) {
     // if exit particle is observed decay, take final excitation into account
     Pr_exit = PenFactor(E + Reac.Q - Reac.Qexit - Exf, L[1], M0 + M1 - M2, M2,
-                        Z0 + Z1 - Z2, Z2, R);
+                        Z0 + Z1 - Z2, Z2, R_exit);
     // cout << "Exit energy = " << E+Reac.Q-Reac.Qexit-Exf << endl;
   } else if (Reac.getGamma_index() == 1 && NChannels == 3) {
     // ignore spectator final excitation if it is spectator
     Pr_exit = PenFactor(E + Reac.Q - Reac.Qexit, L[2], M0 + M1 - M2, M2,
-                        Z0 + Z1 - Z2, Z2, R);
+                        Z0 + Z1 - Z2, Z2, R_exit);
     // cout << "Exit energy = " << E+Reac.Q-Reac.Qexit << endl;
   }
 
@@ -982,7 +983,7 @@ double Resonance::Integrand(double x, void *params) {
           E_exit = Reac.Q + x - Reac.Qexit;
         if (E_exit > 0.0) {
           P_exit =
-              PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
+              PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R_exit);
           Scale[i] = P_exit / Pr_exit;
         } else {
           Scale[i] = 0.0;
@@ -1060,7 +1061,7 @@ int Resonance::rhs (double x, const double y[], double dydx[], void *params){
   // std::cout << Pr << " " << Pr_exit << " " << Er << " "
   //	    << Temp << " " << G0 << " " << G1 << " " << G2 << " " << "\n";
 
-  // std::cout << "R = " << R << "\n";
+	//std::cout << "R = " << R << "\n";
 
   double Scale[3];
 
@@ -1100,7 +1101,7 @@ int Resonance::rhs (double x, const double y[], double dydx[], void *params){
           E_exit = Reac.Q + x - Reac.Qexit;
         if (E_exit > 0.0) {
           P_exit =
-              PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
+              PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R_exit);
           Scale[i] = P_exit / Pr_exit;
         } else {
           Scale[i] = 0.0;
@@ -1164,11 +1165,11 @@ double Resonance::getSFactor(double E, int samp){
   if (Reac.getGamma_index() == 2) {
     // if exit particle is observed decay, take final excitation into account
     Pr_exit = PenFactor(E_cm_samp + Reac.Q - Reac.Qexit - Exf, L[1], M0 + M1 - M2, M2,
-                        Z0 + Z1 - Z2, Z2, R);
+                        Z0 + Z1 - Z2, Z2, R_exit);
   } else if (Reac.getGamma_index() == 1 && NChannels == 3) {
     // ignore spectator final excitation if it is spectator
     Pr_exit = PenFactor(E_cm_samp + Reac.Q - Reac.Qexit, L[2], M0 + M1 - M2, M2,
-                        Z0 + Z1 - Z2, Z2, R);
+                        Z0 + Z1 - Z2, Z2, R_exit);
   }
 	//std::cout << "res " << E << " Pr=" << Pr << " Pr_exit=" << Pr_exit << std::endl;
 
@@ -1200,7 +1201,7 @@ double Resonance::getSFactor(double E, int samp){
           E_exit = Reac.Q + E - Reac.Qexit;
         if (E_exit > 0.0) {
           P_exit =
-              PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
+              PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R_exit);
           Scale[i] = P_exit / Pr_exit;
         } else {
           Scale[i] = 0.0;

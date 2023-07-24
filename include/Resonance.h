@@ -130,7 +130,7 @@ class Resonance {
 	int CorresRes;
 	double Frac;
   
-  double R, mue;
+  double R, R_exit, mue;
   
   //  bool bwg_known;
   //bool bUseInrate;
