@@ -72,7 +72,7 @@ int PenZeroCount=0, IntegratedCount=0, SubSampledPosCount=0, SampledNegCount=0,
 
 // Is a string numeric?
 bool isNumber(const std::string& str){
-	return str.find_first_not_of("0123456789.") == std::string::npos;
+	return str.find_first_not_of("0123456789.-") == std::string::npos;
 }
 
 // Read an integer from a single line

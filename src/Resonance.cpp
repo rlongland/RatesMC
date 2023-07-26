@@ -170,9 +170,15 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
 
     wg_sample.resize(NSamples);
 
-    // Convert input values (expectation value and standard deviation)
-    // to lognormal mu and sigma
-    logNormalize(wg, dwg, mu, sigma);
+		// Find the lognormal parameters to generate the random partial width
+		if(dwg < 0.0){
+			mu = gsl_sf_log(wg);
+			sigma = gsl_sf_log(-1.0*dwg);
+		} else {
+			// Convert input values (expectation value and standard deviation)
+			// to lognormal mu and sigma
+			logNormalize(wg, dwg, mu, sigma);
+		}
 
     // Correlation parameter
 		corr = 0.0;
