@@ -118,7 +118,7 @@ int countLines(std::ifstream &infile){
     std::size_t found;
     found = line.find("***");
     if (found!=std::string::npos){
-      logfile << "Found end of non-resonant section\n";
+			//      logfile << "Found end of non-resonant section\n";
       break;
     }
 		nlines++;
@@ -314,10 +314,10 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     std::size_t found;
     found = data.find("***");
     if (found!=std::string::npos){
-      logfile << "Found end of ";
-      if(isUpperLimit)
-				logfile << "upper limit ";
-      logfile << "resonances\n" << data << std::endl;
+			//      logfile << "Found end of ";
+			//      if(isUpperLimit)
+			//				logfile << "upper limit ";
+			//      logfile << "resonances\n" << data << std::endl;
       break;
     }
 
@@ -325,9 +325,9 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     //logfile << data << "\n";
     found = data.find("!");
     if (found!=std::string::npos){
-      if(isUpperLimit)
-				logfile << "Upper limit ";
-      logfile << "Resonance is commented-out (" << data << ")" << std::endl;
+//      if(isUpperLimit)
+//				logfile << "Upper limit ";
+//      logfile << "Resonance is commented-out (" << data << ")" << std::endl;
       fin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
       continue;
     }
@@ -624,8 +624,8 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
     std::size_t found;
     found = dummy.find("***");
     if (found!=std::string::npos){
-      logfile << "Found end of interfering ";
-      logfile << "resonances\n" << dummy << std::endl;
+			//      logfile << "Found end of interfering ";
+			//      logfile << "resonances\n" << dummy << std::endl;
       break;
     }
 
@@ -633,7 +633,7 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
 		//std::cout << "read: " << dummy << "\n";
     found = dummy.find("!");
     if (found!=std::string::npos){
-			logfile << "Interfering resonances commented-out (" << dummy << ")" << std::endl;
+			//			logfile << "Interfering resonances commented-out (" << dummy << ")" << std::endl;
       infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 			skipLines(infile, 1);
       continue;
