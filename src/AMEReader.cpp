@@ -59,7 +59,7 @@ AMEReader::~AMEReader() {}
 
 double AMEReader::readMass(std::string nucname) {
 
-	std::cout << "Reading AME mass for '" << nucname << "' = ";
+	logfile << "Reading AME mass for '" << nucname << "' = ";
 
 	// Go through the file and look for where the name is the same as nucname
 
@@ -106,7 +106,7 @@ double AMEReader::readMass(std::string nucname) {
 
 	// Quit with an error if the nuclide was not found!
 	if(found){
-		std::cout << std::setprecision(8) <<  mass << " (atomic) ";
+		logfile << std::setprecision(8) <<  mass << " (atomic) ";
 		return mass;
 	} else {
 		std::cout << "ERROR: Could not find AME mass for " << nucname << std::endl;
@@ -118,7 +118,7 @@ double AMEReader::readMass(std::string nucname) {
 double AMEReader::readMassFromAandZ(int A, int Z) {
 
 	// Go through the file and look for where the name is the same as nucname
-	std::cout << "Reading AME mass for A=" << A << " and Z=" << Z << " = ";
+	logfile << "Reading AME mass for A=" << A << " and Z=" << Z << " = ";
 	
 	std::string dummy;   // The AME line
 	bool found = false;  // Was the nuclide found?
@@ -163,7 +163,7 @@ double AMEReader::readMassFromAandZ(int A, int Z) {
 
 	// Quit with an error if the nuclide was not found!
 	if(found){
-		std::cout << std::setprecision(8) << mass << " (atomic) ";
+		logfile << std::setprecision(8) << mass << " (atomic) ";
 		return mass;
 	} else {
 		std::cout << "ERROR: Could not find AME mass!" << std::endl;
@@ -174,7 +174,7 @@ double AMEReader::readMassFromAandZ(int A, int Z) {
 
 int AMEReader::readCharge(std::string nucname) {
 
-	std::cout << "Reading AME charge for '" << nucname << "' = ";
+	logfile << "Reading AME charge for '" << nucname << "' = ";
 
 	// Go through the file and look for where the name is the same as nucname
 
@@ -219,7 +219,7 @@ int AMEReader::readCharge(std::string nucname) {
 
 	// Quit with an error if the nuclide was not found!
 	if(found){
-		std::cout << Z << "\n";
+		logfile << Z << "\n";
 		return Z;
 	} else {
 		std::cout << "ERROR: Could not find AME charge for " << nucname << std::endl;
@@ -231,7 +231,7 @@ int AMEReader::readCharge(std::string nucname) {
 // Read the spin 
 double AMEReader::readSpin(std::string nucname) {
 
-	std::cout << "Reading NuBase for '" << nucname << "': J = ";
+	logfile << "Reading NuBase for '" << nucname << "': J = ";
 
 	// Go through the file and look for where the name is the same as nucname
 
@@ -288,7 +288,7 @@ double AMEReader::readSpin(std::string nucname) {
 
 	// Quit with an error if the nuclide was not found!
 	if(found){
-		std::cout << spin << "\n";
+		logfile << spin << "\n";
 		return spin;
 	} else {
 		std::cout << "ERROR: Could not find Nubase for " << nucname << std::endl;

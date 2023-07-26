@@ -39,10 +39,20 @@ class AMEReader {
 	int readCharge(std::string nucname);
   double readSpin(std::string nucname);
 
+	void toggleAMEcharge(int i){AMEcharge[i]=true;}
+	void toggleAMEmass(int i){AMEmass[i]=true;}
+
+	bool getAMEmass(int i){return AMEmass[i];}
+	
  private:
 
   std::ifstream amefile;
 	std::ifstream nubasefile;
+
+	// flags
+	bool AMEcharge[3]={false};
+	bool AMEmass[3]={false};
+	
 };
 
 #endif
