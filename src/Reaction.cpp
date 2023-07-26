@@ -159,7 +159,7 @@ void Reaction::printReaction(){
   printf( " %5.2f     %5.2f    %5.2f\n",M0,M1,M2);
   std::cout << "   S_entrance = " << Q << "\n";
   std::cout << "   S_exit     = " << Qexit << "\n";
-  std::cout << "   The gamma ray channel is channel " << Gamma_index << "\n";
+  std::cout << "   The gamma ray channel is channel " << Gamma_index+1 << "\n";
   std::cout << "--------------------------------------------------" << "\n";
 
   std::cout << " Direct Capture part     \n";
@@ -199,7 +199,7 @@ void Reaction::writeReaction(){
   logfile << "   " << J0 << "   " << J1 << "   " << J2 << "\n";
   logfile << "   S_entrance = " << Q << " MeV (nuclear) \n";
   logfile << "   S_exit     = " << Qexit << " MeV (nuclear) \n";
-  logfile << "   The gamma ray channel is channel " << Gamma_index << "\n";
+  logfile << "   The gamma ray channel is channel " << Gamma_index+1 << "\n";
   logfile << "--------------------------------------------------" << "\n";
 
   logfile << " Direct Capture part     \n";
