@@ -893,15 +893,26 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 
 	bool AMEWarning = false;
   // Print a big warning if user is mixing and matching
-  if((isNumber(dummy) && ame->getAMEmass(0)) ||
-		 (!isNumber(dummy) && !ame->getAMEmass(0))) {
+  if(isNumber(dummy) && (ame->getAMEmass(0) ||
+												 ame->getAMEmass(1) ||
+												 ame->getAMEmass(2))) { 
 		AMEWarning = true;
 		std::cout << "\033[31m"
 							<< "WARNING: It looks like you're mixing-and-matching\n"
-							<< "         AME masses with user inputs.\n"
-							<< "         Make sure your user inputs are NUCLEAR mass\n"
-							<< "         or Q will be wrong!\n"
+							<< "         AME masses with user input separation energy.\n"
+							<< "         Are you being careful?\n"
 							<< "\033[0m" << std::endl;
+	}
+	 
+	if(!isNumber(dummy) && !(ame->getAMEmass(0) &&
+													 ame->getAMEmass(1) &&
+													 ame->getAMEmass(2))) { 
+		std::cout << "\033[31m"
+							<< "ERROR:   It looks like you're mixing-and-matching\n"
+							<< "         AME masses with user inputs.\n"
+							<< "         This is too dangerous to continue!\n"
+							<< "\033[0m" << std::endl;
+		exit(EXIT_FAILURE);
 	}
 
   if(isNumber(dummy)){
@@ -915,6 +926,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 		logfile << "= " << mcompound << " (nuclear)\n";
 		//		std::cout << m0 << "\t" << m1 << "\t" << mcompound << "\t" << AMU << "\n";
 		Qin = ((m0 + m1) - mcompound)*AMU*1000.0;   // To get into keV
+		logfile << "Using 1u = " << AMU << " MeV:\n";
 		logfile << "Qin = " << Qin << " keV (nuclear)\n";
 		AMEUsed = true;
 	} else {
@@ -929,16 +941,29 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 
   // Print a big warning if user is mixing and matching
 	if(!AMEWarning){
-		if((isNumber(dummy) && ame->getAMEmass(0)) ||
-			 (!isNumber(dummy) && !ame->getAMEmass(0))) {
+		// Print a big warning if user is mixing and matching
+		if(isNumber(dummy) && (ame->getAMEmass(0) ||
+													 ame->getAMEmass(1) ||
+													 ame->getAMEmass(2))) { 
+			AMEWarning = true;
 			std::cout << "\033[31m"
 								<< "WARNING: It looks like you're mixing-and-matching\n"
-								<< "         AME masses with user inputs.\n"
-								<< "         Make sure your user inputs are NUCLEAR mass\n"
-								<< "         or Q will be wrong!\n"
+								<< "         AME masses with user input separation energy.\n"
+								<< "         Are you being careful?\n"
 								<< "\033[0m" << std::endl;
 		}
 	}
+	if(!isNumber(dummy) && !(ame->getAMEmass(0) &&
+													 ame->getAMEmass(1) &&
+													 ame->getAMEmass(2))) { 
+		std::cout << "\033[31m"
+							<< "ERROR:   It looks like you're mixing-and-matching\n"
+							<< "         AME masses with user inputs.\n"
+							<< "         This is too dangerous to continue!\n"
+							<< "\033[0m" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
 
 
 	if(isNumber(dummy)){
@@ -960,6 +985,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 		logfile << "= " << mresidual << " (nuclear)\n";
 
 		Qout = ((m2 + mresidual) - mcompound)*AMU*1000.0;   // To get into keV
+		logfile << "Using 1u = " << AMU << " MeV:\n";
 		logfile << "Qout = " << Qout << " keV (nuclear)\n";
 		AMEUsed = true;
 	} else {
