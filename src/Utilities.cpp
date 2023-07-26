@@ -775,7 +775,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   double Qin,Qout;
   int gindex;
 
-	logfile << "--------------------------------------------------\n";
+	logfile << "--------------------------------------------------------------------------------\n";
 	logfile << "AME and NuBase\n"
 					<< "--------------\n";
 	bool AMEUsed = false;
@@ -894,9 +894,10 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 	bool AMEWarning = false;
   // Print a big warning if user is mixing and matching
   if(isNumber(dummy) && (ame->getAMEmass(0) ||
-												 ame->getAMEmass(1) ||
-												 ame->getAMEmass(2))) { 
+												 ame->getAMEmass(1))) { 
 		AMEWarning = true;
+		// std::cout << ame->getAMEmass(0) << " " << ame->getAMEmass(1) << "\n";
+
 		std::cout << "\033[31m"
 							<< "WARNING: It looks like you're mixing-and-matching\n"
 							<< "         AME masses with user input separation energy.\n"
@@ -905,8 +906,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 	}
 	 
 	if(!isNumber(dummy) && !(ame->getAMEmass(0) &&
-													 ame->getAMEmass(1) &&
-													 ame->getAMEmass(2))) { 
+													 ame->getAMEmass(1))) { 
 		std::cout << "\033[31m"
 							<< "ERROR:   It looks like you're mixing-and-matching\n"
 							<< "         AME masses with user inputs.\n"
@@ -944,18 +944,21 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 		// Print a big warning if user is mixing and matching
 		if(isNumber(dummy) && (ame->getAMEmass(0) ||
 													 ame->getAMEmass(1) ||
-													 ame->getAMEmass(2))) { 
-			AMEWarning = true;
-			std::cout << "\033[31m"
-								<< "WARNING: It looks like you're mixing-and-matching\n"
-								<< "         AME masses with user input separation energy.\n"
-								<< "         Are you being careful?\n"
-								<< "\033[0m" << std::endl;
+													 (ame->getAMEmass(2) ||
+														isZero(m2)))) {
+			if(!isZero(std::stod(dummy))){
+				AMEWarning = true;
+				std::cout << "\033[31m"
+									<< "WARNING: It looks like you're mixing-and-matching\n"
+									<< "         AME masses with user input separation energy.\n"
+									<< "         Are you being careful?\n"
+									<< "\033[0m" << std::endl;
+			}
 		}
 	}
-	if(!isNumber(dummy) && !(ame->getAMEmass(0) &&
-													 ame->getAMEmass(1) &&
-													 ame->getAMEmass(2))) { 
+	if(!isNumber(dummy) && (!ame->getAMEmass(0) ||
+													 !ame->getAMEmass(1) ||
+													 (!ame->getAMEmass(2) && !isZero(m2)))) { 
 		std::cout << "\033[31m"
 							<< "ERROR:   It looks like you're mixing-and-matching\n"
 							<< "         AME masses with user inputs.\n"
@@ -997,7 +1000,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 
 	if(!AMEUsed)
 		logfile << "AME/NuBase were not used in this calculation\n";
-	logfile << "--------------------------------------------------\n\n";
+	logfile << "--------------------------------------------------------------------------------\n\n";
 	
 	//  Qout = readDouble(infile);
 	R -> setSeparationEnergies(Qin/1000.0, Qout/1000.0);
