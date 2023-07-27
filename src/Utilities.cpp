@@ -1058,7 +1058,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 		// Non-resonant line 2
 		readNonResonant(infile, *R, 1);
 	} else if(nLines == 6){
-		std::cout << "We have a new tabulated S-factor input!\n";
+		//std::cout << "We have a new tabulated S-factor input!\n";
 		// Read Tabulated non-resonant table
 		readNonResonantTable(infile, *R, 0);
 		readNonResonantTable(infile, *R, 1);

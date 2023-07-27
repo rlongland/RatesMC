@@ -209,7 +209,7 @@ void Reaction::writeReaction(){
   logfile << "\n";
 
 	logfile << " Tabulated Direct Capture part     \n";
-  logfile << "      E         S           dS  \n";
+  logfile << "      E         S           dS (fractional uncertainty)  \n";
 	for(size_t i=0; i<SFactorE[0].size(); i++)
 	 	logfile << SFactorE[0][i] << "    " << SFactorS[0][i] << "    " << SFactordS[0][i]  << "\n ";
 	logfile << "-----------------\n";
