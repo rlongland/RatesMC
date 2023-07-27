@@ -9,8 +9,8 @@ RatesMCFile      <- "RatesMC.in"
 ContributionFile <- "RatesMC.cont"
 TMatchFile       <- ""   ## set "" to ignore Tmatch file
 
-TRange <- c(0.01,1)        ## Tempterature range in GK
-Threshold <- 0.1           ## Only look at resonances that contribute
+TRange <- c(0.01,10)        ## Tempterature range in GK
+Threshold <- 0.01           ## Only look at resonances that contribute
                             ## more than 'Threshold' over this
                             ## temperature range
 
@@ -155,8 +155,8 @@ angle <- rep(seq(0,270,45),ceiling(length(contributors)/7))
 
 ## The contributions plot
 mypdf("GraphContribution.pdf",width=6,height=5)
-##while(dev.cur()>1)dev.off()
-##myX11(width=7,height=5)
+#while(dev.cur()>1)dev.off()
+#myX11(width=7,height=5)
 
 oldpar <- par(mar=c(4,5,2.5,1)+0.1)
 
@@ -216,7 +216,7 @@ if(length(noncontributors)>1){
 } else {
   others <- toplot[,(noncontributors*3-1)]
 }
-if(dim(others)[2]>0)lines(x=logT,y=others,lty=3)
+if(length(others)>0)lines(x=logT,y=others,lty=3)
 
 ## Need to plot the labels
 xxmin <- grconvertX(0.1,from="npc",to="user")
