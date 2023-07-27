@@ -28,6 +28,8 @@ n.Gamow          <- 1
 ## extrapolate to there?
 extrapolateHF <- TRUE    ## TRUE="assume HF is correct at 10 GK
 
+sink("TMatch.log")
+
 ######################################################################
 ## You shouldn't need to touch anything below this line...
 library("RColorBrewer")
