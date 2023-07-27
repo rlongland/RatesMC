@@ -1,6 +1,9 @@
 #!/bin/bash
 # A script to batch run RatesMC and main analysis R scripts
 
+## Ask user to make sure TMatch is in place
+read -p "Are you using the correct TMatch.HF file? Press [Enter] to continue "
+
 ## Run RatesMC
 (trap 'kill 0' SIGINT; ./RatesMC & (sleep 5; Rscript PlotSFactor.R) & wait)
 
