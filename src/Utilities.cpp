@@ -262,7 +262,8 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     G3, dG3, PT3=0.0, DPT3=0.0, Exf, Frac=1.0;
   int i,L1, L2, L3, isBroad;
 	int CorresRes;
-	bool isECorrelated, isWidthCorrelated;
+	bool isECorrelated, isWidthCorrelated, firstECorrelated=false,
+		firstWidthCorrelated=false;
 	std::string CorString;
 
   if(!isUpperLimit){
@@ -380,10 +381,30 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 			// Read correlation flags if they're wanted
 			isECorrelated=false;
 			isWidthCorrelated=false;
-			if(bEnergyCorrelations)
-				isECorrelated = (CorString.find("e")!=std::string::npos);
-			if(bPartialWidthCorrelations)
-				isWidthCorrelated = (CorString.find("w")!=std::string::npos);
+			//if(bEnergyCorrelations){
+			isECorrelated = (CorString.find("e")!=std::string::npos);
+			if(isECorrelated && !firstECorrelated){
+				firstECorrelated = true;
+				if(!bEnergyCorrelations){
+					std::cout << "\033[31m"
+										<< "WARNING: You have specified resonances with correlated\n"
+										<< "         energies, but the correlations flag is off!\n"
+										<< "\033[0m" << std::endl;
+				}
+			}
+
+			//			if(bPartialWidthCorrelations)
+			isWidthCorrelated = (CorString.find("w")!=std::string::npos);
+			if(isWidthCorrelated && !firstWidthCorrelated){
+				firstWidthCorrelated = true;
+				if(!bPartialWidthCorrelations){
+					std::cout << "\033[31m"
+										<< "WARNING: You have specified resonances with correlated\n"
+										<< "         widths, but the correlations flag is off!\n"
+										<< "\033[0m" << std::endl;
+				}
+			}
+			//			if(bPartialWidthCorrelations)
 
 			// If this is a resonance possibility, try to read the probability
 			//if(CorresRes != i){
