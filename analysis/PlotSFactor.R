@@ -51,7 +51,7 @@ axTexpr <- function(side, at = axTicks(side, axp=axp, usr=usr, log=log),
   ##            pre determines if you should put the 3 in 3 \times 10^3
   ## --------------------------------------------------------------
   ## Author: Martin Maechler, Date:  7 May 2004, 18:01
-  eT <- floor(log10(abs(at)))# at == 0 case is dealt with below
+  eT <- round(log10(abs(at)))# at == 0 case is dealt with below
   mT <- at / 10^eT 
   if(pad){
     eT[sign(eT)>-1] <- paste("+",eT[sign(eT)>-1],sep="")
@@ -68,6 +68,7 @@ axTexpr <- function(side, at = axTicks(side, axp=axp, usr=usr, log=log),
                })
    do.call("expression", ss) 
 }
+
 
 ## Read and format the reaction name
 ReacName = as.character(read.table(RatesMCFile,skip=0,header=FALSE,nrows=1)$V1)
@@ -186,8 +187,9 @@ Inter.lab <- paste("Intf",InterNumber)
 
 leg <- c(aRate.lab,
 	 ##paste("Res",1:(nparts-2)))
-	 paste(Energies,"keV",ULstring),
-	 Inter.lab)
+	 paste(Energies,"keV",ULstring))
+if(length(iInter)>0)
+    leg <- c(leg,Inter.lab)
 
 if(drawNarrow){
     leg <- c(leg,"Narrow res.")
