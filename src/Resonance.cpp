@@ -625,11 +625,15 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
 
   // if particle is in spectator channel, integration should
   //  not be truncated
-  if (Reac.Qexit > Reac.Q && Reac.getGamma_index() == 2)
+  if (Reac.Qexit > Reac.Q && Reac.getGamma_index() == 2){
     E_min += Reac.Qexit + Exf - Reac.Q;
+	} else if(Reac.Q < 0.0) {
+		E_min -= Reac.Q;
+	}
 
   double E_max = 10.0;
 
+	std::cout << "E_min = " << E_min << " E_max = " << E_max << std::endl;
   //  ofstream evsr;
   //  ofstream testhist;
   //  testhist.open("integrands.dat");
@@ -642,7 +646,9 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   // IF we input E>0, but the sample is <0, we need to treat it as a
   // subthreshold resonance. To do this, we need to convert
   // G into C2S*Theta_sp
-  if (E_cm > 0.0 && E < 0.0) {
+	double thresh = std::max(0.0, -1*Reac.Q);
+	//std::cout << "thresh = " << thresh << "\n";
+  if (E_cm > thresh && E < thresh) {
     ErrorFlag = true;
     SampledNegCount++;
     G0 = mue * gsl_pow_2(R) * G0 /
@@ -651,7 +657,7 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
     //    std::cout << "E_cm = " << E_cm << "E_sample = " << E << "G[0] = " <<
     //    G[0]
     //              << " G_sample = " << G0 << std::endl;
-  } else if (E_cm < 0.0 && E > 0.0) {
+  } else if (E_cm < thresh && E > thresh) {
     // or convert to real resonance if E>0.0
     ErrorFlag = true;
     SubSampledPosCount++;
@@ -663,7 +669,7 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   }
 
   //  The penetration factor at the resonance energy (the "true" PF)
-  if (E > 0.0) {
+  if (E > thresh) {
     Pr = PenFactor(E, L[0], M0, M1, Z0, Z1, R);
     //    std::cout << "Pr = " << Pr << "\n";
 		if(isZero(Pr))return 0.0;
@@ -697,7 +703,7 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   //double pole = E;
 
   // The array that needs to be passed to the integration function
-  double alpha[8];
+  double alpha[9];
   alpha[0] = (int)writeIntegrand;
   alpha[1] = Pr;
   alpha[2] = Pr_exit;
@@ -706,6 +712,7 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   alpha[5] = G0;
   alpha[6] = G1;
   alpha[7] = G2;
+	alpha[8] = thresh;
 
   //double gammaT = G0 + G1 + G2;
 
@@ -943,11 +950,12 @@ double Resonance::Integrand(double x, void *params) {
   double G0 = (double)par[5];
   double G1 = (double)par[6];
   double G2 = (double)par[7];
+	double thresh = (double)par[8];
 
   //  this->print();
 
-  // std::cout << Pr << " " << Pr_exit << " " << Er << " "
-  //	    << Temp << " " << G0 << " " << G1 << " " << G2 << " " << "\n";
+	//  std::cout << Pr << " " << Pr_exit << " " << Er << " "
+	//						<< Temp << " " << G0 << " " << G1 << " " << G2 << " " << "\n";
 
   // std::cout << "R = " << R << "\n";
 
@@ -963,9 +971,9 @@ double Resonance::Integrand(double x, void *params) {
   // cout << Jr << " " << J0 << " " << J1 << " " << mue << " " << R << " " <<
   // PEK << " " << omega << "\n";
 
-  // std::cout << P << " " << omega << "\n";
+	//	std::cout << P << " " << omega << "\n";
 
-  if (Er > 0.0) {
+  if (Er > thresh) {
     Scale[0] = P / Pr;
   } else {
     Scale[0] = 1.0;
@@ -977,6 +985,8 @@ double Resonance::Integrand(double x, void *params) {
   for (int i = 1; i < 3; i++) {
     if (G[i] > 0.0) {
       if (i == Reac.getGamma_index()) {
+				std::cout << "Scale[1]: " << Reac.Q+x-Exf << " " << Reac.Q+Er-Exf << " Er="
+									<< Er << " Q=" << Reac.Q << "\n"; 
         if (i == 1)
           Scale[i] =
               pow((Reac.Q + x - Exf) / (Reac.Q + Er - Exf), (2. * L[i] + 1.0));
@@ -1009,6 +1019,9 @@ double Resonance::Integrand(double x, void *params) {
 
 	double sfactor = (S1/S2)*exp(0.989510*Z0*Z1*sqrt(mue/x)); 
 
+	std::cout << x << " " << S1 << " " << S2 << " " << S3 << " " << integrand << "\n";
+	std::cout << PEK << " " << Scale[0] << " " << G0 << " " << Scale[1] << " " << G1 << "\n";
+	
   //  if(integrand < 1.e-99)integrand=0.0;
 
   //  std::cout << x << " " << integrand << "\n";
@@ -1061,6 +1074,7 @@ int Resonance::rhs (double x, const double y[], double dydx[], void *params){
   double G0 = (double)par[5];
   double G1 = (double)par[6];
   double G2 = (double)par[7];
+	double thresh = (double)par[8];
 
   //  this->print();
 
@@ -1083,7 +1097,7 @@ int Resonance::rhs (double x, const double y[], double dydx[], void *params){
 
   // std::cout << P << " " << omega << "\n";
 
-  if (Er > 0.0) {
+  if (Er > thresh) {
     Scale[0] = P / Pr;
   } else {
     Scale[0] = 1.0;

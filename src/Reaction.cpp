@@ -870,6 +870,9 @@ void Reaction::writeSFactor(bool MCSamples=false){
 	setupSFactorHeader(sfactorfile);
 
 	double E_min = EMin;
+
+	double thresh = std::max(0.0, -1*Q);
+	E_min = std::max(EMin,thresh);
 	
 	gsl_interp_accel *acc0, *acc1;
 	gsl_spline *Sspline0, *Sspline1;

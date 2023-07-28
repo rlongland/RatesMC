@@ -262,8 +262,12 @@ double Interference::NumericalRate(double T, double E_sample[2],
 		//	L[iRes][1] << " " << L[iRes][2] << "\n";
 		// if particle is in spectator channel, integration should
 		//  not be truncated
-		if (Reac.Qexit > Reac.Q && Reac.getGamma_index() == 2)
+		E_min = EMin;
+		if (Reac.Qexit > Reac.Q && Reac.getGamma_index() == 2){
 			E_min += Reac.Qexit + Exf[iRes] - Reac.Q;
+		} else if(Reac.Q < 0.0){
+			E_min -= Reac.Q;
+		}
 
 		// Scale the partial widths by the energy effect
 		for(int i=0; i<3; i++){
