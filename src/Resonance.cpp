@@ -770,7 +770,7 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   int status = gsl_integration_cquad(&F,      // Function to be integrated
                                      E_min,   // Where known singularity is
                                      E_max,   // number of singularities
-                                     1e-100,   // absolute error
+                                     1e-200,   // absolute error
                                      1e-6,    // relative error
                                      w,       // workspace
                                      &result, // The result

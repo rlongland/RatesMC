@@ -734,11 +734,11 @@ double Reaction::NonResonantTabulatedIntegrand(double x, void * params){
 	gsl_spline *Sspline = (p->Sspline);
 	gsl_interp_accel *facc = (p->facc);
 
-	//  std::cout << index << " " << mue << " " << T << std::endl;
+	// std::cout << index << " " << mue << " " << T << std::endl;
   //  std::cout << S << std::endl;
-	//testfile << x << " ";
+	//	if(T == 0.01)
+	//		testfile << x << " ";
   double Ssum = gsl_spline_eval(Sspline, x, facc);
-	//testfile << Ssum << "\n";
   //  std::cout << "Ssum = " << Ssum << std::endl;
   
   double eta = 0.989510*Z0Z1*sqrt(mue/x);
@@ -746,6 +746,9 @@ double Reaction::NonResonantTabulatedIntegrand(double x, void * params){
   double Boltzmann = gsl_sf_exp(-11.605*x/T);
   
   double integrand = Ssum*Sommerfeld*Boltzmann;
+
+	//	if(T == 0.01)
+	//		testfile << integrand << "\n";
 
   return integrand;
 }
