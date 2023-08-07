@@ -633,7 +633,7 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
 
   double E_max = 10.0;
 
-	std::cout << "E_min = " << E_min << " E_max = " << E_max << std::endl;
+	//	std::cout << "E_min = " << E_min << " E_max = " << E_max << std::endl;
   //  ofstream evsr;
   //  ofstream testhist;
   //  testhist.open("integrands.dat");
@@ -985,8 +985,8 @@ double Resonance::Integrand(double x, void *params) {
   for (int i = 1; i < 3; i++) {
     if (G[i] > 0.0) {
       if (i == Reac.getGamma_index()) {
-				std::cout << "Scale[1]: " << Reac.Q+x-Exf << " " << Reac.Q+Er-Exf << " Er="
-									<< Er << " Q=" << Reac.Q << "\n"; 
+				//				std::cout << "Scale[1]: " << Reac.Q+x-Exf << " " << Reac.Q+Er-Exf << " Er="
+				//									<< Er << " Q=" << Reac.Q << "\n"; 
         if (i == 1)
           Scale[i] =
               pow((Reac.Q + x - Exf) / (Reac.Q + Er - Exf), (2. * L[i] + 1.0));
@@ -1019,8 +1019,8 @@ double Resonance::Integrand(double x, void *params) {
 
 	double sfactor = (S1/S2)*exp(0.989510*Z0*Z1*sqrt(mue/x)); 
 
-	std::cout << x << " " << S1 << " " << S2 << " " << S3 << " " << integrand << "\n";
-	std::cout << PEK << " " << Scale[0] << " " << G0 << " " << Scale[1] << " " << G1 << "\n";
+	//	std::cout << x << " " << S1 << " " << S2 << " " << S3 << " " << integrand << "\n";
+	//	std::cout << PEK << " " << Scale[0] << " " << G0 << " " << Scale[1] << " " << G1 << "\n";
 	
   //  if(integrand < 1.e-99)integrand=0.0;
 
