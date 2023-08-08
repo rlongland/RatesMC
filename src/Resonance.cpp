@@ -144,7 +144,7 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
     double x2 = gsl_ran_gaussian(r, 1.0);
     x2 = corr * Ref_sample[s][0] + x2 * sqrt(std::max(0.0,1. - gsl_pow_2(corr)));
     E_sample[s] = E_cm + x2 * dE_cm;
-		if(E_sample[s] < Reac.Q){
+		if(E_sample[s] < (-1.0*Reac.Q)){
 			std::cout << "ERROR: Resonance energy cannot be less than the Q-value\n"
 								<< "       for resonance: " << E_cm << " keV\n";
 			std::exit(EXIT_FAILURE);
