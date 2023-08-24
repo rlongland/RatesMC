@@ -197,8 +197,8 @@ void Reaction::writeReaction(){
   logfile << "  " <<  M0 << "  " << M1 << "  " << M2 << "\n";
   logfile << "   J0        J1       J2" << "\n";
   logfile << "   " << J0 << "   " << J1 << "   " << J2 << "\n";
-  logfile << "   S_entrance = " << Q << " MeV (nuclear) \n";
-  logfile << "   S_exit     = " << Qexit << " MeV (nuclear) \n";
+  logfile << "   S_entrance = " << Q << " MeV (atomic) \n";
+  logfile << "   S_exit     = " << Qexit << " MeV (atomic) \n";
   logfile << "   The gamma ray channel is channel " << Gamma_index+1 << "\n";
   logfile << "--------------------------------------------------" << "\n";
 

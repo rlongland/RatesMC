@@ -156,21 +156,33 @@
    - Cutoff energy is needed. Check S-factor output!
 
 * Factor Uncertainties
+  If you mean "times 1.4 and divide by 1.4'', use factor uncertainties!
   #+BEGIN_SRC R :exports both :results output graphics file :file ln.png
-    ## Define the plotting range
-    x <- seq(from=0.1,to=10,by=0.1)
+    ## The RatesMC input
     mu <- 5
     frac <- 0.4
     fu <- 1.4
 
-    y.norm <- dnorm(x, mean=mu,sd=frac*mu)
+    ## Set the plotting parameters
+    mypars()
+    ## Define the plotting range
+    x <- seq(from=0.1,to=10,by=0.01)
 
+    ## Convert RatesMC input how RatesMC would into mu and sigma
+    mu.n <- log(mu) - 0.5*log(1+(frac*mu)^2/mu^2)
+    sd.n <- sqrt(log(1+(frac*mu)^2/mu^2))
+    y.norm <- dlnorm(x, meanlog=mu.n,sdlog=sd.n)
+    print(mu.n)
+    print(sd.n)
+    ## Plot how RatesMC interprets fractional uncertainty
+    plot(x,y.norm,type='l',xlab="x",ylab="P(x)",ylim=c(0,0.3),xlim=c(0,10))
+    ##abline(v=c(5+0.05,5-0.05))
+
+    ## Convert factor uncertainty input how RatesMC does
     mu.ln <- log(mu)
     sd.ln <- log(fu)
     y.lnorm <- dlnorm(x, meanlog=mu.ln, sdlog=sd.ln)
-
-    mypars()
-    plot(x,y.norm,type='l',xlab="x",ylab="P(x)",ylim=c(0,0.3))
+    ## and plot
     lines(x,y.lnorm,col="red",lty=2)
 
     legend("topright",legend=c("Fractional","Factor"),lty=c(1,2),col=c("black","red"))
@@ -178,5 +190,103 @@
   #+RESULTS:
   [[file:ln.png]]
 
-* 
+* Resonances
+  #+BEGIN_SRC 
+    Ecm(keV) DEcm(keV) wg(eV)     Dwg(eV)    J   G1(eV)    DG1(eV)   L1  G2(eV)    DG2(eV)   L2  G3(eV)    DG3(eV)   L3  Exf(keV) Int  Corr/Frac
+    0.0      0.00      0          0          0   0.0E+00   0.0E+00   0   0.0E+00   0.0E+00   0   0.00E+00  0.00E+00  0   0.0      0   
+  #+END_SRC
+  - These are fairly self explanatory
+  - Remember to use the correct units
+  - -ve /factor uncertainties/ can be used for
+    - Resonance strengths
+    - Partial widths
+  - The "end"
+    #+BEGIN_SRC 
+      Int  Corr/Frac
+      0    we   0.5
+    #+END_SRC
+    - =Int= denotes whether resonance should be integrated numerically
+      (usually yes if you have widths)
+    - =Corr=
+      - flag with =w= to enable width or strength correlations for this resonance
+      - flag with =e= to enable energy correlations for this resonance
+    - =Frac=
+      - Use when you're not sure of a resonance's J$^{\pi}$
+
+* Fractional resonances
+  - Say you have a 150 keV resonance. It's either
+    - J=0.5, Gammap = 1e-5 eV, Gammag = 3 eV
+    - J=1.5, Gammap = 1e-8 eV, Gammag = 3 eV
+    with a 50% probability of each
+  - Enter the following
+    #+BEGIN_SRC 
+      150.0  1.0    0    0   0.5   1.0E-05   1.0E-06   0   3.0E+00   0.1E+00   0   0.00E+00  0.00E+00  0   0.0      0   0.5
+      +             0    0   1.5   1.0E-08   1.0E-09   1   3.0E+00   0.1E+00   0   0.00E+00  0.00E+00  0   0.0      0   0.5
+    #+END_SRC
+
+
+* Resonance peculiarities
+
+** Sub-threshold resonances
+   - If entering a sub-threshold resonance, there is no partial width!
+   - Enter $\theta_{sp}^2  C^2S$
+   - $\theta_{sp}^{2}$: Single particle reduced width
+   - $C^2S$: Spectroscopic Factor
+
+** Commented-out resonances
+   - Put an exclamation point before the resonance:
+     #+BEGIN_SRC 
+     ! 150.0  1.0    0    0   0.5   1.0E-05   1.0E-06   0   3.0E+00   0.1E+00   0   0.00E+00  0.00E+00  0   0.0      0         
+     #+END_SRC
+
+
+* Upper limits of resonances
+  - No resonance strengths
+  - Each partial width has two new inputs
+    #+BEGIN_SRC 
+      Ecm(keV) DEcm(keV) J   G1(eV)    DG1(eV) L1  PT       DPT      
+      150.00   1.00      0   1.00E-3   0       0   4.0E-02  -2  
+    #+END_SRC
+  - =DG= *must* be 0
+  - =PT= is the mean of the Porter-Thomas distribution
+    - See Pogrebnyak, Howard & Iliadis et al. (2013) https://doi.org/10.1103/physrevc.88.015808
+  - =DPT= is the uncertainty in =PT=. -ve numbers are factor uncertainties (I like =-3=)
+
+* Interferences
+  #+BEGIN_SRC 
+    Ecm(keV) DEcm(keV) Jr   G1(eV)    
+    +-                               
+    150.0    2.0       1.5  1.0E-03 ...       
+    1250.0   2.0       1.5  5.2E+00 ...       
+  #+END_SRC
+  - Unless you know the sign of the interference, leave =+-=
+  - Input is just like upper limits
+  - Leave =PT= and =DPT= as 0 unless you need them
+
+* Comments
+  - Put key comments at the bottom!
+
+* Downloading and Setup
+  #+BEGIN_SRC sh
+    # Download
+    git clone https://github.com/rlongland/RatesMC.git
+    # Make a build directory
+    cd RatesMC
+    mkdir build
+    cd build
+    # Compile
+    cmake ..
+    make
+  #+END_SRC
+  - Now you have a clean RatesMC folder!
+  - For each reaction, copy the contents of this folder somewhere. e.g.:
+    =~/RatesMC/Evaluation/25Mg-pg/=
+  - *Be sure not to overwrite your RatesMC.in file*
+
+* Running
+  - Run with =./RatesMC=
+  - *or* =./runall.sh=!
+    - This will run RatesMC, then produce all the R plots you need
+    - S-factor plot is made immediately for error checking while you wait
+  - 
 
