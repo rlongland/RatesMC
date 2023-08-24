@@ -6,13 +6,19 @@
 RatesMC2
 build
 project
-Training
 
 # CMake stuff
 CMakeFiles
 CMakeCache.txt
 cmake_install.cmake
 Makefile
+
+## Training files
+Training/*.pdf
+Training/*.aux
+Training/*.tex
+Training/*.pygtex
+Training/*.pygstyle
 
 ## Extras
 tests
