@@ -7,7 +7,7 @@
   I plan to give you enough training so that you don't bug me with questions!
 
 * The template file
-  #+BEGIN_SRC
+  #+BEGIN_SRC text
     39K(p,g)40Ca
     ********************************************************************************************************************************************************************
     1H              ! Zproj                           (or nuclide's name to use AME2020)
@@ -69,7 +69,7 @@
   #+END_SRC
 
 * Reaction Definition
-  #+BEGIN_SRC
+  #+BEGIN_SRC text
     39K(p,g)40Ca
     **************************
   #+END_SRC
@@ -78,7 +78,7 @@
     accurate
 
 * Reacting particles
-  #+BEGIN_SRC 
+  #+BEGIN_SRC text
     1H              ! Zproj                           (or nuclide's name to use AME2020)
     39K             ! Ztarget
     4He             ! Zexitparticle                   (=0 when only 2 channels open)
@@ -96,19 +96,19 @@
   - If isotopic symbol is used, the AME2020 nuclear mass is used
 
 * Separation energies
-  #+BEGIN_SRC 
+  #+BEGIN_SRC text
     AME             ! projectile separation energy    (NUCLEAR Q value; enter AME if nuclide names are used)
     AME             ! exit particle separation energy (=0 when only 2 channels open; enter AME if nuclide names are used)
   #+END_SRC
   - Enter
     - Nuclear Q-value or
-    - "AME"
+    - ''AME''
   - *Warnings*:
-    - Do not mix-and-match "AME" with nuclear masses above
-    - Especially do not enter atomic masses and "AME"
+    - Do not mix-and-match ''AME'' with nuclear masses above
+    - Especially do not enter atomic masses and ''AME''
 
 * Final reaction definitions
-  #+BEGIN_SRC 
+  #+BEGIN_SRC text
     1.25            ! Radius parameter R0 (fm)
     2               ! Gamma-ray channel number        (=2 if ejectile is a g-ray; =3 otherwise)
   #+END_SRC
@@ -116,7 +116,7 @@
   - *double and triple check* the gamma-ray channel. I've lost many hours to this... 
 
 * RatesMC Control
-  #+BEGIN_SRC
+  #+BEGIN_SRC text
     1.0             ! Minimum energy for numerical integration (keV)
     10000           ! Number of random samples (>5000 for better statistics)
     0               ! =0 for rate output at all temperatures; =NT for rate output at selected temperatures
@@ -131,7 +131,7 @@
 * Non-resonant section
 ** Option 1 (preferred)
    Enter tabulated non-resonant (not necessarily DC) S-factor (two 3-line entries)
-   #+BEGIN_SRC
+   #+BEGIN_SRC text
      0      50  100  150  200  250  300  350  400  450  500  550  600  650  700  750  800  850  900  950  1000
     124   119  115  112  108  105  102   99   97   95   93   91   89   88   87   87   86   86   86   86    87
     -10    -9   -8   -7   -6   -5   -4   -3   -3   -3   -3   -3   -3   -2   -2   -2   -2   -2   -1  0.4   0.4
@@ -146,7 +146,7 @@
       - -ve values: Factor uncertainty (i.e. -1.4 means a 40% /geometric/)
 ** Option 2
    Enter quadratic fit to non-resonant S-factor
-   #+BEGIN_SRC 
+   #+BEGIN_SRC text
    S(keVb) S'(b)           S''(b/keV)      fracErr Cutoff Energy (keV)
    18.14      -8.93e-3       5.776e-6         0.24     2000.0
    19.68      -0.144         7.934e-4         0.45     239.0
@@ -154,9 +154,9 @@
    - Enter the quadratic fit parameters
    - =fracErr= can also be negative for factor uncertainty
    - Cutoff energy is needed. Check S-factor output!
-
+     
 * Factor Uncertainties
-  If you mean "times 1.4 and divide by 1.4'', use factor uncertainties!
+  If you mean ''$\times$ 1.4 and $\div$ 1.4'', use factor uncertainties!
   #+BEGIN_SRC R :exports both :results output graphics file :file ln.png
     ## The RatesMC input
     mu <- 5
@@ -191,7 +191,7 @@
   [[file:ln.png]]
 
 * Resonances
-  #+BEGIN_SRC 
+  #+BEGIN_SRC text
     Ecm(keV) DEcm(keV) wg(eV)     Dwg(eV)    J   G1(eV)    DG1(eV)   L1  G2(eV)    DG2(eV)   L2  G3(eV)    DG3(eV)   L3  Exf(keV) Int  Corr/Frac
     0.0      0.00      0          0          0   0.0E+00   0.0E+00   0   0.0E+00   0.0E+00   0   0.00E+00  0.00E+00  0   0.0      0   
   #+END_SRC
@@ -200,8 +200,8 @@
   - -ve /factor uncertainties/ can be used for
     - Resonance strengths
     - Partial widths
-  - The "end"
-    #+BEGIN_SRC 
+  - The ''end''
+    #+BEGIN_SRC text
       Int  Corr/Frac
       0    we   0.5
     #+END_SRC
@@ -219,7 +219,7 @@
     - J=1.5, Gammap = 1e-8 eV, Gammag = 3 eV
     with a 50% probability of each
   - Enter the following
-    #+BEGIN_SRC 
+    #+BEGIN_SRC text
       150.0  1.0    0    0   0.5   1.0E-05   1.0E-06   0   3.0E+00   0.1E+00   0   0.00E+00  0.00E+00  0   0.0      0   0.5
       +             0    0   1.5   1.0E-08   1.0E-09   1   3.0E+00   0.1E+00   0   0.00E+00  0.00E+00  0   0.0      0   0.5
     #+END_SRC
@@ -235,7 +235,7 @@
 
 ** Commented-out resonances
    - Put an exclamation point before the resonance:
-     #+BEGIN_SRC 
+     #+BEGIN_SRC text
      ! 150.0  1.0    0    0   0.5   1.0E-05   1.0E-06   0   3.0E+00   0.1E+00   0   0.00E+00  0.00E+00  0   0.0      0         
      #+END_SRC
 
@@ -243,17 +243,19 @@
 * Upper limits of resonances
   - No resonance strengths
   - Each partial width has two new inputs
-    #+BEGIN_SRC 
+    #+BEGIN_SRC text
       Ecm(keV) DEcm(keV) J   G1(eV)    DG1(eV) L1  PT       DPT      
-      150.00   1.00      0   1.00E-3   0       0   4.0E-02  -2  
+      150.00   1.00      0   1.00E-3   0       0   4.0E-02  -3  
     #+END_SRC
   - =DG= *must* be 0
   - =PT= is the mean of the Porter-Thomas distribution
-    - See Pogrebnyak, Howard & Iliadis et al. (2013) https://doi.org/10.1103/physrevc.88.015808
-  - =DPT= is the uncertainty in =PT=. -ve numbers are factor uncertainties (I like =-3=)
+    - See Pogrebnyak, Howard & Iliadis et al. (2013)
+      https://doi.org/10.1103/physrevc.88.015808
+  - =DPT= is the uncertainty in =PT=. -ve numbers are factor
+    uncertainties (I like =-3=)
 
 * Interferences
-  #+BEGIN_SRC 
+  #+BEGIN_SRC text
     Ecm(keV) DEcm(keV) Jr   G1(eV)    
     +-                               
     150.0    2.0       1.5  1.0E-03 ...       
@@ -288,5 +290,42 @@
   - *or* =./runall.sh=!
     - This will run RatesMC, then produce all the R plots you need
     - S-factor plot is made immediately for error checking while you wait
-  - 
+    - This script will ask about Hauser-Feshbach... 
+  - =RatesMC.out= and others are updated during calculation
+  - =RatesMC.log= is important to read
+
+* Analysis scripts
+  Most of these will need to be edited to make sure the correct files
+  are being analysed.
+** =PlotUncertainties.R=
+   New code to plot the 1, 2, and 3-sigma uncertainties of the rate, as
+   well as a comparison to literature if desired
+** =PlotCompare.R=
+   Plots the 1-sigma uncertainties of the present rate and a literature
+   rate
+** =PlotContribution.R=
+   Plots the contribution bands of each resonance as a function of
+   temperature
+** =PlotIntegrand.R=
+   Plots the integrands for broad resonances. Be sure to adjust the
+   temperature you're looking for at the top of the code
+** =PlotSFactor.R=
+   Plots the astrophysical s-factor for all resonances. This has now
+   been updated from the previous version to work well! 
+** =PlotPanel6.R=
+   Plots the reaction rate probability density distribution for 6
+   useful temperatures
+** =PlotPanelall.R=
+   Plots the reaction rate probability density distribution for all
+   temperatures
+** =PlotParameter.R=
+   Diagnostics. Check the probability distribution of input parameters
+** =PlotCorrelations.R=
+   Diagnostics. Show correlations of rate (at a given temperature) with
+   all input parameters. Also show corner plot correlations between
+   everything (should be mostly uncorrelated unless energy or width
+   correlations are turned on)
+** =PlotPT.R=
+   Diagnostics. Plot the Porter-Thomas samples
+
 
