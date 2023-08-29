@@ -73,8 +73,8 @@ int main(int argc, char** argv){
   sampfile.open("RatesMC.samp");
   // Contribution file
   contribfile.open("RatesMC.cont");
-	// Test file for storing debugging
-	testfile.open("test.dat");
+  // Test file for storing debugging
+  testfile.open("test.dat");
 	
   // Make a reaction. This is where everything is held
   Reaction *Reac = new Reaction();
@@ -82,10 +82,10 @@ int main(int argc, char** argv){
   // Open the input file
   int ret = ReadInputFile(ifilename, Reac);
 
-	if(ret != 0){
-		std::cout << "ERROR: You should never see this message!\n";
-		exit(EXIT_FAILURE);
-	}
+  if(ret != 0){
+    std::cout << "ERROR: You should never see this message!\n";
+    exit(EXIT_FAILURE);
+  }
 	
   // Make output file headers
   writeOutputFileHeaders(Reac);
@@ -101,11 +101,11 @@ int main(int argc, char** argv){
   Reac -> prepareSamples();
 
   // Write the reaction information to log file for diagnostics
-	//Reac -> printReaction();
+  //Reac -> printReaction();
   Reac -> writeReaction();
 
-	// Before we write anything long, write the astrophysical S-factor
-	Reac -> writeSFactor(false);
+  // Before we write anything long, write the astrophysical S-factor
+  Reac -> writeSFactor(false);
 
   // Write all samples to a file for later analysis
   Reac -> writeSamples();
@@ -124,14 +124,14 @@ int main(int argc, char** argv){
 
   // Now do the big loop over temperatures in parallel!!
   // Do all of the calculations first, then collect everything together
-	std::vector<double>::iterator it;
+  std::vector<double>::iterator it;
   //omp_set_num_threads(1);
-	//#pragma omp parallel for ordered
-	for(it = Temp.begin(); it < Temp.end(); ++it){
+  //#pragma omp parallel for ordered
+  for(it = Temp.begin(); it < Temp.end(); ++it){
     // ------------------------
     // FOR EACH TEMPERATURE
     // ------------------------
-		double T = *it;
+    double T = *it;
     
     int ID = 0;//omp_get_thread_num();
     std::cout << std::endl;
@@ -143,7 +143,7 @@ int main(int argc, char** argv){
     
     //logfile << "--------------------\n";
     logfile << "Temperature = " << T << " GK" << std::endl;
-		integrandfile << "Temperature = " << T << " GK" << std::endl;
+    integrandfile << "Temperature = " << T << " GK" << std::endl;
 		
     // ------------------------
     // CALCULATE RATE
@@ -152,15 +152,15 @@ int main(int argc, char** argv){
     // Calculate the non-resonant rate
     double ADRate[2];
     for(int j=0; j<2; j++){
-			if(bTabulatedNonResonant){
-				// Calculate the non-resonant rate from a tabulated S-factor
-				// For now, put it in the second ADRate entry
-				ADRate[j] = Reac -> calcNonResonantTabulated(T, j);
-			} else {
-				// New method of simply integrating the astrophysical s-factor
-				ADRate[j] = Reac -> calcNonResonantIntegrated(T, j);
-			}
-		}
+      if(bTabulatedNonResonant){
+	// Calculate the non-resonant rate from a tabulated S-factor
+	// For now, put it in the second ADRate entry
+	ADRate[j] = Reac -> calcNonResonantTabulated(T, j);
+      } else {
+	// New method of simply integrating the astrophysical s-factor
+	ADRate[j] = Reac -> calcNonResonantIntegrated(T, j);
+      }
+    }
 		
     // Calculate the resonant rate
     double ResRate = Reac -> calcResonant(T);
@@ -173,8 +173,8 @@ int main(int argc, char** argv){
     classicalRate.push_back(ADRate[0]+ADRate[1]+ResRate);
     //std::cout << "Classical Total Rate = " << classicalRate.back() << "\n";
 
-		// Combine Resonance possibilities into the main corresponding resonance
-		Reac -> CombineResonancePossibilities();
+    // Combine Resonance possibilities into the main corresponding resonance
+    Reac -> CombineResonancePossibilities();
 		
     // Contribution array (NSamples)by(NRes+2)
     std::vector<std::vector<double> > Contributions;
@@ -193,17 +193,17 @@ int main(int argc, char** argv){
       // Sum the total rate
       double totalRate = ADRate0 + ADRate1;
       for(double res : resonancesSample){
-				//if( !std::isnan(res) )
-				totalRate += res;
+	//if( !std::isnan(res) )
+	totalRate += res;
       }
-			//std::cout << s << "  " << totalRate << "\n";
+      //std::cout << s << "  " << totalRate << "\n";
 
       // Calculate contribution for each resonance. 
       std::vector<double> Cont;
       Cont.push_back(ADRate0/totalRate);
       Cont.push_back(ADRate1/totalRate);
       for(double res : resonancesSample)
-				Cont.push_back(res/totalRate);
+	Cont.push_back(res/totalRate);
       Contributions.push_back(Cont);
       
       // Fill the total reaction rate vector
@@ -221,18 +221,18 @@ int main(int argc, char** argv){
     writeRateSamples(RateSample, T);
     
     /*
-			#pragma omp critical
-			{
+      #pragma omp critical
+      {
 
       // print out the thread number and temperature
       // #pragma omp ordered
       std::cout << "Classical Resonant Rate (again) = " << ResRate << "\n";
-			}
-    */
+      }
+     */
 
     // Summarize any errors that may have occurred
     summarizeErrors(T);
-		integrandfile << std::endl;
+    integrandfile << std::endl;
   }
 
   
@@ -248,7 +248,7 @@ int main(int argc, char** argv){
   ptfile.close();
   outfile.close();
   outfullfile.close();
-	testfile.close();
+  testfile.close();
 	
   return 1;
 }
@@ -259,10 +259,10 @@ void WelcomeScreen(){
   std::cout << std::endl;
   std::cout << " **************************************************" << std::endl;
   std::cout << " *                   RatesMC                      *" << std::endl;
-	std::cout << " *        Copyright (C) 2022  R. Longland         *" << std::endl;
+  std::cout << " *        Copyright (C) 2022  R. Longland         *" << std::endl;
   std::cout << " *            V. " << VersionNumber << "  " << VersionDate 
-						<< "                *" << std::endl;
-	std::cout << " * This program comes with ABSOLUTELY NO WARRANTY *" << std::endl;
+  << "                *" << std::endl;
+  std::cout << " * This program comes with ABSOLUTELY NO WARRANTY *" << std::endl;
   std::cout << " *                                                *" << std::endl;
   std::cout << " **************************************************" << std::endl;
   std::cout << "\n" << std::endl;
