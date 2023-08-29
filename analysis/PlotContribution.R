@@ -152,7 +152,7 @@ val <- 0.7
 col <- hsv(hue,sat,val,alpha=1)
 if(randomColour){
     col <- sample(col)
-}else{
+}else if(length(col)>2){
     col <- col[unlist(lapply(1:3,function(i)seq(i,length(col),by=3)))]
 }
 
