@@ -10,9 +10,12 @@ ContributionFile <- "RatesMC.cont"
 TMatchFile       <- ""   ## set "" to ignore Tmatch file
 
 TRange <- c(0.01,10)        ## Tempterature range in GK
-Threshold <- 0.01           ## Only look at resonances that contribute
+Threshold <- 0.05           ## Only look at resonances that contribute
                             ## more than 'Threshold' over this
                             ## temperature range
+
+randomColour <- FALSE        ## Randomize the colours
+
 
 ######################################################################
 ## You shouldn't need to touch anything below this line...
@@ -147,7 +150,11 @@ hue <- c(seq(from=0,to=1-2/lc,length.out=floor(lc/2)),
 sat <- 0.8
 val <- 0.7
 col <- hsv(hue,sat,val,alpha=1)
-
+if(randomColour){
+    col <- sample(col)
+}else{
+    col <- col[unlist(lapply(1:3,function(i)seq(i,length(col),by=3)))]
+}
 
 density <- c(NA,rep(1.5,length(contributors)))*20
 angle <- rep(seq(0,270,45),ceiling(length(contributors)/7))
