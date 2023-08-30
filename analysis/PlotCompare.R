@@ -46,8 +46,12 @@ add.alpha <- function(col, alpha=1){
                      function(x) 
                        rgb(x[1], x[2], x[3], alpha=alpha))  
 }
+# Complementary error function
+erfc    <- function(x) {  # 1 - erf(x)
+    2 * pnorm(-sqrt(2) * x)
+}
 
-library("gsl")
+##library("gsl")
 
 #cat("\nWhat Temperature would you like to stop (default = 10)\n")
 #TMax <- scan(nmax=1,quiet=TRUE)
