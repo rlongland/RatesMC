@@ -3,6 +3,10 @@ samplename = "RatesMC.samp"
 ntemps = 6
 templist = c(11,14,18,28,33,37)
 
+extraSuper <- ""            ## Use to put a superscript at the end
+                            ## e.g. "g" for ^{26}Al^g
+
+
 lognorm_norm <- function(){
   sum(lognorm(hist[,1]))
   max(hist[,3])
@@ -43,6 +47,8 @@ ReacName <- sub(",","*','*",ReacName)
 ##ReacName <- sub("\\(a*","\\(alpha",ReacName)
 ReacName <- sub("\\)","\\)*",ReacName)
 ReacName <- gsub("([[:digit:]]+)", "phantom()^{\\1}*", ReacName)
+## Add a superscript
+if(nchar(extraSuper)>0)ReacName <- paste(ReacName,"^",extraSuper,sep="")
 
 FirstLetter <- regexpr("([a-z])",ReacName)[1]
 word1<-substr(ReacName,1, FirstLetter-1)

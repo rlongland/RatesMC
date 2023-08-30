@@ -74,8 +74,7 @@
     **************************
   #+END_SRC
   - This labels the reaction
-  - *Warning*: This gets read into plots later, so I recommends being
-    accurate
+  - *Warning*: This gets read into plots later, so I recommends being accurate
 
 * Reacting particles
   #+BEGIN_SRC text
@@ -90,8 +89,7 @@
     4He             ! Jexitparticle                   (=0 when only 2 channels open)
   #+END_SRC
   - Can enter
-    - *atomic numbers* (integers), *nuclear mass*, *spin* (as
-      decimals)
+    - *atomic numbers* (integers), *nuclear mass*, *spin* (as decimals)
     - *isotope symbol*
   - If isotopic symbol is used, the AME2020 nuclear mass is used
 
@@ -125,8 +123,7 @@
   - *Minimum energy*: leave at 1 keV
   - *Samples*: Check for convergence. 1000 is too small, 3000 may be fine
   - *NT*: Leave as zero - not implemented!
-  - *Correlations*: Take into account correlations? Two numbers needed
-    here! We'll come back to this
+  - *Correlations*: Take into account correlations? Two numbers needed here! We'll come back to this
 
 * Non-resonant section
 ** Option 1 (preferred)

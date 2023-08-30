@@ -4,11 +4,14 @@
 
 outputfile <- "RatesMC.out"
 fullfile    <- "RatesMC.full"
-litfilename <- "/home/longland/code/RatesMC-V1/datafiles/17Opg/RatesMC2Testing/RatesMC.out"
+litfilename <- "RatesMC-comparison.out"
 headerskip <- 4  ## 3 for RatesMC type files
                  ## 4 for RatesMC2 type files
-headerskip.lit <- 3  ## 3 for RatesMC type files
+headerskip.lit <- 4  ## 3 for RatesMC type files
                      ## 4 for RatesMC2 type files
+
+extraSuper <- ""            ## Use to put a superscript at the end
+                            ## e.g. "g" for ^{26}Al^g
 
 RateColor <- "gray"  # colour for the error region shade
 RateTrans <- 0.8     # transparancy of error region (1 is fully opaque)
@@ -63,6 +66,8 @@ ReacName <- sub(",","*','*",ReacName)
 ##ReacName <- sub("\\(a*","\\(alpha",ReacName)
 ReacName <- sub("\\)","\\)*",ReacName)
 ReacName <- gsub("([[:digit:]]+)", "phantom()^{\\1}*", ReacName)
+## Add a superscript
+if(nchar(extraSuper)>0)ReacName <- paste(ReacName,"^",extraSuper,sep="")
 
 
 data <- read.table(outputfile,skip=headerskip,header=FALSE,stringsAsFactors=FALSE)

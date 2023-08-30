@@ -5,8 +5,11 @@
 ########################################
 
 outputfile <- "RatesMC.out"
-litfilename <- "../RatesMC/RatesMC.out"#RatesMC-comparison.out"
+litfilename <- "" ##../RatesMC/RatesMC.out"#RatesMC-comparison.out"
 sampfile <- "RatesMC.samp"
+
+extraSuper <- ""            ## Use to put a superscript at the end
+                            ## e.g. "g" for ^{26}Al^g
 
 ## Is literature a RatesMC.out file?
 litisRatesMC <- TRUE
@@ -78,7 +81,7 @@ axTexpr <- function(side, at = axTicks(side, axp=axp, usr=usr, log=log),
    do.call("expression", ss) 
 }
 
-library("gsl")
+##library("gsl")
 
 ## Read and format the reaction name
 ReacName = as.character(read.table(outputfile,skip=0,header=FALSE,nrows=1)$V1)
@@ -91,6 +94,8 @@ ReacName <- sub(",","*','*",ReacName)
 ##ReacName <- sub("\\(a*","\\(alpha",ReacName)
 ReacName <- sub("\\)","\\)*",ReacName)
 ReacName <- gsub("([[:digit:]]+)", "phantom()^{\\1}*", ReacName)
+## Add a superscript
+if(nchar(extraSuper)>0)ReacName <- paste(ReacName,"^",extraSuper,sep="")
 
 
 ## ------------------------------------------------------

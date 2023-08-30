@@ -9,10 +9,14 @@ RatesMCFile      <- "RatesMC.in"
 ContributionFile <- "RatesMC.cont"
 TMatchFile       <- ""   ## set "" to ignore Tmatch file
 
+extraSuper <- ""            ## Use to put a superscript at the end
+                            ## e.g. "g" for ^{26}Al^g
+
 TRange <- c(0.01,10)        ## Tempterature range in GK
 Threshold <- 0.05           ## Only look at resonances that contribute
                             ## more than 'Threshold' over this
                             ## temperature range
+
 
 randomColour <- FALSE        ## Randomize the colours
 
@@ -68,6 +72,8 @@ ReacName <- sub(",","*','*",ReacName)
 ##ReacName <- sub("\\(a*","\\(alpha",ReacName)
 ReacName <- sub("\\)","\\)*",ReacName)
 ReacName <- gsub("([[:digit:]]+)", "phantom()^{\\1}*", ReacName)
+## Add a superscript
+if(nchar(extraSuper)>0)ReacName <- paste(ReacName,"^",extraSuper,sep="")
 
 ## Find the beginning of the resonances
 skip <- 28
