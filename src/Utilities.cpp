@@ -498,30 +498,30 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     E_cm  *= 1.0e-3;   // keV to MeV
     dE_cm *= 1.0e-3;   // keV to MeV
     wg    *= 1.0e-6;   // eV to MeV
-    dwg   *= 1.0e-6;   // eV to MeV
+    if(dwg > 0)dwg   *= 1.0e-6;   // eV to MeV
     G1    *= 1.0e-6;   // eV to MeV
-    dG1   *= 1.0e-6;   // eV to MeV
+    if(dG1 > 0)dG1   *= 1.0e-6;   // eV to MeV
     G2    *= 1.0e-6;   // eV to MeV
-    dG2   *= 1.0e-6;   // eV to MeV
+    if(dG2 > 0)dG2   *= 1.0e-6;   // eV to MeV
     G3    *= 1.0e-6;   // eV to MeV
-    dG3   *= 1.0e-6;   // eV to MeV
+    if(dG3 > 0)dG3   *= 1.0e-6;   // eV to MeV
     Exf   *= 1.0e-3;   // keV to MeV
 
     // if E_cm is negative, G1 is actually unitless, so undo the unit operation above
     if(E_cm < 0){
       G1 *= 1.0e6;
-      dG1 *= 1.0e6;
+      if(dG1 > 0)dG1 *= 1.0e6;
       // Also, force it to be broad
       if(!isBroad){
 	logfile << "WARNING: sub-threshold resonances must be broad. The code switched this automatically for you!\n";
 	isBroad = true;
       }
-    }
+    } 
     // If factor uncertainties are input, don't scale 
-    if(dG1 < 0.0) dG1 *= 1.0e6;
-    if(dG2 < 0.0) dG2 *= 1.0e6;
-    if(dG3 < 0.0) dG3 *= 1.0e6;
-    if(dwg < 0.0) dwg *= 1.0e6;
+    //if(dG1 < 0.0 && E_cm > 0.0) dG1 *= 1.0e6;
+    //if(dG2 < 0.0) dG2 *= 1.0e6;
+    //if(dG3 < 0.0) dG3 *= 1.0e6;
+    //if(dwg < 0.0) dwg *= 1.0e6;
 		
 
     //infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
