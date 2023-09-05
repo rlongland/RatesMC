@@ -710,48 +710,28 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
       E_cm  *= 1.0e-3;   // keV to MeV
       dE_cm *= 1.0e-3;   // keV to MeV
       G1 *= 1.0e-6;      // eV to MeV
-      dG1 *= 1.0e-6;     // eV to MeV
+      if(dG1 > 0)dG1   *= 1.0e-6;   // eV to MeV
       G2 *= 1.0e-6;      // eV to MeV
-      dG2 *= 1.0e-6;     // eV to MeV
+      if(dG2 > 0)dG2   *= 1.0e-6;   // eV to MeV
       G3 *= 1.0e-6;      // eV to MeV
-      dG3 *= 1.0e-6;     // eV to MeV
+      if(dG3 > 0)dG3   *= 1.0e-6;   // eV to MeV
       Exf *= 1.0e-3;      // keV to MeV
 			
       // if E_cm is negative, G1 is actually unitless, so undo
       // the unit operation above
       if (E_cm < 0) {
 	G1 *= 1.0e6;
-	dG1 *= 1.0e6;
+	if(dG1 > 0)dG1 *= 1.0e6;
       }
-      // If factor uncertainties are input, don't scale 
-      if(dG1 < 0.0) dG1 *= 1.0e6;
-      if(dG2 < 0.0) dG2 *= 1.0e6;
-      if(dG3 < 0.0) dG3 *= 1.0e6;
 
-					
-      // TODO: Add this resonance to the interfering pair
-      /*
-	IntfPair->addResonance(count, E_cm, dE_cm, Jr, G1,G1,G3, dG1,dG2,dG3,
-	L1,L2,L3, PT1,PT2,PT3, DPT1,DPT2,DPT3,
-	Exf, i);
-       */
       R.addResonanceToInterference(count, E_cm, dE_cm,Jr,
 				   G1, dG1, L1, PT1, DPT1,
 				   G2, dG2, L2, PT2, DPT2,
 				   G3, dG3, L3, PT3, DPT3,
 				   Exf, isUpperLimit, i);
-      /*
-	R.addInterference(count, E_cm, dE_cm, Jr,
-	G1, dG1, L1, PT1, DPT1,
-	G2, dG2, L2, PT2, DPT2,
-	G3, dG3, L3, PT3, DPT3,
-	Exf, i);
-       */
-      //			Res[i] = new Resonance();
     
     }
     count++;
-    // TODO: Add the interfering pair to the reaction
   
   }
 }
