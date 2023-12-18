@@ -1,13 +1,14 @@
 name="RatesMC.full"
 samplename = "RatesMC.samp"
-ntemps = 51
+ntemps = 61
 
 lognorm_norm <- function(){
-  sum(lognorm(hist[,1]))
+    sum(lognorm(hist[,1]))
+    max(hist[,3])
 }
 
 lognorm <- function(x){
-  (1/(x*sigma*sqrt(2*3.142))) * exp(-((log(x)-mu)^2)/(2*sigma^2))
+  (1/(sigma*sqrt(2*pi))) * exp(-((log(x)-mu)^2)/(2*sigma^2))
 }
 
 
@@ -50,7 +51,7 @@ for( i in 1:ntemps ) {
     break
   }
 
-  histt <- hist(samples,breaks=1000,plot=FALSE)
+  histt <- hist(log10(samples),breaks=1000,plot=FALSE)
   hist <- cbind(histt$mids,histt$mids,histt$counts)
 #  hist <- read.table(histname,skip=templist[i]*3+(templist[i]-1)*1000,
 #                     nrows=1000,header=FALSE)
@@ -73,11 +74,13 @@ for( i in 1:ntemps ) {
 
   # Make the lognormal fit
   xlims <- c(min(hist[,1]),max(hist[,1]))
-  x<-seq(from=xlims[1]/2,to=xlims[2]*2,length.out=2000)
-  h <- lognorm(hist[,1])/max(lognorm(hist[,1]))
+  x <- seq(from=log10(min(samples)), to=log10(max(samples)), length.out=1000)
+  y <- lognorm(10^x)
+  y <- y/max(y)
+  
   ## The normalisation
-  n <- median((h/(hist[,3]/lognorm_norm()))[h>0.3])
-  lines(x,lognorm(x)/(n*max(lognorm(x))),lwd=1.5)
+  n <- median((hist[,3]/lognorm_norm())[(hist[,3]/lognorm_norm())>0.5])
+  lines(x,y*n,lwd=1.5)
 
 #  lines(x,lognorm(x)/lognorm_norm(),lwd=1.5)
 
@@ -86,7 +89,7 @@ for( i in 1:ntemps ) {
   xpos <- grconvertX(0.75,from="npc",to="user")
   ypos <- grconvertY(0.85,from="npc",to="user")
   
-  AD_text <- paste("A-D =",format(data[i,11],digits=3),"\nT9 =",data[i,1])
+  AD_text <- paste("T9 =",data[i,1], "\nA-D =",format(data[i,11],digits=3))
 
   text(xpos,ypos,AD_text,cex=1.5)
 
