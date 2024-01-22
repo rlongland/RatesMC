@@ -28,7 +28,7 @@ n.Gamow          <- 1
 ## extrapolate to there?
 extrapolateHF <- TRUE    ## TRUE="assume HF is correct at 10 GK
 
-sink("TMatch.log")
+##sink("TMatch.log")
 
 ######################################################################
 ## You shouldn't need to touch anything below this line...
@@ -232,7 +232,7 @@ if(ReadCont){
 	## Break the loop if we see *s
 	if(substr(x[,1],1,2) == "**") break
 	## Is the first entry a '+' or '!'? Ignore if so
-	if(x[1] == "+" || x[1] == "!" || sign(x[1]) == -1) {
+	if(x[1] == "+" || x[1] == "!" || length(grep("!",x[1])) || sign(x[1]) == -1) {
 	    skip <- skip+1
 	    next
 	}
@@ -362,24 +362,30 @@ cat("TMatch from Gamow peak method: ",TMatch.Gamow,"\n")
 ## Then ETER method
 ## Cut out low temperatures
 cut <- T>0.1 & !is.na(ETER.array)
-interp.ETER <- approxfun(x=ETER.array[cut],
-			 y=T[cut])
-TMatch.ETER <- interp.ETER(maxE)
-cat("TMatch from ETER method:       ",TMatch.ETER,"\n")
+if(sum(cut, na.rm=TRUE)>0){
+    interp.ETER <- approxfun(x=ETER.array[cut],
+			     y=T[cut])
+    TMatch.ETER <- interp.ETER(maxE)
+    cat("TMatch from ETER method:       ",TMatch.ETER,"\n")
 
-if(ETER.array[length(ETER.array)] < maxE){
-    cat(paste0(redtext,
-	       "\nExperimental rate looks good up to 10 GK!\nCheck TMatch.pdf\n",
-	       normtext))
-    TMatch.ETER <- 11
+    if(ETER.array[length(ETER.array)] < maxE){
+	cat(paste0(redtext,
+		   "\nExperimental rate looks good up to 10 GK!\nCheck TMatch.pdf\n",
+		   normtext))
+	TMatch.ETER <- 11
 ##    dev.off()
 ##    stop()
+    }
+} else {
+    TMatch.ETER <- NA
 }
 
 if(is.na(TMatch.ETER)){
 ##    dev.off()
     cat(paste0(redtext,
-	       "\nSomething went wrong finding the ETER matching T!\nCheck TMatch.pdf\n",
+	       "\nSomething went wrong finding the ETER matching T!\n",
+	       "There likely aren't enough resonances to use this method.\n",
+	       "Check TMatch.pdf\n",
 	       normtext))
     cat("Using Gamow window matching temperature\n\n")
     ##    stop()
