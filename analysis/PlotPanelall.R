@@ -52,10 +52,10 @@ for( i in 1:ntemps ) {
   }
 
   histt <- hist(log10(samples),breaks=1000,plot=FALSE)
-  hist <- cbind(histt$mids,histt$mids,histt$counts)
-#  hist <- read.table(histname,skip=templist[i]*3+(templist[i]-1)*1000,
-#                     nrows=1000,header=FALSE)
-  hist[,3]<-(hist[,3])/sum(hist[,3])
+  hist <- cbind(histt$mids,histt$mids,histt$density/100)
+  ##  hist <- read.table(histname,skip=templist[i]*3+(templist[i]-1)*1000,
+  ##                     nrows=1000,header=FALSE)
+  ##hist[,3]<-(hist[,3])/sum(hist[,3])
 
   # get rid of brackets
   data[i,9] <- gsub("([()])","",data[i,9])
@@ -68,18 +68,22 @@ for( i in 1:ntemps ) {
   var <- (exp(sigma^2) -1)*exp((2*mu + sigma^2))
 
   # make histogram
-  plot(hist[,1],hist[,3]/lognorm_norm(),type="l",col="tomato1",
-       ylim=c(0,max(hist[,3])/lognorm_norm()),
+  ##plot(hist[,1],hist[,3]/lognorm_norm(),type="l",col="tomato1",
+  ##     ylim=c(0,max(hist[,3])/lognorm_norm()),
+  ##     xlab="",ylab="",cex.axis=1.3,yaxs="i")
+  plot(hist[,1],hist[,3],type="l",col="tomato1",
        xlab="",ylab="",cex.axis=1.3,yaxs="i")
 
   # Make the lognormal fit
   xlims <- c(min(hist[,1]),max(hist[,1]))
-  x <- seq(from=log10(min(samples)), to=log10(max(samples)), length.out=1000)
+  x <- seq(from=log10(min(samples)), to=log10(max(samples)), length.out=length(hist[,3]))
   y <- lognorm(10^x)
-  y <- y/max(y)
+  ##y <- y/max(y)
+  y <- sum(hist[,3])*y/sum(y)
   
   ## The normalisation
-  n <- median((hist[,3]/lognorm_norm())[(hist[,3]/lognorm_norm())>0.5])
+  ##n <- mean((hist[,3]/y)[(hist[,3])>0.5*max(hist[,3])])
+  n <- 1
   lines(x,y*n,lwd=1.5)
 
 #  lines(x,lognorm(x)/lognorm_norm(),lwd=1.5)

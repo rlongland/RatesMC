@@ -64,7 +64,6 @@ Samples = as.double(read.table(name,skip=2,header=FALSE,nrows=1)[3])
 data <- read.table(name,skip=4,header=FALSE,stringsAsFactors=FALSE)
 NumberPlot<-1
 
-
 for( i in 1:ntemps ) {
 
     samples <- withRestarts(read.table(samplename,skip=1+(templist[i]*3+
@@ -73,10 +72,10 @@ for( i in 1:ntemps ) {
 			    abort=function(){ })$V1
 
     histt <- hist(log10(samples),breaks=1000,plot=FALSE)
-    hist <- cbind(histt$mids,histt$mids,histt$counts)
+    hist <- cbind(histt$mids,histt$mids,histt$density/100)
     ##  hist <- read.table(histname,skip=templist[i]*3+(templist[i]-1)*1000,
     ##                     nrows=1000,header=FALSE)
-    hist[,3]<-(hist[,3])/sum(hist[,3])
+    ##hist[,3]<-(hist[,3])/sum(hist[,3])/diff(hist[,1])[1]
 
     ## get rid of brackets
     data[templist[i],9] <- gsub("([()])","",data[templist[i],9])
@@ -90,8 +89,11 @@ for( i in 1:ntemps ) {
 
     ## make histogram
     ##plot(hist[,1],hist[,3],type="l",col="red",log="y",ylim=c(0.1,max(hist[,3])))
-    plot(hist[,1],hist[,3]/lognorm_norm(),type="l",col="tomato1",
-	 ylim=c(0,max(hist[,3]/lognorm_norm())),
+##plot(hist[,1],hist[,3]/lognorm_norm(),type="l",col="tomato1",
+##	 ylim=c(0,max(hist[,3]/lognorm_norm())),
+##	 xlab="",ylab="",cex.axis=1.3,yaxs="i")
+
+    plot(hist[,1],hist[,3],type="l",col="tomato1",
 	 xlab="",ylab="",cex.axis=1.3,yaxs="i")
 					#  print(lognorm_norm())
     
@@ -99,9 +101,11 @@ for( i in 1:ntemps ) {
     xlims <- c(min(hist[,1]),max(hist[,1]))
     ##x<-seq(from=xlims[1]/2,to=xlims[2]*2,length.out=2000)
     ##  lines(x,lognorm(x)/lognorm_norm(),lwd=1.5)
-    x <- seq(from=log10(min(samples)),to=log10(max(samples)),length.out=1000)
+    x <- seq(from=log10(min(samples)),to=log10(max(samples)),length.out=length(hist[,3]))
     y <- lognorm(10^x)
-    y <- y/max(y)
+    ##y <- y/max(y)
+    ##y <- dlnorm(10^x, meanlog=mu, sdlog=sigma)
+    y <- sum(hist[,3])*y/sum(y)
 
     ## ---------------------
     ##  m <- mean(log(samples/median(samples)))
@@ -115,7 +119,8 @@ for( i in 1:ntemps ) {
     ##  ##n <- median((h/(hist[,3]/lognorm_norm()))[h>0.3])
     ##  lines(hist[,1],h/n)
     ## ---------------------
-    n <- mean((hist[,3]/lognorm_norm())[(hist[,3]/lognorm_norm())>0.5])
+    ##n <- mean((hist[,3]/y)[hist[,3]>(0.5*max(hist[,3]))])
+    n <- 1
     lines(x,y*n,lwd=1.5)
     
     xpos <- grconvertX(0.75,from="npc",to="user")
