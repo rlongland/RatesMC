@@ -1222,28 +1222,32 @@ void transpose(std::vector<std::vector<double> > &b){
 //----------------------------------------------------------------------
 void writeOutputFileHeaders(Reaction *R){
 
+  std::string hash = GIT_COMMIT_HASH;
+  
   // current date/time based on current system
   auto now = std::chrono::system_clock::now();
   std::time_t now_time = std::chrono::system_clock::to_time_t(now);
 	
   outfile << R->getName() << std::endl;
-  outfile << "Calculated with RatesMC " << VersionNumber << " on " <<
-  std::ctime(&now_time);// <<  std::endl;
+  outfile << "Calculated with RatesMC " << VersionNumber
+  << " (git hash:" << hash << ") on " << std::ctime(&now_time);// << std::endl;
+  //outfile << "Calculated with RatesMC " << VersionNumber << " on " <<
+  //std::ctime(&now_time) << " git hash:" << hash;// <<  std::endl;
   outfile << "Samples = " << NSamples << std::endl;
   outfile << " T9      RRate_low       Median Rate" << 
   "     RRate_high     f.u."  << std::endl;
   
   outfullfile << R->getName() << std::endl;
-  outfullfile << "Calculated with RatesMC " << VersionNumber << " on "
-  << std::ctime(&now_time);// << std::endl;
+  outfullfile << "Calculated with RatesMC " << VersionNumber
+  << " (git hash:" << hash << ") on " << std::ctime(&now_time);// << std::endl;
   outfullfile << "Samples = " << NSamples << std::endl;
   outfullfile << " T9      RRate_2low      RRate_low       Classical Rate  Median Rate" << 
   "     Mean Rate       RRate_high     RRate_2high     Log-Normal mu" <<
   "      Log-Normal sigma A-D Statistic" << std::endl;
 
   sampfile << R->getName() << std::endl;
-  sampfile << "Calculated with RatesMC " << VersionNumber << " on " <<
-  std::ctime(&now_time);// <<  std::endl;
+  sampfile << "Calculated with RatesMC " << VersionNumber
+  << " (git hash:" << hash << ") on " << std::ctime(&now_time);// <<  std::endl;
 	
 }
 
