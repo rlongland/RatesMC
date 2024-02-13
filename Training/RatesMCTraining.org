@@ -231,7 +231,7 @@
    - $C^2S$: Spectroscopic Factor
 
 ** Commented-out resonances
-   - Put an exclamation point before the resonance:
+   - Put an exclamation point _and a space_ before the resonance:
      #+BEGIN_SRC text
      ! 150.0  1.0    0    0   0.5   1.0E-05   1.0E-06   0   3.0E+00   0.1E+00   0   0.00E+00  0.00E+00  0   0.0      0         
      #+END_SRC
