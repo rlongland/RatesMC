@@ -35,6 +35,9 @@
 #include "Reaction.h"
 #include "Resonance.h"
 
+#ifndef GIT_COMMIT_HASH
+#define GIT_COMMIT_HASH "?"
+#endif
 
 int main(int argc, char** argv){
 
@@ -256,12 +259,14 @@ int main(int argc, char** argv){
 
 
 void WelcomeScreen(){
+  std::string hash = GIT_COMMIT_HASH;
   std::cout << std::endl;
   std::cout << " **************************************************" << std::endl;
   std::cout << " *                   RatesMC                      *" << std::endl;
   std::cout << " *        Copyright (C) 2022  R. Longland         *" << std::endl;
   std::cout << " *            V. " << VersionNumber << "  " << VersionDate 
-  << "                *" << std::endl;
+  << "             *" << std::endl;
+  std::cout << " *             git hash: " << hash << "               *" << std::endl;
   std::cout << " * This program comes with ABSOLUTELY NO WARRANTY *" << std::endl;
   std::cout << " *                                                *" << std::endl;
   std::cout << " **************************************************" << std::endl;

@@ -34,3 +34,22 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/mass_1.mas20
 ## Copy the NuBase file over if needed
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/nubase_3.mas20
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+#ADD_CUSTOM_TARGET(
+#	do_always ALL
+#   	COMMAND git describe --abbrev=10 --always
+#	OUTPUT_VARIABLE GIT_COMMIT_HASH
+#)
+#execute_process(COMMAND git describe --tags --always
+#    OUTPUT_VARIABLE GIT_COMMIT_HASH)
+#add_definitions(-DGIT_COMMIT_HASH=$(GIT_COMMIT_HASH))
+#shell git describe --abbrev=10 --always))
+
+execute_process(
+    COMMAND git describe --abbrev=10 --always
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+target_compile_definitions(RatesMC PRIVATE
+    "-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\"")
