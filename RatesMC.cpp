@@ -41,8 +41,6 @@
 
 int main(int argc, char** argv){
 
-  // Write the welcome screen
-  WelcomeScreen();
 
   //  gsl_error_handler_t myHandler;
   //  gsl_set_error_handler(&);
@@ -78,7 +76,11 @@ int main(int argc, char** argv){
   contribfile.open("RatesMC.cont");
   // Test file for storing debugging
   testfile.open("test.dat");
-	
+
+  // Write the welcome screen
+  WelcomeScreen();
+
+  
   // Make a reaction. This is where everything is held
   Reaction *Reac = new Reaction();
   
@@ -271,6 +273,18 @@ void WelcomeScreen(){
   std::cout << " *                                                *" << std::endl;
   std::cout << " **************************************************" << std::endl;
   std::cout << "\n" << std::endl;
+
+  logfile << std::endl;
+  logfile << " **************************************************" << std::endl;
+  logfile << " *                   RatesMC                      *" << std::endl;
+  logfile << " *        Copyright (C) 2022  R. Longland         *" << std::endl;
+  logfile << " *            V. " << VersionNumber << "  " << VersionDate 
+  << "             *" << std::endl;
+  logfile << " *             git hash: " << hash << "               *" << std::endl;
+  logfile << " * This program comes with ABSOLUTELY NO WARRANTY *" << std::endl;
+  logfile << " *                                                *" << std::endl;
+  logfile << " **************************************************" << std::endl;
+  logfile << "\n" << std::endl;
 
   return;
 }
