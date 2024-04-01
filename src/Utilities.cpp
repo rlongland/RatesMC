@@ -522,7 +522,15 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     //if(dG2 < 0.0) dG2 *= 1.0e6;
     //if(dG3 < 0.0) dG3 *= 1.0e6;
     //if(dwg < 0.0) dwg *= 1.0e6;
-		
+    // If a partial width is defined but the spectator particle
+    // isn't, throw an error
+    if(!isZero(G3) && R.getGamma_index() == 1 && isZero(R.M2)){
+      std::cout << "\nERROR: For resonance " << i+1 << " at " << E_cm*1000.0 << " keV\n" 
+      << "       you have defined a spectator particle partial width,\n"
+      << "       but no spectator particle!\n\n";
+      abort();
+    }
+	
 
     //infile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 

@@ -34,8 +34,8 @@ void WelcomeScreen();
 
 
 // Versions
-std::string VersionNumber = "2.2.3";
-std::string VersionDate = "Feb. 13, 2024";
+std::string VersionNumber = "2.2.4";
+std::string VersionDate = "Apr. 1, 2024";
 
 
 #endif
