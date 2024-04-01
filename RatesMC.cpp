@@ -75,7 +75,7 @@ int main(int argc, char** argv){
   // Contribution file
   contribfile.open("RatesMC.cont");
   // Test file for storing debugging
-  testfile.open("test.dat");
+  //testfile.open("test.dat");
 
   // Write the welcome screen
   WelcomeScreen();
@@ -253,7 +253,7 @@ int main(int argc, char** argv){
   ptfile.close();
   outfile.close();
   outfullfile.close();
-  testfile.close();
+  //testfile.close();
 	
   return 1;
 }
