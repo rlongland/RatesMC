@@ -114,6 +114,8 @@ while(
   skip <- skip+1
   if(is.numeric(x))
     Energies <- c(Energies,x)
+  if(x == "+")
+      Energies <- c(Energies,Energies[length(Energies)])
 }
 Energies <- format(Energies,digits=1,trim=TRUE)
 is.UL <- c(is.UL,rep(1,length(Energies)-length(is.UL)))
@@ -187,9 +189,20 @@ iInter <- grep("Int",names(data))
 InterNumber <- as.double(substr(names(data)[iInter],4,6))
 Inter.lab <- paste("Intf",InterNumber)
 
+counter <- rep("",length(Energies))
+c <- 1
+for(i in 2:length(Energies)){
+    if(Energies[i] == Energies[i-1]){
+	c <- c+1
+	counter[i] <- paste("#",c,sep="")
+    } else {
+	c <- 1
+    }
+}
+
 leg <- c(aRate.lab,
 	 ##paste("Res",1:(nparts-2)))
-	 paste(Energies,"keV",ULstring))
+	 paste(Energies,"keV",counter,ULstring))
 if(length(iInter)>0)
     leg <- c(leg,Inter.lab)
 
