@@ -95,13 +95,15 @@ skip <- skip+1
 Energies <- numeric()
 while(
   ## Try to read a line and see if an actual number was read.
-  substr(x <- try(unlist(read.table(RatesMCFile,skip=skip,nrows=1)[1]
-                             )),1,2) != "**"){
-  ## append the resonance energy list and skip to the next line
-  skip <- skip+1
-  if(is.numeric(x))
-    Energies <- c(Energies,x)
-}
+    substr(x <- try(unlist(read.table(RatesMCFile,skip=skip,nrows=1)[1]
+			   )),1,2) != "**"){
+			       ## append the resonance energy list and skip to the next line
+			       skip <- skip+1
+			       if(is.numeric(x))
+				   Energies <- c(Energies,x)
+			       if(x == "+")
+				   Energies <- c(Energies,Energies[length(Energies)])
+			   }
 is.UL <- rep(0,length(Energies))
 
 ## Now read the upper limit resonances in the same way
