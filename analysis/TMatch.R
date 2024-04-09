@@ -9,7 +9,7 @@
 RatesMCFile      <- "RatesMC.in"
 RatesMCOutput    <- "RatesMC.out"
 ContributionFile <- "RatesMC.cont"
-HFFile           <- "Tmatch.HF"
+HFFile           <- "TMatch.HF"
 
 massfile         <- "mass_1.mas20"
 nubasefile       <- "nubase_3.mas20"
