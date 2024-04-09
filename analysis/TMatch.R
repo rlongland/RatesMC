@@ -368,7 +368,8 @@ if(sum(cut, na.rm=TRUE)>0){
     TMatch.ETER <- interp.ETER(maxE)
     cat("TMatch from ETER method:       ",TMatch.ETER,"\n")
 
-    if(ETER.array[length(ETER.array)] < maxE){
+    ##if(ETER.array[length(ETER.array)] < maxE){
+    if(!any(ETER.array[cut] > maxE)){
 	cat(paste0(redtext,
 		   "\nExperimental rate looks good up to 10 GK!\nCheck TMatch.pdf\n",
 		   normtext))
