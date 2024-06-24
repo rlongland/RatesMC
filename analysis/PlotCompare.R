@@ -13,6 +13,9 @@ headerskip.lit <- 4  ## 3 for RatesMC type files
 extraSuper <- ""            ## Use to put a superscript at the end
                             ## e.g. "g" for ^{26}Al^g
 
+## Y-axis range (set to NULL for automatic plotting)
+YRangeUser <- c(1e-2,1e2)
+
 RateColor <- "gray"  # colour for the error region shade
 RateTrans <- 0.8     # transparancy of error region (1 is fully opaque)
 CompColor <- "blue"  # colour for the comparison shade
@@ -50,6 +53,35 @@ add.alpha <- function(col, alpha=1){
 erfc    <- function(x) {  # 1 - erf(x)
     2 * pnorm(-sqrt(2) * x)
 }
+axTexpr <- function(side, at = axTicks(side, axp=axp, usr=usr, log=log),
+                    axp = NULL, usr = NULL, log = NULL, pad=FALSE,
+                    pre=FALSE,dot=TRUE)
+{
+  ## Purpose: Do "a 10^k" labeling instead of "a e<k>"
+  ##	      this auxiliary should return 'at' and 'label' (expression)
+  ## -------------------------------------------------------------
+  ## Arguments: as for axTicks()
+  ##            pre determines if you should put the 3 in 3 \times 10^3
+  ## --------------------------------------------------------------
+  ## Author: Martin Maechler, Date:  7 May 2004, 18:01
+  eT <- floor(log10(abs(at)))# at == 0 case is dealt with below
+  mT <- at / 10^eT 
+  if(pad){
+    eT[sign(eT)>-1] <- paste("+",eT[sign(eT)>-1],sep="")
+    temp <- eT[nchar(tmp)<3]
+    eT[nchar(eT)<3] <- paste(substr(temp,1,1),"0",substr(temp,2,2),sep="")
+  }
+  ss <- lapply(seq(along = at),
+               function(i) if(at[i] == 0) quote(0) else
+               if(pre){
+                 if(dot)substitute(A%.%10^E, list(A=mT[i], E=eT[i])) else
+                 substitute(A%*%10^E, list(A=mT[i], E=eT[i]))
+               }else{
+                 substitute(10^E, list(A=mT[i], E=eT[i]))
+               })
+   do.call("expression", ss) 
+}
+
 
 ##library("gsl")
 
@@ -217,6 +249,11 @@ RateComp <- cbind(MyRate[matchlist1,1],
 }
 cYAxisLims <- range(RateComp[,c(2:4)])
 YAxisLims <- range(c(cYAxisLims,YAxisLims))
+
+if(!is.null(YRangeUser)){
+    YAxisLims <- YRangeUser
+}
+
 ##YAxisLims <- c(1e-1,1e1)
 minBase10 <- floor(log10(YAxisLims[1]))
 maxBase10 <- ceiling(log10(YAxisLims[2]))
