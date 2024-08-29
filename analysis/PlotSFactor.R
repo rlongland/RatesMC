@@ -151,7 +151,7 @@ mypdf("GraphSFactor.pdf",width=8,height=6)
 oldpar <- par(mar=0.1+c(5,5,1,1))
 
 ## First make the plotting pane
-ylim.default <- range(data[,2:dim(data)[2]])
+ylim.default <- range(data[,2:dim(data)[2]],na.rm=TRUE,finite=TRUE)
 if(is.na(ylim[1]))ylim <- ylim.default
 ylim[1] <- max(ylim[1],1e-10)
 xlim.default <- c(0,1)
