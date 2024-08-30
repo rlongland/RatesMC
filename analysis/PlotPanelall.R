@@ -76,7 +76,9 @@ for( i in 1:ntemps ) {
 
   # Make the lognormal fit
   xlims <- c(min(hist[,1]),max(hist[,1]))
-  x <- seq(from=log10(min(samples)), to=log10(max(samples)), length.out=length(hist[,3]))
+  x <- seq(from=log10(min(samples[samples>0])),
+	   to=log10(max(samples[samples>0])),
+	   length.out=length(hist[,3]))
   y <- lognorm(10^x)
   ##y <- y/max(y)
   y <- sum(hist[,3])*y/sum(y)
