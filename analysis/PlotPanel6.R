@@ -71,6 +71,12 @@ for( i in 1:ntemps ) {
 				       nrows=Samples,header=FALSE),
 			    abort=function(){ })$V1
 
+    ## Check for negative
+    samples[samples<0] <- NA
+    if(sum(is.na(samples))>0)
+	cat("\nFor T=",data[templist[i],1],"there is",sum(is.na(samples)),
+	    "negative rate (likely just a numberical error)\n")
+
     histt <- hist(log10(samples),breaks=1000,plot=FALSE)
     hist <- cbind(histt$mids,histt$mids,histt$density/100)
     ##  hist <- read.table(histname,skip=templist[i]*3+(templist[i]-1)*1000,
@@ -101,7 +107,9 @@ for( i in 1:ntemps ) {
     xlims <- c(min(hist[,1]),max(hist[,1]))
     ##x<-seq(from=xlims[1]/2,to=xlims[2]*2,length.out=2000)
     ##  lines(x,lognorm(x)/lognorm_norm(),lwd=1.5)
-    x <- seq(from=log10(min(samples)),to=log10(max(samples)),length.out=length(hist[,3]))
+    x <- seq(from=log10(min(samples,na.rm=TRUE)),
+	     to=log10(max(samples,na.rm=TRUE)),
+	     length.out=length(hist[,3]))
     y <- lognorm(10^x)
     ##y <- y/max(y)
     ##y <- dlnorm(10^x, meanlog=mu, sdlog=sigma)
