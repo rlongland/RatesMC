@@ -188,7 +188,7 @@ void readNonResonant(std::ifstream &infile, Reaction &R, int part){
   R.setNonResonant(s,sp,spp,ds,cutoffe,part);
 
   if(ds < 0)logfile << "Non-resonant part " << part+1 << " has a factor uncertainty of " 
-	    << -ds << std::endl;
+										<< -ds << std::endl;
   
 }
 
@@ -249,11 +249,11 @@ void readNonResonantTable(std::ifstream &infile, Reaction &R, int part) {
 }
 
 /* 
-  This is where Victor need to work on reading all of the "standard" resonances
-  1) Start by just reading 5 of them
-  2) Then add the ability to add up until the end of the block (check for ****?)
-  3) Include error checking. Do the numbers make sense?
- */
+	 This is where Victor need to work on reading all of the "standard" resonances
+	 1) Start by just reading 5 of them
+	 2) Then add the ability to add up until the end of the block (check for ****?)
+	 3) Include error checking. Do the numbers make sense?
+*/
 
 void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 
@@ -299,7 +299,11 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
      
   while(true){
 
-    //		std::cout << "New resonance\n";
+		std::cout << "New resonance\n";
+
+		// Count the number of entries in the line
+		int nEnt = countEntries(infile);
+		std::cout << "nEnt = " << nEnt << std::endl;
 		
     // New method: Read entire line into a string first
     std::string line;
@@ -348,8 +352,52 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
       Resonance Res = R.getLastResonance();
 			// Right here: count how many inputs there are? I need to figure
 			// out if there is a resonance energy defined or not somehow
-      E_cm = Res.getE_cm()*1000.0;
-      dE_cm = Res.getdE_cm()*1000.0;
+			// For normal resonances, an additional resonance should have 16 inputs
+			if(!isUpperLimit){
+				if(nEnt == 16){
+					std::cout << "This is an added possibility with " << nEnt 
+										<< " entries, so the energy is the same as the previous resonance\n"
+										<< std::endl;
+					E_cm = Res.getE_cm()*1000.0;
+					dE_cm = Res.getdE_cm()*1000.0;
+				} else if (nEnt == 18) {
+					std::cout << "This is an added possibility with " << nEnt 
+										<< " entries, so the energy should be read\n"
+										<< std::endl;
+					fin >> data;
+					E_cm = std::stod(data);
+					fin >> dE_cm;
+				} else {
+					std::cout << "\033[31m"
+										<< "ERROR:   It looks like you've done something\n"
+										<< "         wrong for resonance " << i+1 << "\n"
+										<< "         Check input file.\n"
+										<< "\033[0m" << std::endl;
+					exit(EXIT_FAILURE);
+				}
+			}	else {   // if this is an upper limit
+				if(nEnt == 20){
+					std::cout << "This is an added possibility with " << nEnt 
+										<< " entries, so the energy is the same as the previous resonance\n"
+										<< std::endl;
+					E_cm = Res.getE_cm()*1000.0;
+					dE_cm = Res.getdE_cm()*1000.0;
+				} else if (nEnt == 22) {
+					std::cout << "This is an added possibility with " << nEnt 
+										<< " entries, so the energy should be read\n"
+										<< std::endl;
+					fin >> data;
+					E_cm = std::stod(data);
+					fin >> dE_cm;
+				} else {
+					std::cout << "\033[31m"
+										<< "ERROR:   It looks like you've done something\n"
+										<< "         wrong for upper limit resonance " << i+1 << "\n"
+										<< "         Check input file.\n"
+										<< "\033[0m" << std::endl;
+					exit(EXIT_FAILURE);
+				}
+			}
       CorresRes = Res.getCorresRes();
 			
     } else {
@@ -373,39 +421,39 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
       //isWidthCorrelated = (data.find("c")!=std::string::npos);
       dwg = std::stod(data);
       fin >> Jr 
-      >> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
-      >> Exf >> isBroad;
+					>> G1 >> dG1 >> L1 >> G2 >> dG2 >> L2 >> G3 >> dG3 >> L3
+					>> Exf >> isBroad;
 
       fin >> CorString;
       //std::cout << "CorString = " << CorString << "\n";
       // Make CorString lowercase
       std::transform(CorString.begin(), CorString.end(), CorString.begin(),
-		     [](unsigned char c){ return std::tolower(c); });
+										 [](unsigned char c){ return std::tolower(c); });
       // Read correlation flags if they're wanted
       isECorrelated=false;
       isWidthCorrelated=false;
       //if(bEnergyCorrelations){
       isECorrelated = (CorString.find("e")!=std::string::npos);
       if(isECorrelated && !firstECorrelated){
-	firstECorrelated = true;
-	if(!bEnergyCorrelations){
-	  std::cout << "\033[31m"
-	  << "WARNING: You have specified resonances with correlated\n"
-	  << "         energies, but the correlations flag is off!\n"
-	  << "\033[0m" << std::endl;
-	}
+				firstECorrelated = true;
+				if(!bEnergyCorrelations){
+					std::cout << "\033[31m"
+										<< "WARNING: You have specified resonances with correlated\n"
+										<< "         energies, but the correlations flag is off!\n"
+										<< "\033[0m" << std::endl;
+				}
       }
 
       //			if(bPartialWidthCorrelations)
       isWidthCorrelated = (CorString.find("w")!=std::string::npos);
       if(isWidthCorrelated && !firstWidthCorrelated){
-	firstWidthCorrelated = true;
-	if(!bPartialWidthCorrelations){
-	  std::cout << "\033[31m"
-	  << "WARNING: You have specified resonances with correlated\n"
-	  << "         widths, but the correlations flag is off!\n"
-	  << "\033[0m" << std::endl;
-	}
+				firstWidthCorrelated = true;
+				if(!bPartialWidthCorrelations){
+					std::cout << "\033[31m"
+										<< "WARNING: You have specified resonances with correlated\n"
+										<< "         widths, but the correlations flag is off!\n"
+										<< "\033[0m" << std::endl;
+				}
       }
       //			if(bPartialWidthCorrelations)
 
@@ -413,10 +461,10 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
       //if(CorresRes != i){
       // First check if the fraction is contained in CorString
       if(isNumeric(CorString)){
-	Frac = stod(CorString);
-	//std::cout << "CorString is numeric!\n";
+				Frac = stod(CorString);
+				//std::cout << "CorString is numeric!\n";
       } else {
-	fin >> Frac;
+				fin >> Frac;
       }
       //std::cout << i << " " << CorresRes << " " << " " << Frac << "\n";
       //}
@@ -424,74 +472,74 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
       // Upper limit resonances.
       // Old style with no DPT
       if(nEnt == 17){
-	// First check whether the energy uncertainty has a correlation tag
-	//fin >> data;
-	//isECorrelated = (data.find("c")!=std::string::npos);
-	//dE_cm = std::stod(data);
-	fin >> Jr 
-	>> G1 >> dG1 >> L1 >> PT1 >> G2 >> dG2 >> L2 >> PT2
-	>> G3 >> dG3 >> L3 >> PT3
-	>> Exf >> isBroad;
-	fin >> CorString;
-	//std::cout << "CorString = " << CorString << "\n";
-	// Make CorString lowercase
-	std::transform(CorString.begin(), CorString.end(), CorString.begin(),
-		       [](unsigned char c){ return std::tolower(c); });
-	// Read correlation flags if they're wanted
-	isECorrelated=false;
-	isWidthCorrelated=false;
-	if(bEnergyCorrelations)
-	  isECorrelated = (CorString.find("e")!=std::string::npos);
-	if(bPartialWidthCorrelations)
-	  isWidthCorrelated = (CorString.find("w")!=std::string::npos);
+				// First check whether the energy uncertainty has a correlation tag
+				//fin >> data;
+				//isECorrelated = (data.find("c")!=std::string::npos);
+				//dE_cm = std::stod(data);
+				fin >> Jr 
+						>> G1 >> dG1 >> L1 >> PT1 >> G2 >> dG2 >> L2 >> PT2
+						>> G3 >> dG3 >> L3 >> PT3
+						>> Exf >> isBroad;
+				fin >> CorString;
+				//std::cout << "CorString = " << CorString << "\n";
+				// Make CorString lowercase
+				std::transform(CorString.begin(), CorString.end(), CorString.begin(),
+											 [](unsigned char c){ return std::tolower(c); });
+				// Read correlation flags if they're wanted
+				isECorrelated=false;
+				isWidthCorrelated=false;
+				if(bEnergyCorrelations)
+					isECorrelated = (CorString.find("e")!=std::string::npos);
+				if(bPartialWidthCorrelations)
+					isWidthCorrelated = (CorString.find("w")!=std::string::npos);
 				
-	// If this is a resonance possibility, try to
-	// read the probability
-	//if (CorresRes != i) {
-	// First check if the fraction is contained in
-	// CorString
-	if (isNumeric(CorString)) {
-	  Frac = stod(CorString);
-	} else {
-	  fin >> Frac;
-	}
-	//std::cout << i << " " << CorresRes << " " << " " << Frac << "\n";
-	//}
+				// If this is a resonance possibility, try to
+				// read the probability
+				//if (CorresRes != i) {
+				// First check if the fraction is contained in
+				// CorString
+				if (isNumeric(CorString)) {
+					Frac = stod(CorString);
+				} else {
+					fin >> Frac;
+				}
+				//std::cout << i << " " << CorresRes << " " << " " << Frac << "\n";
+				//}
 				
       }
-	// New style with DPT
+			// New style with DPT
       else if(nEnt == 20 || nEnt == 21){
-	// First check whether the energy uncertainty has a correlation tag
-	//fin >> data;
-	//isECorrelated = (data.find("c")!=std::string::npos);
-	//dE_cm = std::stod(data);
-	fin >> Jr 
-	>> G1 >> dG1 >> L1 >> PT1 >> DPT1 >> G2 >> dG2 >> L2 >> PT2 >> DPT2
-	>> G3 >> dG3 >> L3 >> PT3 >> DPT3
-	>> Exf >> isBroad;
+				// First check whether the energy uncertainty has a correlation tag
+				//fin >> data;
+				//isECorrelated = (data.find("c")!=std::string::npos);
+				//dE_cm = std::stod(data);
+				fin >> Jr 
+						>> G1 >> dG1 >> L1 >> PT1 >> DPT1 >> G2 >> dG2 >> L2 >> PT2 >> DPT2
+						>> G3 >> dG3 >> L3 >> PT3 >> DPT3
+						>> Exf >> isBroad;
 
-	fin >> CorString;
-	//std::cout << "CorString = " << CorString << "\n";
-	// Make CorString lowercase
-	std::transform(CorString.begin(), CorString.end(), CorString.begin(),
-		       [](unsigned char c){ return std::tolower(c); });
-	isECorrelated=false;
-	isWidthCorrelated=false;
-	if(bEnergyCorrelations)
-	  isECorrelated = (CorString.find("e")!=std::string::npos);
-	if(bPartialWidthCorrelations)
-	  isWidthCorrelated = (CorString.find("w")!=std::string::npos);
+				fin >> CorString;
+				//std::cout << "CorString = " << CorString << "\n";
+				// Make CorString lowercase
+				std::transform(CorString.begin(), CorString.end(), CorString.begin(),
+											 [](unsigned char c){ return std::tolower(c); });
+				isECorrelated=false;
+				isWidthCorrelated=false;
+				if(bEnergyCorrelations)
+					isECorrelated = (CorString.find("e")!=std::string::npos);
+				if(bPartialWidthCorrelations)
+					isWidthCorrelated = (CorString.find("w")!=std::string::npos);
 
-	// If this is a resonance possibility, try to read the probability
-	//if(CorresRes != i){
-	// First check if the fraction is contained in CorString
-	if(isNumeric(CorString)){
-	  Frac = stod(CorString);
-	} else {
-	  fin >> Frac;
-	}
-	//std::cout << i << " " << CorresRes << " " << " " << Frac << "\n";
-	//}
+				// If this is a resonance possibility, try to read the probability
+				//if(CorresRes != i){
+				// First check if the fraction is contained in CorString
+				if(isNumeric(CorString)){
+					Frac = stod(CorString);
+				} else {
+					fin >> Frac;
+				}
+				//std::cout << i << " " << CorresRes << " " << " " << Frac << "\n";
+				//}
 
       }
     }
@@ -515,8 +563,8 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
       if(dG1 > 0)dG1 *= 1.0e6;
       // Also, force it to be broad
       if(!isBroad){
-	logfile << "WARNING: sub-threshold resonances must be broad. The code switched this automatically for you!\n";
-	isBroad = true;
+				logfile << "WARNING: sub-threshold resonances must be broad. The code switched this automatically for you!\n";
+				isBroad = true;
       }
     } 
     // If factor uncertainties are input, don't scale 
@@ -528,8 +576,8 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     // isn't, throw an error
     if(!isZero(G3) && R.getGamma_index() == 1 && isZero(R.M2)){
       std::cout << "\nERROR: For resonance " << i+1 << " at " << E_cm*1000.0 << " keV\n" 
-      << "       you have defined a spectator particle partial width,\n"
-      << "       but no spectator particle!\n\n";
+								<< "       you have defined a spectator particle partial width,\n"
+								<< "       but no spectator particle!\n\n";
       abort();
     }
 	
@@ -539,65 +587,65 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     // If we care about energy correlations
     if(bEnergyCorrelations && isECorrelated)
       if(dE_cm < R.smallestdE || isZero(R.smallestdE)){
-	R.smallestdE = dE_cm;
-	R.EofSmallestdE = E_cm;
+				R.smallestdE = dE_cm;
+				R.EofSmallestdE = E_cm;
       }
 		
     if(bPartialWidthCorrelations && !isUpperLimit && isWidthCorrelated){
       if(!isZero(wg)){
-	if(dwg > 0.0){
-	  if(dwg/wg < R.smallestdwg || isZero(R.smallestdwg)){
-	    R.smallestdwg = dwg/wg;
-	    R.EofSmallestdwg = E_cm;
-	  }					
-	} else {
-	  if( ((-dwg)-1.0) < R.smallestdwg || isZero(R.smallestdwg)){
-	    R.smallestdwg = (-dwg)-1.0;
-	    R.EofSmallestdwg = E_cm;
-	  }
-	}
+				if(dwg > 0.0){
+					if(dwg/wg < R.smallestdwg || isZero(R.smallestdwg)){
+						R.smallestdwg = dwg/wg;
+						R.EofSmallestdwg = E_cm;
+					}					
+				} else {
+					if( ((-dwg)-1.0) < R.smallestdwg || isZero(R.smallestdwg)){
+						R.smallestdwg = (-dwg)-1.0;
+						R.EofSmallestdwg = E_cm;
+					}
+				}
       }
 			
       if(!isZero(G1)){
-	if(dG1 > 0.0){
-	  if(dG1/G1 < R.smallestdG[0] || isZero(R.smallestdG[0])){
-	    R.smallestdG[0] = dG1/G1;
-	    R.EofSmallestdG[0] = E_cm;
-	  }
-	} else {
-	  if( ((-dG1)-1.0) < R.smallestdG[0] || isZero(R.smallestdG[0])){
-	    R.smallestdG[0] = (-dG1)-1.0;
-	    R.EofSmallestdG[0] = E_cm;
-	  }
-	}
+				if(dG1 > 0.0){
+					if(dG1/G1 < R.smallestdG[0] || isZero(R.smallestdG[0])){
+						R.smallestdG[0] = dG1/G1;
+						R.EofSmallestdG[0] = E_cm;
+					}
+				} else {
+					if( ((-dG1)-1.0) < R.smallestdG[0] || isZero(R.smallestdG[0])){
+						R.smallestdG[0] = (-dG1)-1.0;
+						R.EofSmallestdG[0] = E_cm;
+					}
+				}
       }
 
       if(!isZero(G2)){
-	if(dG2 > 0.0){
-	  if(dG2/G2 < R.smallestdG[1] || isZero(R.smallestdG[1])){
-	    R.smallestdG[1] = dG2/G2;
-	    R.EofSmallestdG[1] = E_cm;
-	  }
-	} else {
-	  if( ((-dG2)-1.0) < R.smallestdG[1] || isZero(R.smallestdG[1])){
-	    R.smallestdG[1] = (-dG2)-1.0;
-	    R.EofSmallestdG[1] = E_cm;
-	  }
-	}
+				if(dG2 > 0.0){
+					if(dG2/G2 < R.smallestdG[1] || isZero(R.smallestdG[1])){
+						R.smallestdG[1] = dG2/G2;
+						R.EofSmallestdG[1] = E_cm;
+					}
+				} else {
+					if( ((-dG2)-1.0) < R.smallestdG[1] || isZero(R.smallestdG[1])){
+						R.smallestdG[1] = (-dG2)-1.0;
+						R.EofSmallestdG[1] = E_cm;
+					}
+				}
       }
 
       if(!isZero(G3)){
-	if(dG3 > 0.0){
-	  if(dG3/G3 < R.smallestdG[2] || isZero(R.smallestdG[2])){
-	    R.smallestdG[2] = dG3/G3;
-	    R.EofSmallestdG[2] = E_cm;
-	  }
-	} else {
-	  if( ((-dG3)-1.0) < R.smallestdG[2] || isZero(R.smallestdG[2])){
-	    R.smallestdG[2] = (-dG3)-1.0;
-	    R.EofSmallestdG[2] = E_cm;
-	  }
-	}
+				if(dG3 > 0.0){
+					if(dG3/G3 < R.smallestdG[2] || isZero(R.smallestdG[2])){
+						R.smallestdG[2] = dG3/G3;
+						R.EofSmallestdG[2] = E_cm;
+					}
+				} else {
+					if( ((-dG3)-1.0) < R.smallestdG[2] || isZero(R.smallestdG[2])){
+						R.smallestdG[2] = (-dG3)-1.0;
+						R.EofSmallestdG[2] = E_cm;
+					}
+				}
       }
     }
 		
@@ -605,11 +653,11 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
     // Add this resonance to the list of resonances stored in the
     // reaction
     R.addResonance(i++, E_cm, dE_cm, wg, dwg, Jr,
-		   G1, dG1, L1, PT1, DPT1,
-		   G2, dG2, L2, PT2, DPT2,
-		   G3, dG3, L3, PT3, DPT3,
-		   Exf, isBroad, isUpperLimit,isECorrelated, isWidthCorrelated,
-		   CorresRes, Frac);
+									 G1, dG1, L1, PT1, DPT1,
+									 G2, dG2, L2, PT2, DPT2,
+									 G3, dG3, L3, PT3, DPT3,
+									 Exf, isBroad, isUpperLimit,isECorrelated, isWidthCorrelated,
+									 CorresRes, Frac);
     
   }
   
@@ -683,7 +731,7 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
       IntfSign = -1;
     else {
       std::cout << "ERROR: Enter '+-', '+', or '-'"
-      << " for the interference sign!\n";
+								<< " for the interference sign!\n";
       std::cout << " You entered '" << dummy << "'\n";
       exit(EXIT_FAILURE);
     }
@@ -708,8 +756,8 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
       //std::cout << E_cm << std::endl;
 
       fin >> Jr 
-      >> G1 >> dG1 >> L1 >> PT1 >> DPT1 >> G2 >> dG2 >> L2 >> PT2 >> DPT2
-      >> G3 >> dG3 >> L3 >> PT3 >> DPT3 >> Exf;
+					>> G1 >> dG1 >> L1 >> PT1 >> DPT1 >> G2 >> dG2 >> L2 >> PT2 >> DPT2
+					>> G3 >> dG3 >> L3 >> PT3 >> DPT3 >> Exf;
 
       if(G1>0.0 && fabs(dG1)==0.0)isUpperLimit=true;	
       if(G2>0.0 && fabs(dG2)==0.0)isUpperLimit=true;
@@ -730,15 +778,15 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
       // if E_cm is negative, G1 is actually unitless, so undo
       // the unit operation above
       if (E_cm < 0) {
-	G1 *= 1.0e6;
-	if(dG1 > 0)dG1 *= 1.0e6;
+				G1 *= 1.0e6;
+				if(dG1 > 0)dG1 *= 1.0e6;
       }
 
       R.addResonanceToInterference(count, E_cm, dE_cm,Jr,
-				   G1, dG1, L1, PT1, DPT1,
-				   G2, dG2, L2, PT2, DPT2,
-				   G3, dG3, L3, PT3, DPT3,
-				   Exf, isUpperLimit, i);
+																	 G1, dG1, L1, PT1, DPT1,
+																	 G2, dG2, L2, PT2, DPT2,
+																	 G3, dG3, L3, PT3, DPT3,
+																	 Exf, isUpperLimit, i);
     
     }
     count++;
@@ -789,7 +837,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 
   logfile << "--------------------------------------------------------------------------------\n";
   logfile << "AME and NuBase\n"
-  << "--------------\n";
+					<< "--------------\n";
   bool AMEUsed = false;
 	
   infile >> dummy;
@@ -906,24 +954,24 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   bool AMEWarning = false;
   // Print a big warning if user is mixing and matching
   if(isNumber(dummy) && (ame->getAMEmass(0) ||
-			 ame->getAMEmass(1))) { 
+												 ame->getAMEmass(1))) { 
     AMEWarning = true;
     // std::cout << ame->getAMEmass(0) << " " << ame->getAMEmass(1) << "\n";
 
     std::cout << "\033[31m"
-    << "WARNING: It looks like you're mixing-and-matching\n"
-    << "         AME masses with user input separation energy.\n"
-    << "         Are you being careful?\n"
-    << "\033[0m" << std::endl;
+							<< "WARNING: It looks like you're mixing-and-matching\n"
+							<< "         AME masses with user input separation energy.\n"
+							<< "         Are you being careful?\n"
+							<< "\033[0m" << std::endl;
   }
 	 
   if(!isNumber(dummy) && !(ame->getAMEmass(0) &&
-			   ame->getAMEmass(1))) { 
+													 ame->getAMEmass(1))) { 
     std::cout << "\033[31m"
-    << "ERROR:   It looks like you're mixing-and-matching\n"
-    << "         AME masses with user inputs.\n"
-    << "         This is too dangerous to continue!\n"
-    << "\033[0m" << std::endl;
+							<< "ERROR:   It looks like you're mixing-and-matching\n"
+							<< "         AME masses with user inputs.\n"
+							<< "         This is too dangerous to continue!\n"
+							<< "\033[0m" << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -943,7 +991,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
     AMEUsed = true;
   } else {
     std::cout << "ERROR: Enter a number, 'ame', or 'AME'"
-    << " for the entrance particle separation energy\n";
+							<< " for the entrance particle separation energy\n";
     exit(EXIT_FAILURE);
   }
   //	std::cout << "Qin = " << Qin << "\n";
@@ -955,27 +1003,27 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   if(!AMEWarning){
     // Print a big warning if user is mixing and matching
     if(isNumber(dummy) && (ame->getAMEmass(0) ||
-			   ame->getAMEmass(1) ||
-			   (ame->getAMEmass(2) ||
-			    isZero(m2)))) {
+													 ame->getAMEmass(1) ||
+													 (ame->getAMEmass(2) ||
+														isZero(m2)))) {
       if(!isZero(std::stod(dummy))){
-	AMEWarning = true;
-	std::cout << "\033[31m"
-	<< "WARNING: It looks like you're mixing-and-matching\n"
-	<< "         AME masses with user input separation energy.\n"
-	<< "         Are you being careful?\n"
-	<< "\033[0m" << std::endl;
+				AMEWarning = true;
+				std::cout << "\033[31m"
+									<< "WARNING: It looks like you're mixing-and-matching\n"
+									<< "         AME masses with user input separation energy.\n"
+									<< "         Are you being careful?\n"
+									<< "\033[0m" << std::endl;
       }
     }
   }
   if(!isNumber(dummy) && (!ame->getAMEmass(0) ||
-			  !ame->getAMEmass(1) ||
-			  (!ame->getAMEmass(2) && !isZero(m2)))) { 
+													!ame->getAMEmass(1) ||
+													(!ame->getAMEmass(2) && !isZero(m2)))) { 
     std::cout << "\033[31m"
-    << "ERROR:   It looks like you're mixing-and-matching\n"
-    << "         AME masses with user inputs.\n"
-    << "         This is too dangerous to continue!\n"
-    << "\033[0m" << std::endl;
+							<< "ERROR:   It looks like you're mixing-and-matching\n"
+							<< "         AME masses with user inputs.\n"
+							<< "         This is too dangerous to continue!\n"
+							<< "\033[0m" << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -1005,7 +1053,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
     AMEUsed = true;
   } else {
     std::cout << "ERROR: Enter a number, 'ame', or 'AME'"
-    << " for the exit particle separation energy\n";
+							<< " for the exit particle separation energy\n";
     exit(EXIT_FAILURE);
   }
   //	std::cout << "Qout = " << Qout << "\n";
@@ -1040,7 +1088,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
   std::size_t found = dummy.find("***");
   if(found!=std::string::npos){
     std::cout << "WARNING: It looks like you are using an old RatesMC.in.\n" <<
-    "         I'll assume you don't care about correlations!\n" << std::endl;
+			"         I'll assume you don't care about correlations!\n" << std::endl;
     bPartialWidthCorrelations = false;
     bEnergyCorrelations = false;
 
@@ -1162,7 +1210,7 @@ void logNormalize(double mean, double sd, double& mu, double& sigma){
 //----------------------------------------------------------------------
 // Penetration factor calculation
 double PenFactor(double E, double L, double Mass0, double Mass1,
-		 int Charge0, int Charge1, double R){
+								 int Charge0, int Charge1, double R){
 
   //  std::cout << E << " " << L << " " << Mass0 << " " << Mass1 << " " << Charge0
   //	    << " " << Charge1 << " " << R << "\n";
@@ -1181,7 +1229,7 @@ double PenFactor(double E, double L, double Mass0, double Mass1,
   double eta = 0.15748927*(double)Charge0*(double)Charge1*sqrt(mue/E);
 
   int status = gsl_sf_coulomb_wave_FG_e (eta, rho, L, 0, &F, &Fp, &G,
-					 &Gp, &exp_F, &exp_G);
+																				 &Gp, &exp_F, &exp_G);
 
   // Check to see if this failed. If it's out of range, set P=0,
   // if not, print an error and exit
@@ -1192,7 +1240,7 @@ double PenFactor(double E, double L, double Mass0, double Mass1,
       return 0.0;
     } else {
       std::cout << "\nERROR: Something went wrong in coulomb wavefunction!" <<
-      "\n\tGSL Error: " << gsl_strerror (status)<< std::endl;
+				"\n\tGSL Error: " << gsl_strerror (status)<< std::endl;
       std::cout << "The Energy was " << E*1e3 << " keV." << std::endl;
       abort();
     }
@@ -1240,24 +1288,24 @@ void writeOutputFileHeaders(Reaction *R){
 	
   outfile << R->getName() << std::endl;
   outfile << "Calculated with RatesMC " << VersionNumber
-  << " (git hash:" << hash << ") on " << std::ctime(&now_time);// << std::endl;
+					<< " (git hash:" << hash << ") on " << std::ctime(&now_time);// << std::endl;
   //outfile << "Calculated with RatesMC " << VersionNumber << " on " <<
   //std::ctime(&now_time) << " git hash:" << hash;// <<  std::endl;
   outfile << "Samples = " << NSamples << std::endl;
   outfile << " T9      RRate_low       Median Rate" << 
-  "     RRate_high     f.u."  << std::endl;
+		"     RRate_high     f.u."  << std::endl;
   
   outfullfile << R->getName() << std::endl;
   outfullfile << "Calculated with RatesMC " << VersionNumber
-  << " (git hash:" << hash << ") on " << std::ctime(&now_time);// << std::endl;
+							<< " (git hash:" << hash << ") on " << std::ctime(&now_time);// << std::endl;
   outfullfile << "Samples = " << NSamples << std::endl;
   outfullfile << " T9      RRate_2low      RRate_low       Classical Rate  Median Rate" << 
-  "     Mean Rate       RRate_high     RRate_2high     Log-Normal mu" <<
-  "      Log-Normal sigma A-D Statistic" << std::endl;
+		"     Mean Rate       RRate_high     RRate_2high     Log-Normal mu" <<
+		"      Log-Normal sigma A-D Statistic" << std::endl;
 
   sampfile << R->getName() << std::endl;
   sampfile << "Calculated with RatesMC " << VersionNumber
-  << " (git hash:" << hash << ") on " << std::ctime(&now_time);// <<  std::endl;
+					 << " (git hash:" << hash << ") on " << std::ctime(&now_time);// <<  std::endl;
 	
 }
 
@@ -1281,9 +1329,9 @@ void writeContributions(std::vector<std::vector<double> > Contributions, double 
 
     // Remove all nan values
     Contributions[j].erase(std::remove_if(std::begin(Contributions[j]),
-					  std::end(Contributions[j]),
-					  [](const auto& value) { return isnan(value); }),
-			   std::end(Contributions[j]));
+																					std::end(Contributions[j]),
+																					[](const auto& value) { return isnan(value); }),
+													 std::end(Contributions[j]));
 			
     // Sort the Contributions for each resonance
     std::sort (Contributions[j].begin(), Contributions[j].end());
@@ -1314,7 +1362,7 @@ void writeContributions(std::vector<std::vector<double> > Contributions, double 
     if(HighCont[i] < 1.0e-99)HighCont[i]=0.0;
     //if(j<2 || UseInRate[j-2] || j>=NRes+2){
     contribfile << LowCont[i] << "  " << MedianCont[i] << "  " <<
-    HighCont[i] << "  ";
+			HighCont[i] << "  ";
   }
     
   contribfile << std::endl;
@@ -1348,34 +1396,34 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
       int status = gsl_sf_log_e(Rates[s],&LogResult);
       // Check to make sure log didn't error
       if(status){
-	ErrorFlag = true;
-	LogZeroCount++;
-	logRates.push_back(std::numeric_limits<double>::quiet_NaN());
+				ErrorFlag = true;
+				LogZeroCount++;
+				logRates.push_back(std::numeric_limits<double>::quiet_NaN());
       } else {
-	logRates.push_back(LogResult.val);
-	//				std::cout << lograte[s] << "\n";
+				logRates.push_back(LogResult.val);
+				//				std::cout << lograte[s] << "\n";
       }
     }
     /*    
-      // No longer need to bin rates
-      //      BinRates(summed,Temp[i],i,distfileName);
-      for(int k=0;k<NSamples;k++){
-      sampfile << summed[k] << endl;
-      summed[k] /= RateFactor;
-      }
-      sampfile << endl;
-     */
+		// No longer need to bin rates
+		//      BinRates(summed,Temp[i],i,distfileName);
+		for(int k=0;k<NSamples;k++){
+		sampfile << summed[k] << endl;
+		summed[k] /= RateFactor;
+		}
+		sampfile << endl;
+		*/
   }
 
   // Remove all nan rates
   Rates.erase(std::remove_if(std::begin(Rates),
-			     std::end(Rates),
-			     [](const auto& value) { return isnan(value); }),
-	      std::end(Rates));
+														 std::end(Rates),
+														 [](const auto& value) { return isnan(value); }),
+							std::end(Rates));
   logRates.erase(std::remove_if(std::begin(logRates),
-				std::end(logRates),
-				[](const auto& value) { return isnan(value); }),
-		 std::end(logRates));
+																std::end(logRates),
+																[](const auto& value) { return isnan(value); }),
+								 std::end(logRates));
 	
 	
   // Now, find the uncertainties. Before finding quantiles, need to sort
@@ -1410,14 +1458,14 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
   if(status){
     ErrorFlag = true;
     std::cout << "\nERROR: Something went wrong in logarithm, negative or zero rate?!\n"
-    << std::endl;
+							<< std::endl;
     RateMu = 0.0;
     RateSigma = 0.0;
   } else {
     // Calculate mu and sigma 
     // Check to see if mu is close to ln(median)
     double mu_err = (RateMu-gsl_sf_log(MedianRate))/
-		    gsl_sf_log(MedianRate);
+			gsl_sf_log(MedianRate);
 
     // sigma error using high and medium rates
     double sigma_err =
@@ -1438,7 +1486,7 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
   
   if(LogZeroCount > 0){
     logfile << "\tWARNING: The Rate was zero, creating \n\t\tproblems in ln " <<
-    LogZeroCount << " times" << std::endl;
+			LogZeroCount << " times" << std::endl;
   }
 
   // Check validity of lognormal. Only for more than 1 sample
@@ -1469,14 +1517,14 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
   char buffer[200];
   // RatesMC.out output
   sprintf(buffer,"%6.3f  %10.3e      %10.3e      %10.3e       %10.3e",
-	  Temperature,LowRate,MedianRate,HighRate,fu);
+					Temperature,LowRate,MedianRate,HighRate,fu);
   outfile << buffer << std::endl;
   //  outfile << std::endl;
   
   // RatesMC.full output
   sprintf(buffer,"%6.3f  %10.3e      %10.3e      %10.3e      %10.3e      %10.3e      %10.3e     %10.3e      %c% 10.3e%c      %c% 10.3e%c       %9.3e",
-	  Temperature,Low2Rate, LowRate, ARate, MedianRate, MeanRate, HighRate,
-	  High2Rate, Parenth[0],RateMu,Parenth[1],Parenth[0],RateSigma,Parenth[1],AndDar_Asqrd);
+					Temperature,Low2Rate, LowRate, ARate, MedianRate, MeanRate, HighRate,
+					High2Rate, Parenth[0],RateMu,Parenth[1],Parenth[0],RateSigma,Parenth[1],AndDar_Asqrd);
   outfullfile << buffer << std::endl;
   //  outfullfile << std::endl;
 
@@ -1487,7 +1535,7 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
 //----------------------------------------------------------------------
 // Function to write a latex table
 void WriteLatex2(double Temperature, double LowRate, double MedianRate, double HighRate,
-		 double RateSigma){
+								 double RateSigma){
 
   double low_x,low_f,median_x,median_f,high_x,high_f,fu,fu_f,fu_x;
 
@@ -1535,22 +1583,22 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate, double H
   }
 		
   latexfile << std::setprecision(3) << low_x <<"E"
-  << std::setprecision(0) << std::setw(3)
-  << std::setiosflags(std::ios::showpos)
-  << low_f << " & " << std::setprecision(3)
-  << std::resetiosflags(std::ios::showpos)
-  << median_x << "E" << std::setw(3)
-  << std::setiosflags(std::ios::showpos)
-  << std::setprecision(0) << median_f << " & \n" << std::setprecision(3)
-  << std::resetiosflags(std::ios::showpos)
-  << "      " << high_x << "E" << std::setw(3)
-  << std::setiosflags(std::ios::showpos)
-  << std::setprecision(0) << high_f << " & " << std::setprecision(3)
-  << std::resetiosflags(std::ios::showpos)
-  << fu_x << "E" << std::setw(3)
-  << std::setiosflags(std::ios::showpos)
-  << std::setprecision(0) << fu_f << " \\\\ " << std::setprecision(3)
-  << std::resetiosflags(std::ios::showpos) << std::endl;
+						<< std::setprecision(0) << std::setw(3)
+						<< std::setiosflags(std::ios::showpos)
+						<< low_f << " & " << std::setprecision(3)
+						<< std::resetiosflags(std::ios::showpos)
+						<< median_x << "E" << std::setw(3)
+						<< std::setiosflags(std::ios::showpos)
+						<< std::setprecision(0) << median_f << " & \n" << std::setprecision(3)
+						<< std::resetiosflags(std::ios::showpos)
+						<< "      " << high_x << "E" << std::setw(3)
+						<< std::setiosflags(std::ios::showpos)
+						<< std::setprecision(0) << high_f << " & " << std::setprecision(3)
+						<< std::resetiosflags(std::ios::showpos)
+						<< fu_x << "E" << std::setw(3)
+						<< std::setiosflags(std::ios::showpos)
+						<< std::setprecision(0) << fu_f << " \\\\ " << std::setprecision(3)
+						<< std::resetiosflags(std::ios::showpos) << std::endl;
 	
   
   //  latexfile << "\n";
@@ -1582,27 +1630,27 @@ void summarizeErrors(double Temp){
 
     if(SampledNegCount>0){
       logfile << " A positive resonance had a negative energy "
-      << SampledNegCount << " times" << std::endl;
+							<< SampledNegCount << " times" << std::endl;
       SampledNegCount = 0;
     }
     if(SubSampledPosCount>0){
       logfile << " A negative resonance had a positive energy "
-      << SubSampledPosCount << " times" << std::endl;
+							<< SubSampledPosCount << " times" << std::endl;
       SubSampledPosCount = 0;
     }
     if(IntegratedCount>0){
       logfile << " A positive narrow resonance had a negative energy "
-      << IntegratedCount << " times" << std::endl;
+							<< IntegratedCount << " times" << std::endl;
       IntegratedCount = 0;
     }
     if(NANCount>0){
       logfile << " An integration error occured "
-      << NANCount << " times" << std::endl;
+							<< NANCount << " times" << std::endl;
       NANCount = 0;
     }
     if(InfCount>0){
       logfile << " An integration reached infinity "
-      << InfCount << " times" << std::endl;
+							<< InfCount << " times" << std::endl;
       InfCount = 0;
     }
     ErrorFlag = false;
@@ -1639,8 +1687,8 @@ double CalcAD(std::vector<double> Rates,double Mu,double Sigma){
       CumLognorm[i] = CumLognorm[i-1];
     } else {
       CumLognorm[i] = CumLognorm[i-1]+((1.0/(X*Sigma*sqrt(2.0*M_PI)))*
-				       gsl_sf_exp(-gsl_pow_2(gsl_sf_log(X)-Mu)/
-						  (2.0*gsl_pow_2(Sigma))));
+																			 gsl_sf_exp(-gsl_pow_2(gsl_sf_log(X)-Mu)/
+																									(2.0*gsl_pow_2(Sigma))));
     }
   }
   double norm = 1/CumLognorm[Rates.size()];
@@ -1655,13 +1703,13 @@ double CalcAD(std::vector<double> Rates,double Mu,double Sigma){
     } else {
       // also calculate the Anderson-Darling test
       double F = 0.5*(gsl_sf_erf((gsl_sf_log(Rates[i-1])-Mu)/
-				 (sqrt(2.0)*Sigma)) + 1.0);
+																 (sqrt(2.0)*Sigma)) + 1.0);
       double OneMinusF = 1.0-
-			 0.5*(gsl_sf_erf((gsl_sf_log(Rates[Rates.size()-i])-Mu)/
-					 (sqrt(2.0)*Sigma)) + 1.0);
+				0.5*(gsl_sf_erf((gsl_sf_log(Rates[Rates.size()-i])-Mu)/
+												(sqrt(2.0)*Sigma)) + 1.0);
 
       AndDar_S_tmp =
-	((2.0*i-1.0)/Rates.size())*(gsl_sf_log(F)+gsl_sf_log(OneMinusF));
+				((2.0*i-1.0)/Rates.size())*(gsl_sf_log(F)+gsl_sf_log(OneMinusF));
     }
 
     // check for NaN (if F is too small)
@@ -1681,7 +1729,7 @@ double CalcAD(std::vector<double> Rates,double Mu,double Sigma){
 
   if(NanADCount > 0){
     logfile << "\tWARNING: Anderson-Darling test cannot \n\t\tbe calculated for " << NanADCount <<
-    " sample(s).\n" << std::endl;
+			" sample(s).\n" << std::endl;
     ErrorFlag=true;
   }
 
@@ -1768,6 +1816,6 @@ unsigned long int random_seed()
 //----------------------------------------------------------------------
 // Error handler
 void RatesMC_Error_Handler(const char * reason,
-			   const char * file,
-			   int line,
-			   int gsl_errno){};
+													 const char * file,
+													 int line,
+													 int gsl_errno){};
