@@ -299,11 +299,11 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
      
   while(true){
 
-		std::cout << "New resonance\n";
+		//std::cout << "New resonance\n";
 
 		// Count the number of entries in the line
 		int nEnt = countEntries(infile);
-		std::cout << "nEnt = " << nEnt << std::endl;
+		//std::cout << "nEnt = " << nEnt << std::endl;
 		
     // New method: Read entire line into a string first
     std::string line;
@@ -355,15 +355,15 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 			// For normal resonances, an additional resonance should have 16 inputs
 			if(!isUpperLimit){
 				if(nEnt == 16){
-					std::cout << "This is an added possibility with " << nEnt 
-										<< " entries, so the energy is the same as the previous resonance\n"
-										<< std::endl;
+					//std::cout << "This is an added possibility with " << nEnt 
+					//					<< " entries, so the energy is the same as the previous resonance\n"
+					//					<< std::endl;
 					E_cm = Res.getE_cm()*1000.0;
 					dE_cm = Res.getdE_cm()*1000.0;
 				} else if (nEnt == 18) {
-					std::cout << "This is an added possibility with " << nEnt 
-										<< " entries, so the energy should be read\n"
-										<< std::endl;
+					//std::cout << "This is an added possibility with " << nEnt 
+					//					<< " entries, so the energy should be read\n"
+					//					<< std::endl;
 					fin >> data;
 					E_cm = std::stod(data);
 					fin >> dE_cm;
@@ -377,27 +377,28 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 				}
 			}	else {   // if this is an upper limit
 				if(nEnt == 20){
-					std::cout << "This is an added possibility with " << nEnt 
-										<< " entries, so the energy is the same as the previous resonance\n"
-										<< std::endl;
+					//std::cout << "This is an added possibility with " << nEnt 
+					//					<< " entries, so the energy is the same as the previous resonance\n"
+					//					<< std::endl;
 					E_cm = Res.getE_cm()*1000.0;
 					dE_cm = Res.getdE_cm()*1000.0;
 				} else if (nEnt == 22) {
-					std::cout << "This is an added possibility with " << nEnt 
-										<< " entries, so the energy should be read\n"
-										<< std::endl;
+					//std::cout << "This is an added possibility with " << nEnt 
+					//					<< " entries, so the energy should be read\n"
+					//					<< std::endl;
 					fin >> data;
 					E_cm = std::stod(data);
 					fin >> dE_cm;
 				} else {
 					std::cout << "\033[31m"
 										<< "ERROR:   It looks like you've done something\n"
-										<< "         wrong for upper limit resonance " << i+1 << "\n"
+										<< "         wrong for resonance " << i+1 << "\n"
 										<< "         Check input file.\n"
 										<< "\033[0m" << std::endl;
 					exit(EXIT_FAILURE);
 				}
 			}
+			nEnt--;
       CorresRes = Res.getCorresRes();
 			
     } else {
@@ -519,6 +520,8 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 						>> Exf >> isBroad;
 
 				fin >> CorString;
+				//std::cout << "Exf = " << Exf << "\n";
+				//std::cout << "isBroad = " << isBroad << "\n";
 				//std::cout << "CorString = " << CorString << "\n";
 				// Make CorString lowercase
 				std::transform(CorString.begin(), CorString.end(), CorString.begin(),
