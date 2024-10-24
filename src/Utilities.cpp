@@ -346,6 +346,8 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
       //isECorr[i] = isECorr[i-1];
       //std::cout << "Found a continuation of the previous resonance\n";
       Resonance Res = R.getLastResonance();
+			// Right here: count how many inputs there are? I need to figure
+			// out if there is a resonance energy defined or not somehow
       E_cm = Res.getE_cm()*1000.0;
       dE_cm = Res.getdE_cm()*1000.0;
       CorresRes = Res.getCorresRes();
