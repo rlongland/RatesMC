@@ -8,11 +8,11 @@
 RatesMCFile   <- "RatesMC.in"
 IntegrandFile <- "RatesMC.integ"
 
-Temp <- 0.1  ## The temperature to plot the integrand at
+Temp <- 2  ## The temperature to plot the integrand at
 
 ## Set limits to NA for auto plotting
-xlim <- c(0,1)
-ylim <- c(1e-50,1e-15)
+xlim <- c(1,4)
+ylim <- c(1e-16,1e-4)
 
 ######################################################################
 
@@ -82,4 +82,8 @@ t <- lapply(integ, function(data){
     icol <<- icol+1
 })
 
-legend(x="topright",legend=paste("Res",1:length(integ)),col=col,lty=1)
+leg <- paste("Res",1:length(integ))
+for(i in 1:length(leg)){
+    if(integ[[i]][1,4] == "nonres") leg[i] <- "nonres"
+}
+legend(x="topright",legend=leg,col=col,lty=1)

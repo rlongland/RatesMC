@@ -472,7 +472,7 @@ double NonResonantIntegrandWrapper(double x, void *params)
 {
   return ReactionPtr->NonResonantIntegrand(x, params);
 }
-struct my_f_params { double mue; double T; double Z0Z1;
+struct my_f_params { double mue; double T; double Z0Z1; int writeIntegrand;
 	gsl_spline *Sspline; gsl_interp_accel *facc;};
 double NonResonantTabulatedWrapper(double x, void *params)
 {
@@ -577,6 +577,8 @@ double Reaction::calcNonResonantIntegrated(double Temp, int j){
 	
 	gsl_integration_workspace_free(w);
   //ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
+
+//  integrandfile << "\n"  << std::endl;
   
   return ADRate;
 }
@@ -613,6 +615,8 @@ double Reaction::NonResonantIntegrand(double x, void * params){
 // astrophysical s-factor
 double Reaction::calcNonResonantTabulated(double Temp, int j){
 
+  int writeIntegrand;
+  
   //  std::cout << Temp << " " << j << "\n";
   double mue = M0*M1/(M0+M1);
   //  double mu, sigma;
@@ -652,9 +656,13 @@ double Reaction::calcNonResonantTabulated(double Temp, int j){
 				//SFac[k] = SFactorS[j][k] * SScale_sample[j][s] * SFactordS[j][k];
 				//}
 		}
-		
+
+		writeIntegrand = 0;
 		// The very last one should be the "classical" result
-		if(s == NSamples)SFac = SFactorS[j];
+		if(s == NSamples){
+		  SFac = SFactorS[j];
+		  writeIntegrand = 1;
+		}
 
 		// Create an interpolation routine
 		gsl_spline_init(Sspline, SFactorE[j].data(), SFac.data(),
@@ -674,7 +682,7 @@ double Reaction::calcNonResonantTabulated(double Temp, int j){
 		// double x = E_min, x1 = E_max;
 		
 		// The array that needs to be passed to the integration function
-		struct my_f_params params = {mue, Temp, (double)(Z0 * Z1),
+		struct my_f_params params = {mue, Temp, (double)(Z0 * Z1), writeIntegrand,
 			Sspline, acc};
 
 		// Turn off the error handler
@@ -721,7 +729,8 @@ double Reaction::calcNonResonantTabulated(double Temp, int j){
 	gsl_spline_free (Sspline);
 	gsl_interp_accel_free (acc);
 
-	
+	integrandfile << std::endl;
+
   return ADRate;
 }
 
@@ -731,6 +740,7 @@ double Reaction::NonResonantTabulatedIntegrand(double x, void * params){
 	double mue = (p->mue);
 	double T = (p->T);
 	double Z0Z1 = (p->Z0Z1);
+	int writeIntegrand = (p->writeIntegrand);
 	gsl_spline *Sspline = (p->Sspline);
 	gsl_interp_accel *facc = (p->facc);
 
@@ -747,6 +757,10 @@ double Reaction::NonResonantTabulatedIntegrand(double x, void * params){
   
   double integrand = Ssum*Sommerfeld*Boltzmann;
 
+  if(writeIntegrand)
+    integrandfile << std::scientific << std::setprecision(9) << x << " " << integrand
+    << " " << Ssum << " " << "nonres" << std::endl;
+  
 	//	if(T == 0.01)
 	//		testfile << integrand << "\n";
 
