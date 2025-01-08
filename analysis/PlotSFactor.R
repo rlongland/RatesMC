@@ -202,9 +202,11 @@ if(length(Energies)>1){
     }
 }
 
-leg <- c(aRate.lab,
-	 ##paste("Res",1:(nparts-2)))
-	 paste(Energies,"keV",counter,ULstring))
+leg <- aRate.lab
+if(length(Energies)>0)
+    leg <- c(aRate.lab,
+	     ##paste("Res",1:(nparts-2)))
+	     paste(Energies,"keV",counter,ULstring))
 if(length(iInter)>0)
     leg <- c(leg,Inter.lab)
 
