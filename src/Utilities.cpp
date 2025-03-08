@@ -937,7 +937,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
     //		std::cout << m0 << "\t" << m1 << "\t" << mcompound << "\t" << AMU << "\n";
     Qin = ((m0 + m1) - mcompound)*AMU*1000.0;   // To get into keV
     logfile << "Using 1u = " << AMU << " MeV:\n";
-    logfile << "Qin = " << Qin << " keV (atomic)\n";
+    logfile << "Qin = " << Qin << " keV (nuclear)\n";
     AMEUsed = true;
   } else {
     std::cout << "ERROR: Enter a number, 'ame', or 'AME'"
@@ -999,7 +999,7 @@ int ReadInputFile(std::string inputfilename, Reaction *R){
 
     Qout = ((m2 + mresidual) - mcompound)*AMU*1000.0;   // To get into keV
     logfile << "Using 1u = " << AMU << " MeV:\n";
-    logfile << "Qout = " << Qout << " keV (atomic)\n";
+    logfile << "Qout = " << Qout << " keV (nuclear)\n";
     AMEUsed = true;
   } else {
     std::cout << "ERROR: Enter a number, 'ame', or 'AME'"
