@@ -67,8 +67,8 @@ bool bTabulatedNonResonant = false;
 
 // counters
 int PenZeroCount=0, IntegratedCount=0, SubSampledPosCount=0, SampledNegCount=0,
-  NANCount=0, InfCount=0, BelowIntLimit=0, IntfNANCount=0, LogZeroCount=0,
-  WeirdMuSigmaCount=0;
+NANCount=0, InfCount=0, BelowIntLimit=0, IntfNANCount=0, LogZeroCount=0,
+WeirdMuSigmaCount=0;
 
 // Is a string numeric?
 bool isNumber(const std::string& str){
@@ -258,12 +258,12 @@ void readNonResonantTable(std::ifstream &infile, Reaction &R, int part) {
 void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 
   double E_cm, dE_cm, wg=0.0, dwg=0.0, Jr,
-    G1, dG1, PT1=0.0, DPT1=0.0, G2, dG2, PT2=0.0, DPT2=0.0,
-    G3, dG3, PT3=0.0, DPT3=0.0, Exf, Frac=1.0;
+  G1, dG1, PT1=0.0, DPT1=0.0, G2, dG2, PT2=0.0, DPT2=0.0,
+  G3, dG3, PT3=0.0, DPT3=0.0, Exf, Frac=1.0;
   int i,L1, L2, L3, isBroad;
   int CorresRes;
   bool isECorrelated, isWidthCorrelated, firstECorrelated=false,
-		firstWidthCorrelated=false;
+  firstWidthCorrelated=false;
   std::string CorString;
 
   if(!isUpperLimit){
@@ -299,7 +299,11 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
      
   while(true){
 
-    //		std::cout << "New resonance\n";
+    //std::cout << "New resonance\n";
+
+    // Count the number of entries in the line
+    int nEnt = countEntries(infile);
+    //std::cout << "nEnt = " << nEnt << std::endl;
 		
     // New method: Read entire line into a string first
     std::string line;
@@ -346,8 +350,55 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
       //isECorr[i] = isECorr[i-1];
       //std::cout << "Found a continuation of the previous resonance\n";
       Resonance Res = R.getLastResonance();
-      E_cm = Res.getE_cm()*1000.0;
-      dE_cm = Res.getdE_cm()*1000.0;
+      // Right here: count how many inputs there are? I need to figure
+      // out if there is a resonance energy defined or not somehow
+      // For normal resonances, an additional resonance should have 16 inputs
+      if(!isUpperLimit){
+	if(nEnt == 16){
+	  //std::cout << "This is an added possibility with " << nEnt 
+	  //					<< " entries, so the energy is the same as the previous resonance\n"
+	  //					<< std::endl;
+	  E_cm = Res.getE_cm()*1000.0;
+	  dE_cm = Res.getdE_cm()*1000.0;
+	} else if (nEnt == 18) {
+	  //std::cout << "This is an added possibility with " << nEnt 
+	  //					<< " entries, so the energy should be read\n"
+	  //					<< std::endl;
+	  fin >> data;
+	  E_cm = std::stod(data);
+	  fin >> dE_cm;
+	} else {
+	  std::cout << "\033[31m"
+	  << "ERROR:   It looks like you've done something\n"
+	  << "         wrong for resonance " << i+1 << "\n"
+	  << "         Check input file.\n"
+	  << "\033[0m" << std::endl;
+	  exit(EXIT_FAILURE);
+	}
+      }	else {   // if this is an upper limit
+	if(nEnt == 20){
+	  //std::cout << "This is an added possibility with " << nEnt 
+	  //<< " entries, so the energy is the same as the previous resonance\n"
+	  //<< std::endl;
+	  E_cm = Res.getE_cm()*1000.0;
+	  dE_cm = Res.getdE_cm()*1000.0;
+	} else if (nEnt == 22) {
+	  //std::cout << "This is an added possibility with " << nEnt 
+	  //<< " entries, so the energy should be read\n"
+	  //<< std::endl;
+	  fin >> data;
+	  E_cm = std::stod(data);
+	  fin >> dE_cm;
+	} else {
+	  std::cout << "\033[31m"
+	  << "ERROR:   It looks like you've done something\n"
+	  << "         wrong for resonance " << i+1 << "\n"
+	  << "         Check input file.\n"
+	  << "\033[0m" << std::endl;
+	  exit(EXIT_FAILURE);
+	}
+      }
+      nEnt--;
       CorresRes = Res.getCorresRes();
 			
     } else {
@@ -420,6 +471,7 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
       //}
     } else {
       // Upper limit resonances.
+      //std::cout << "nEnt = " << nEnt << "\n";
       // Old style with no DPT
       if(nEnt == 17){
 	// First check whether the energy uncertainty has a correlation tag
@@ -458,18 +510,23 @@ void readResonanceBlock(std::ifstream &infile, Reaction &R, bool isUpperLimit){
 				
       }
 	// New style with DPT
-      else if(nEnt == 20 || nEnt == 21){
+      else if(nEnt == 19 || nEnt == 20 || nEnt == 21){
 	// First check whether the energy uncertainty has a correlation tag
 	//fin >> data;
 	//isECorrelated = (data.find("c")!=std::string::npos);
 	//dE_cm = std::stod(data);
+	//std::cout << "fin = " << fin.str() << "\n";
 	fin >> Jr 
 	>> G1 >> dG1 >> L1 >> PT1 >> DPT1 >> G2 >> dG2 >> L2 >> PT2 >> DPT2
 	>> G3 >> dG3 >> L3 >> PT3 >> DPT3
 	>> Exf >> isBroad;
 
 	fin >> CorString;
-	//std::cout << "CorString = " << CorString << "\n";
+	// std::cout << "Er = " << E_cm << "\n";
+	// std::cout << "Jr = " << Jr << "\n"; 
+	// std::cout << "Exf = " << Exf << "\n";
+	// std::cout << "isBroad = " << isBroad << "\n";
+	// std::cout << "CorString = " << CorString << "\n";
 	// Make CorString lowercase
 	std::transform(CorString.begin(), CorString.end(), CorString.begin(),
 		       [](unsigned char c){ return std::tolower(c); });
@@ -618,8 +675,8 @@ void readInterferingResonanceBlock(std::ifstream &infile, Reaction &R){
 
   int IntfSign;
   double E_cm, dE_cm, Jr,
-    G1, dG1, PT1=0.0, DPT1=0.0, G2, dG2, PT2=0.0, DPT2=0.0,
-    G3, dG3, PT3=0.0, DPT3=0.0, Exf;
+  G1, dG1, PT1=0.0, DPT1=0.0, G2, dG2, PT2=0.0, DPT2=0.0,
+  G3, dG3, PT3=0.0, DPT3=0.0, Exf;
   int L1, L2, L3;
   int count=0;
   bool isUpperLimit=false;
@@ -1356,12 +1413,12 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature){
     }
     /*    
       // No longer need to bin rates
-      //      BinRates(summed,Temp[i],i,distfileName);
-      for(int k=0;k<NSamples;k++){
-      sampfile << summed[k] << endl;
-      summed[k] /= RateFactor;
-      }
-      sampfile << endl;
+	 //      BinRates(summed,Temp[i],i,distfileName);
+	 for(int k=0;k<NSamples;k++){
+	 sampfile << summed[k] << endl;
+	 summed[k] /= RateFactor;
+	 }
+	 sampfile << endl;
      */
   }
 
