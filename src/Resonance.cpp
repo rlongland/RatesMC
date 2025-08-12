@@ -26,22 +26,22 @@
  */
 #include "stdio.h"
 #include <algorithm>
+#include <cstdlib>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
-#include <cstdlib>
 #include <limits>
+#include <sstream>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
+#include <gsl/gsl_odeiv2.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf_exp.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_log.h>
 #include <gsl/gsl_statistics.h>
-#include <gsl/gsl_odeiv2.h>
 #include <math.h>
 
 #include "Resonance.h"
@@ -57,7 +57,7 @@ double ResonanceIntegrandWrapper(double x, void *params) {
 }
 // end ugly-ass hack
 // another ugly-ass hack
-int rhsWrapper(double x, const double y[], double dydt[], void *params_ptr){
+int rhsWrapper(double x, const double y[], double dydt[], void *params_ptr) {
   ResonancePtr->rhs(x, y, dydt, params_ptr);
   return GSL_SUCCESS;
 }
@@ -67,9 +67,9 @@ Resonance::Resonance(Reaction &R, int index, double E_cm, double dE_cm,
                      double wg, double dwg, double Jr, double G[3],
                      double dG[3], int L[3], double PT[3], double dPT[3],
                      double Exf, bool isBroad, bool isUpperLimit,
-		     bool isECorrelated, bool isWidthCorrelated,
-		     int CorresRes, double Frac)
-: Reac(R) {
+                     bool isECorrelated, bool isWidthCorrelated, int CorresRes,
+                     double Frac)
+    : Reac(R) {
   // 'this' is a special pointer to the "current instance"
   this->index = index;
   this->E_cm = E_cm;
@@ -100,7 +100,6 @@ Resonance::Resonance(Reaction &R, int index, double E_cm, double dE_cm,
   this->J0 = R.J0;
   this->J1 = R.J1;
   this->J2 = R.J2;
-	
 
   classicalRate = 0.0;
 
@@ -129,24 +128,26 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
   mue = M0 * M1 / (M0 + M1);
   // std::cout << "mue = " << mue << "\n";
   R = Reac.R0 * (pow(M0, (1. / 3.)) + pow(M1, (1. / 3.)));
-  R_exit = Reac.R0 * (pow((M0+M1-M2), (1. / 3.)) + pow(M2, (1. / 3.)));
+  R_exit = Reac.R0 * (pow((M0 + M1 - M2), (1. / 3.)) + pow(M2, (1. / 3.)));
   // std::cout << "R = " << R << "\n";
 
   double meanPen, meanPex;
 
   // First get the energy samples
   double corr = 0.0;
-  if(isECorrelated)
-    corr = smallestdE / dE_cm; // The correlation factor for this resonance energy
+  if (isECorrelated)
+    corr =
+        smallestdE / dE_cm; // The correlation factor for this resonance energy
   E_sample.resize(NSamples);
   // Calculate correlated energies
   for (int s = 0; s < NSamples; s++) {
     double x2 = gsl_ran_gaussian(r, 1.0);
-    x2 = corr * Ref_sample[s][0] + x2 * sqrt(std::max(0.0,1. - gsl_pow_2(corr)));
+    x2 = corr * Ref_sample[s][0] +
+         x2 * sqrt(std::max(0.0, 1. - gsl_pow_2(corr)));
     E_sample[s] = E_cm + x2 * dE_cm;
-    if(E_sample[s] < (-1.0*Reac.Q)){
+    if (E_sample[s] < (-1.0 * Reac.Q)) {
       std::cout << "ERROR: Resonance energy cannot be less than the Q-value\n"
-      << "       for resonance: " << E_cm << " keV\n";
+                << "       for resonance: " << E_cm << " keV\n";
       std::exit(EXIT_FAILURE);
     }
   }
@@ -168,7 +169,7 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
     if (isZero(dwg)) {
       std::cout << "ERROR: You MUST specify a resonance strength uncertainty "
                    "for resonance: "
-      << index << " at " << E_cm << " keV\n";
+                << index << " at " << E_cm << " keV\n";
       std::cout << "       wg = " << wg << " +/- " << dwg << "\n";
       std::exit(EXIT_FAILURE);
     }
@@ -176,9 +177,9 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
     wg_sample.resize(NSamples);
 
     // Find the lognormal parameters to generate the random partial width
-    if(dwg < 0.0){
+    if (dwg < 0.0) {
       mu = gsl_sf_log(wg);
-      sigma = gsl_sf_log(-1.0*dwg);
+      sigma = gsl_sf_log(-1.0 * dwg);
     } else {
       // Convert input values (expectation value and standard deviation)
       // to lognormal mu and sigma
@@ -187,7 +188,7 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
 
     // Correlation parameter
     corr = 0.0;
-    if(isWidthCorrelated)
+    if (isWidthCorrelated)
       corr = smallestdwg * wg / dwg;
 
     // Generate the correlated samples
@@ -195,7 +196,8 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
       double x2 = gsl_ran_gaussian(r, 1.0);
       // Correlate everything with the first known resonance strength, wg_0
       // using: wg_i = p*wg_0 + wg_i*sqrt(1-p^2)
-      x2 = corr * Ref_sample[s][1] + x2 * sqrt(std::max(0.0,1. - gsl_pow_2(corr)));
+      x2 = corr * Ref_sample[s][1] +
+           x2 * sqrt(std::max(0.0, 1. - gsl_pow_2(corr)));
       // Convert normally distributed sample into lognormal for this resonance
       wg_sample[s] = gsl_sf_exp(mu + sigma * x2);
     }
@@ -232,9 +234,9 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
         continue;
       } else if (channel < 2 && isZero(G[channel])) {
         std::cout << "ERROR: You MUST specify a partial width for resonance: "
-        << index << " at " << E_cm << " keV\n";
+                  << index << " at " << E_cm << " keV\n";
         std::cout << "       G" << channel + 1 << " = " << G[channel] << " +/- "
-        << dG[channel] << "\n";
+                  << dG[channel] << "\n";
         std::exit(EXIT_FAILURE);
       }
       //      std::cout << "NChannels = " << NChannels << " " << channel <<
@@ -247,31 +249,31 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
         if (isZero(dG[channel])) {
           std::cout << "ERROR: You MUST specify partial width uncertainties "
                        "for resonance: "
-          << index << " at " << E_cm << " keV\n";
+                    << index << " at " << E_cm << " keV\n";
           std::cout << "       G" << channel + 1 << " = " << G[channel]
-          << " +/- " << dG[channel] << "\n";
+                    << " +/- " << dG[channel] << "\n";
           std::exit(EXIT_FAILURE);
         }
 
         // Find the lognormal parameters to generate the random partial width
-	if(dG[channel] < 0.0){
-	  mu = gsl_sf_log(G[channel]);
-	  sigma = gsl_sf_log(-1.0*dG[channel]);
-	} else {
-	  logNormalize(G[channel], dG[channel], mu, sigma);
-	}
+        if (dG[channel] < 0.0) {
+          mu = gsl_sf_log(G[channel]);
+          sigma = gsl_sf_log(-1.0 * dG[channel]);
+        } else {
+          logNormalize(G[channel], dG[channel], mu, sigma);
+        }
 
-	// Calculate the correlated partial widths for this channel
-	corr = 0.0;
-	if(isWidthCorrelated)
-	  corr = smallestdG[channel] * G[channel] / dG[channel];
-	for (int s = 0; s < NSamples; s++) {
+        // Calculate the correlated partial widths for this channel
+        corr = 0.0;
+        if (isWidthCorrelated)
+          corr = smallestdG[channel] * G[channel] / dG[channel];
+        for (int s = 0; s < NSamples; s++) {
           double x2 = gsl_ran_gaussian(r, 1.0);
           x2 = corr * Ref_sample[s][channel + 1] +
-               x2 * sqrt(std::max(0.0,1. - gsl_pow_2(corr)));
-	  G_temp[s] = gsl_sf_exp(mu + x2 * sigma);
+               x2 * sqrt(std::max(0.0, 1. - gsl_pow_2(corr)));
+          G_temp[s] = gsl_sf_exp(mu + x2 * sigma);
         }
-				
+
         // Or if it is an upper limit
       } else {
 
@@ -280,7 +282,7 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
         // Is this the Gamma channel?
         if (channel == Reac.getGamma_index()) {
           std::cout << "Res " << index << " at E_cm = " << E_cm << " keV:\n"
-          << "      Channel " << channel << " is Gamma_gamma\n";
+                    << "      Channel " << channel << " is Gamma_gamma\n";
           A = (8.0 * M_PI * (L[channel] + 1) /
                (L[channel] *
                 gsl_pow_2(gsl_sf_doublefact(2 * L[channel] + 1)))) *
@@ -305,7 +307,7 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
               G_temp[s] = A * PTi * gsl_ran_chisq(r, 1.0);
 
               ptfile << index << "  " << s << "  " << PTi << "  "
-              << G_temp[s] / A << endl;
+                     << G_temp[s] / A << endl;
 
             } while (G_temp[s] > G[channel] && G[channel] != 0.0);
           }
@@ -313,7 +315,7 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
         } else {
 
           //	  std::cout << "Res " << index << " at E_cm = " << E_cm <<  "
-          //keV:\n"
+          // keV:\n"
           // 	    << "      Channel " << channel << " is Gamma_particle\n";
 
           // If it's an exit particle, we need to account for the Q-value
@@ -338,7 +340,8 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
             double PTi = 0.0;
             // Either as a factor uncertainty
             if (dPT[channel] < 0.0) {
-	      //							std::cout << PT[channel] << " " << dPT[channel] << "\n";
+              //							std::cout
+              //<< PT[channel] << " " << dPT[channel] << "\n";
               double mu = gsl_sf_log(PT[channel]);
               double sigma = gsl_sf_log(-dPT[channel]);
               PTi = gsl_ran_lognormal(r, mu, sigma);
@@ -355,11 +358,11 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
             do {
               G_temp[s] = A * PTi * gsl_ran_chisq(r, 1.0);
             } while (G_temp[s] > G[channel]);
-	    ptfile << s << "  " << index << "  " << P << "  " << PTi << "  "
-	    << G_temp[s] << endl;
+            ptfile << s << "  " << index << "  " << P << "  " << PTi << "  "
+                   << G_temp[s] << endl;
           } // for(int s=0; s<NSamples; s++)
-        }   // if(Gamma_gamma) else {
-      }     // End else if it's an upper limit
+        } // if(Gamma_gamma) else {
+      } // End else if it's an upper limit
 
       //      std::cout << "Pushing back channel " << channel << "\n";
       // By this point, we should have a bunch of samples for this
@@ -374,8 +377,8 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
         if (channel == 1) {
           for (int s = 0; s < NSamples; s++) {
             erFrac_temp[s] =
-              pow(((E_sample[s] + Reac.Q - Exf) / (E_cm + Reac.Q - Exf)),
-                  (2. * L[channel] + 1.));
+                pow(((E_sample[s] + Reac.Q - Exf) / (E_cm + Reac.Q - Exf)),
+                    (2. * L[channel] + 1.));
           }
         } else if (channel == 2) {
           for (int s = 0; s < NSamples; s++) {
@@ -387,12 +390,12 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
       } else {
         if (channel == 0) {
           meanPen = PenFactor(E_cm, L[channel], M0, M1, Z0, Z1, R);
-					
+
           for (int s = 0; s < NSamples; s++) {
             if (E_sample[s] > 0.0 && E_cm > 0.0) {
               erFrac_temp[s] =
-                PenFactor(E_sample[s], L[channel], M0, M1, Z0, Z1, R) /
-                meanPen;
+                  PenFactor(E_sample[s], L[channel], M0, M1, Z0, Z1, R) /
+                  meanPen;
             } else {
               erFrac_temp[s] = 1.0;
             }
@@ -403,25 +406,25 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
                               M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
           for (int s = 0; s < NSamples; s++) {
             erFrac_temp[s] =
-              PenFactor(E_sample[s] + Reac.Q - Reac.Qexit - Exf, L[channel],
-                        M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R) /
-              meanPex;
+                PenFactor(E_sample[s] + Reac.Q - Reac.Qexit - Exf, L[channel],
+                          M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R) /
+                meanPex;
           }
         } else if (channel == 2) {
           meanPex = PenFactor(E_cm + Reac.Q - Reac.Qexit, L[channel],
                               M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R);
           for (int s = 0; s < NSamples; s++) {
             erFrac_temp[s] =
-              PenFactor(E_sample[s] + Reac.Q - Reac.Qexit, L[channel],
-                        M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R) /
-              meanPex;
+                PenFactor(E_sample[s] + Reac.Q - Reac.Qexit, L[channel],
+                          M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R) /
+                meanPex;
           }
         }
       }
       erFrac.push_back(erFrac_temp);
 
     } // end for(int channel=0; channel<3; channel++)
-  }   // end if(wg > 0) else
+  } // end if(wg > 0) else
 
   /*
     for(int s=0; s<NSamples ; s++){
@@ -431,8 +434,8 @@ void Resonance::makeSamples(std::vector<std::vector<double>> Ref_sample,
     }
     testfile << "\n";
     }
-   */		
-	
+   */
+
   /*
     if(index==0 && isUpperLimit==false){
     for(int s=0; s<NSamples; s++)
@@ -453,8 +456,8 @@ void Resonance::writeSamples(std::ofstream &samplefile, int s) {
   if (wg_sample.size() > 0) {
     buffer << std::setw(10) << std::setprecision(3) << wg_sample[s] << " ";
     buffer << std::setw(10) << std::setprecision(3) << 0 << " " << std::setw(10)
-    << std::setprecision(3) << 0 << " " << std::setw(10)
-    << std::setprecision(3) << 0 << " ";
+           << std::setprecision(3) << 0 << " " << std::setw(10)
+           << std::setprecision(3) << 0 << " ";
     // buffer <<  wg_sample[s] << " ";
     // buffer <<  0 << " "
     //	       <<  0 << " "
@@ -463,7 +466,7 @@ void Resonance::writeSamples(std::ofstream &samplefile, int s) {
     buffer << std::setw(10) << std::setprecision(3) << 0 << " ";
     for (int channel = 0; channel < NChannels; channel++) {
       buffer << std::setw(10) << std::setprecision(3) << G_sample[channel][s]
-      << " ";
+             << " ";
       // buffer << G_sample[channel][s] << " ";
     }
     for (int channel = NChannels; channel < 3; channel++) {
@@ -492,14 +495,13 @@ double Resonance::calcBroad(double T) {
     if (s % 10 == 0) {
       // \r goes back to the beginning of the line.
       std::cout << "\r" << 100 * s / NSamples << "% Complete for Resonance "
-      << index + 1 << std::flush;
+                << index + 1 << std::flush;
     }
 
     // Calculate the single integrated rate sample
     Rate_sample[s] = NumericalRate(T, E_sample[s], G_sample[0][s],
                                    G_sample[1][s], G_sample[2][s], erFrac[0][s],
                                    erFrac[1][s], erFrac[2][s], false);
-
   }
 
   // And the central value, which is the classical rate
@@ -544,21 +546,21 @@ double Resonance::calcNarrow(double T) {
       // energy is negative.
       if (E_sample[s] > 0.0) {
         Rate_sample[s] =
-          omega *
-          ((G_sample[0][s] * G_sample[1][s] * erFrac[0][s] * erFrac[1][s]) /
-           (G_sample[0][s] * erFrac[0][s] + G_sample[1][s] * erFrac[1][s] +
-            G_sample[2][s] * erFrac[2][s])) *
-          exp(-11.605 * E_sample[s] / T);
+            omega *
+            ((G_sample[0][s] * G_sample[1][s] * erFrac[0][s] * erFrac[1][s]) /
+             (G_sample[0][s] * erFrac[0][s] + G_sample[1][s] * erFrac[1][s] +
+              G_sample[2][s] * erFrac[2][s])) *
+            exp(-11.605 * E_sample[s] / T);
       } else {
         ErrorFlag = true;
         IntegratedCount++;
 
         Rate_sample[s] = NumericalRate(
-				       T, E_sample[s], G_sample[0][s], G_sample[1][s], G_sample[2][s],
-				       erFrac[0][s], erFrac[1][s], erFrac[2][s], false);
+            T, E_sample[s], G_sample[0][s], G_sample[1][s], G_sample[2][s],
+            erFrac[0][s], erFrac[1][s], erFrac[2][s], false);
       }
     } // Loop over samples
-  }   // If wg is/not known
+  } // If wg is/not known
 
   return classicalRate;
 }
@@ -602,8 +604,8 @@ void Resonance::printRate() {
   }
 
   std::cout << "Mean = " << MeanRate << " Median = " << MedianRate
-  << " Mu = " << RateMu << " Sigma = " << std::scientific << RateSigma
-  << "\n";
+            << " Mu = " << RateMu << " Sigma = " << std::scientific << RateSigma
+            << "\n";
 }
 //----------------------------------------------------------------------
 // Simple function to calculate the rate for a single, narrow,
@@ -630,9 +632,9 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
 
   // if particle is in spectator channel, integration should
   //  not be truncated
-  if (Reac.Qexit > Reac.Q && Reac.getGamma_index() == 2){
+  if (Reac.Qexit > Reac.Q && Reac.getGamma_index() == 2) {
     E_min += Reac.Qexit + Exf - Reac.Q;
-  } else if(Reac.Q < 0.0) {
+  } else if (Reac.Q < 0.0) {
     E_min -= Reac.Q;
   }
 
@@ -647,12 +649,12 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   G0 *= erFrac0;
   G1 *= erFrac1;
   G2 *= erFrac2;
-	
+
   // IF we input E>0, but the sample is <0, we need to treat it as a
   // subthreshold resonance. To do this, we need to convert
   // G into C2S*Theta_sp
-  double thresh = std::max(0.0, -1*Reac.Q);
-  //std::cout << "thresh = " << thresh << "\n";
+  double thresh = std::max(0.0, -1 * Reac.Q);
+  // std::cout << "thresh = " << thresh << "\n";
   if (E_cm > thresh && E < thresh) {
     ErrorFlag = true;
     SampledNegCount++;
@@ -669,21 +671,23 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
     G0 = G0 * 2.0 * 41.80161396 * PenFactor(E, L[0], M0, M1, Z0, Z1, R) /
          (mue * gsl_pow_2(R));
     //		std::cout << "Negative resonance went positive!\n";
-    //		std::cout << "E_cm = " << E_cm << "E_sample = " << E << "G[0] = " << G[0]
-    //							<< " G_sample = " << G0 << std::endl;
+    //		std::cout << "E_cm = " << E_cm << "E_sample = " << E << "G[0] =
+    //" << G[0]
+    //							<< " G_sample = " << G0
+    //<< std::endl;
   }
 
   //  The penetration factor at the resonance energy (the "true" PF)
   if (E > thresh) {
     Pr = PenFactor(E, L[0], M0, M1, Z0, Z1, R);
     //    std::cout << "Pr = " << Pr << "\n";
-    if(isZero(Pr))return 0.0;
+    if (isZero(Pr))
+      return 0.0;
   } else {
     Pr = 0.0;
   }
-  //std::cout << "Pr = " << Pr << "\n";
+  // std::cout << "Pr = " << Pr << "\n";
 
-	
   // Calculate the exit particle energy, depends on if it is spectator
   // if(NChannels[j]==3){
   if (Reac.getGamma_index() == 2) {
@@ -704,8 +708,8 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   size_t nevals;
 
   // Define integration limits
-  //double x = E_min, x1 = E_max;
-  //double pole = E;
+  // double x = E_min, x1 = E_max;
+  // double pole = E;
 
   // The array that needs to be passed to the integration function
   double alpha[9];
@@ -719,7 +723,7 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   alpha[7] = G2;
   alpha[8] = thresh;
 
-  //double gammaT = G0 + G1 + G2;
+  // double gammaT = G0 + G1 + G2;
 
   //  std::cout << "making integration workspace\n";
   // alpha[0] = 1;
@@ -749,7 +753,6 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
     result;
    */
 
-
   /*
     double pts[3];
     pts[0] = E_min;
@@ -778,34 +781,30 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
   temp_handler = gsl_set_error_handler_off();
 
   gsl_integration_cquad_workspace *w =
-    gsl_integration_cquad_workspace_alloc(10000);
+      gsl_integration_cquad_workspace_alloc(10000);
   int status = gsl_integration_cquad(&F,      // Function to be integrated
                                      E_min,   // Where known singularity is
                                      E_max,   // number of singularities
-                                     1e-200,   // absolute error
+                                     1e-200,  // absolute error
                                      1e-6,    // relative error
                                      w,       // workspace
                                      &result, // The result
                                      &error, &nevals);
   gsl_integration_cquad_workspace_free(w);
 
-  //status = -1;
-  // If the integration errored, use the slower ODE method
+  // status = -1;
+  //  If the integration errored, use the slower ODE method
   if (status != 0) {
     //	std::cout << "Integration error = " << gsl_strerror(status) << "\n";
-    //result = std::numeric_limits<double>::quiet_NaN();
-	
+    // result = std::numeric_limits<double>::quiet_NaN();
+
     // OK so the fast integration failed. Go back to the old method
-    const gsl_odeiv2_step_type * T
-      = gsl_odeiv2_step_rkck;
+    const gsl_odeiv2_step_type *T = gsl_odeiv2_step_rkck;
 
     // Set up the ODE solver
-    gsl_odeiv2_step * s
-      = gsl_odeiv2_step_alloc (T, 1);
-    gsl_odeiv2_control * c
-      = gsl_odeiv2_control_y_new (1e-100, 1.0e-6);
-    gsl_odeiv2_evolve * e
-      = gsl_odeiv2_evolve_alloc (1);
+    gsl_odeiv2_step *s = gsl_odeiv2_step_alloc(T, 1);
+    gsl_odeiv2_control *c = gsl_odeiv2_control_y_new(1e-100, 1.0e-6);
+    gsl_odeiv2_evolve *e = gsl_odeiv2_evolve_alloc(1);
 
     // Function, Jacobian, Number of Dimensions, Parameters
     gsl_odeiv2_system sys = {rhsWrapper, NULL, 1, &alpha};
@@ -813,49 +812,47 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
     // Integration limits
     double x = E_min, x1 = E_max;
     // stepsize
-    double h=1.0e-10;
-    double hmin = 1.0e-12;   // The minimum step size
+    double h = 1.0e-10;
+    double hmin = 1.0e-12; // The minimum step size
     // Value of the integrand. Starts at zero
     double y[2] = {0.0, 0.0};
     // Flag to take small steps
     bool smallstep = false;
 
-    while(x < x1){
+    while (x < x1) {
 
       // 2007-12-27
       // If the step will bring it close to the Er, take small steps
-      if(x < E && (x + h) > (E-(3.0*(G0+G1+G2))))smallstep=true;
-			
+      if (x < E && (x + h) > (E - (3.0 * (G0 + G1 + G2))))
+        smallstep = true;
+
       // Now make step small if it isn't already, can be fairly large because
       // it starts on the resonance wing
-      if(smallstep && h>(G0+G1+G2)){
-	h = (G0+G1+G2);
+      if (smallstep && h > (G0 + G1 + G2)) {
+        h = (G0 + G1 + G2);
       }
 
       // Make the step...
       // Note, the step size is determined by the error in the
       //  cross section, so spectroscopic factors may look jumpy
-      int status = gsl_odeiv2_evolve_apply(e, c, s,
-					   &sys,
-					   &x, x1,
-					   &h, y);
+      int status = gsl_odeiv2_evolve_apply(e, c, s, &sys, &x, x1, &h, y);
 
       // quit if there was an error
-      if(status != GSL_SUCCESS)break;
+      if (status != GSL_SUCCESS)
+        break;
 
       // don't let h get too small
-      if(h<hmin)h=hmin;
+      if (h < hmin)
+        h = hmin;
 
       // reset small step flag
-      smallstep=false;
+      smallstep = false;
       //     if(E < 0.05)testhist << x << "\t" << y[0] << endl;
-      //cout << h << "\t" << y[0] << endl;
-      //testhist << x << "\t" << y[0] << endl;
-
+      // cout << h << "\t" << y[0] << endl;
+      // testhist << x << "\t" << y[0] << endl;
     }
 
     result = y[0];
-
   }
   gsl_set_error_handler(temp_handler);
 
@@ -868,8 +865,8 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
     1e-50,       // absolute error
     1e-3,    // relative error
     10000,    // max number of steps (cannot
-    exceed size of workspace w,       // workspace &result, // The result &error);
-    gsl_integration_workspace_free(w);
+    exceed size of workspace w,       // workspace &result, // The result
+    &error); gsl_integration_workspace_free(w);
    */
   //} else {
   /*
@@ -880,7 +877,8 @@ double Resonance::NumericalRate(double T, double E, double G0, double G1,
     1e-50,       // absolute error
     1e-3,    // relative error
     10000,    // max number of steps (cannot
-    exceed size of workspace w,       // workspace &result, // The result &error);
+    exceed size of workspace w,       // workspace &result, // The result
+    &error);
     }
    */
   //  if (status) {
@@ -960,7 +958,8 @@ double Resonance::Integrand(double x, void *params) {
   //  this->print();
 
   //  std::cout << Pr << " " << Pr_exit << " " << Er << " "
-  //						<< Temp << " " << G0 << " " << G1 << " " << G2 << " " << "\n";
+  //						<< Temp << " " << G0 << " " <<
+  // G1 << " " << G2 << " " << "\n";
 
   // std::cout << "R = " << R << "\n";
 
@@ -990,11 +989,13 @@ double Resonance::Integrand(double x, void *params) {
   for (int i = 1; i < 3; i++) {
     if (G[i] > 0.0) {
       if (i == Reac.getGamma_index()) {
-	//				std::cout << "Scale[1]: " << Reac.Q+x-Exf << " " << Reac.Q+Er-Exf << " Er="
-	//									<< Er << " Q=" << Reac.Q << "\n"; 
+        //				std::cout << "Scale[1]: " <<
+        // Reac.Q+x-Exf << " " << Reac.Q+Er-Exf << " Er="
+        //									<<
+        // Er << " Q=" << Reac.Q << "\n";
         if (i == 1)
           Scale[i] =
-            pow((Reac.Q + x - Exf) / (Reac.Q + Er - Exf), (2. * L[i] + 1.0));
+              pow((Reac.Q + x - Exf) / (Reac.Q + Er - Exf), (2. * L[i] + 1.0));
         if (i == 2)
           Scale[i] = pow((Reac.Q + x) / (Reac.Q + Er), (2. * L[i] + 1.0));
       } else {
@@ -1003,8 +1004,8 @@ double Resonance::Integrand(double x, void *params) {
         if (i == 2)
           E_exit = Reac.Q + x - Reac.Qexit;
         if (E_exit > 0.0) {
-          P_exit =
-            PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R_exit);
+          P_exit = PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2,
+                             R_exit);
           Scale[i] = P_exit / Pr_exit;
         } else {
           Scale[i] = 0.0;
@@ -1022,11 +1023,13 @@ double Resonance::Integrand(double x, void *params) {
 
   double integrand = S1 * S3 / S2; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
 
-  double sfactor = (S1/S2)*exp(0.989510*Z0*Z1*sqrt(mue/x)); 
+  double sfactor = (S1 / S2) * exp(0.989510 * Z0 * Z1 * sqrt(mue / x));
 
-  //	std::cout << x << " " << S1 << " " << S2 << " " << S3 << " " << integrand << "\n";
-  //	std::cout << PEK << " " << Scale[0] << " " << G0 << " " << Scale[1] << " " << G1 << "\n";
-	
+  //	std::cout << x << " " << S1 << " " << S2 << " " << S3 << " " <<
+  // integrand << "\n"; 	std::cout << PEK << " " << Scale[0] << " " << G0
+  // << " "
+  //<< Scale[1] << " " << G1 << "\n";
+
   //  if(integrand < 1.e-99)integrand=0.0;
 
   //  std::cout << x << " " << integrand << "\n";
@@ -1042,11 +1045,11 @@ double Resonance::Integrand(double x, void *params) {
 
   // Write the integrand to a file if requested
   //	std::cout << writeIntegrand << " ";
-  if (writeIntegrand){
-    integrandfile << std::scientific << std::setprecision(9) << x << " " << integrand
-    << " " << sfactor << " " << P << std::endl;
+  if (writeIntegrand) {
+    integrandfile << std::scientific << std::setprecision(9) << x << " "
+                  << integrand << " " << sfactor << " " << P << std::endl;
   }
-	
+
   // astrohpysical s-factor
   // cout << x << "\t" << x*(S1/S2)/exp(-0.989534*Z0*Z1*sqrt(mue/x)) << endl;
   // Numerator of x section
@@ -1069,7 +1072,7 @@ double Resonance::Integrand(double x, void *params) {
   return integrand;
 }
 
-int Resonance::rhs (double x, const double y[], double dydx[], void *params){
+int Resonance::rhs(double x, const double y[], double dydx[], void *params) {
 
   double *par = (double *)params;
   double Pr = (double)par[1];
@@ -1086,12 +1089,12 @@ int Resonance::rhs (double x, const double y[], double dydx[], void *params){
   // std::cout << Pr << " " << Pr_exit << " " << Er << " "
   //	    << Temp << " " << G0 << " " << G1 << " " << G2 << " " << "\n";
 
-  //std::cout << "R = " << R << "\n";
+  // std::cout << "R = " << R << "\n";
 
   double Scale[3];
 
-  //double mue = M0*M1/(M0+M1);
-  // double R = R0*(pow(M0,1./3.) + pow(M1,1./3.));
+  // double mue = M0*M1/(M0+M1);
+  //  double R = R0*(pow(M0,1./3.) + pow(M1,1./3.));
   double PEK = 6.56618216E-1 / mue; // a correction factor
   double P = PenFactor(x, L[0], M0, M1, Z0, Z1, R);
   double P_exit, E_exit = 0.;
@@ -1116,7 +1119,7 @@ int Resonance::rhs (double x, const double y[], double dydx[], void *params){
       if (i == Reac.getGamma_index()) {
         if (i == 1)
           Scale[i] =
-            pow((Reac.Q + x - Exf) / (Reac.Q + Er - Exf), (2. * L[i] + 1.0));
+              pow((Reac.Q + x - Exf) / (Reac.Q + Er - Exf), (2. * L[i] + 1.0));
         if (i == 2)
           Scale[i] = pow((Reac.Q + x) / (Reac.Q + Er), (2. * L[i] + 1.0));
       } else {
@@ -1125,8 +1128,8 @@ int Resonance::rhs (double x, const double y[], double dydx[], void *params){
         if (i == 2)
           E_exit = Reac.Q + x - Reac.Qexit;
         if (E_exit > 0.0) {
-          P_exit =
-            PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R_exit);
+          P_exit = PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2,
+                             R_exit);
           Scale[i] = P_exit / Pr_exit;
         } else {
           Scale[i] = 0.0;
@@ -1145,31 +1148,32 @@ int Resonance::rhs (double x, const double y[], double dydx[], void *params){
   double integrand = S1 * S3 / S2; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
 
   dydx[0] = integrand;
-	
+
   return GSL_SUCCESS;
 }
 //}
 
 //----------------------------------------------------------------------
-double Resonance::getSFactor(double E, int samp){
+double Resonance::getSFactor(double E, int samp) {
 
-  if(!isBroad)return 0.0;
+  if (!isBroad)
+    return 0.0;
 
   // Pass samp=-1 to use the central values, or samp>=0 to use MC samples
   double E_cm_samp;
   double G_samp[3];
-  if(samp == -1){
+  if (samp == -1) {
     E_cm_samp = E_cm;
     G_samp[0] = G[0];
     G_samp[1] = G[1];
     G_samp[2] = G[2];
   } else {
     E_cm_samp = E_sample[samp];
-    for(int i=0;i<3;i++)
+    for (int i = 0; i < 3; i++)
       G_samp[i] = G_sample[i][samp];
   }
-	
-  //double PEK = 6.56618216E-1 / mue; // a correction factor
+
+  // double PEK = 6.56618216E-1 / mue; // a correction factor
   double P = PenFactor(E, L[0], M0, M1, Z0, Z1, R);
   double Pr, Pr_exit;
   double P_exit, E_exit = 0.;
@@ -1177,8 +1181,8 @@ double Resonance::getSFactor(double E, int samp){
 
   double Scale[3];
 
-  double eta = 0.989510*Z0*Z1*sqrt(mue/E);
-	
+  double eta = 0.989510 * Z0 * Z1 * sqrt(mue / E);
+
   //  The penetration factor at the resonance energy (the "true" PF)
   if (E_cm_samp > 0.0) {
     Pr = PenFactor(E_cm_samp, L[0], M0, M1, Z0, Z1, R);
@@ -1189,44 +1193,46 @@ double Resonance::getSFactor(double E, int samp){
   // Calculate the exit particle energy, depends on if it is spectator
   if (Reac.getGamma_index() == 2) {
     // if exit particle is observed decay, take final excitation into account
-    Pr_exit = PenFactor(E_cm_samp + Reac.Q - Reac.Qexit - Exf, L[1], M0 + M1 - M2, M2,
-                        Z0 + Z1 - Z2, Z2, R_exit);
+    Pr_exit = PenFactor(E_cm_samp + Reac.Q - Reac.Qexit - Exf, L[1],
+                        M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R_exit);
   } else if (Reac.getGamma_index() == 1 && NChannels == 3) {
     // ignore spectator final excitation if it is spectator
     Pr_exit = PenFactor(E_cm_samp + Reac.Q - Reac.Qexit, L[2], M0 + M1 - M2, M2,
                         Z0 + Z1 - Z2, Z2, R_exit);
   }
-  //std::cout << "res " << E << " Pr=" << Pr << " Pr_exit=" << Pr_exit << std::endl;
+  // std::cout << "res " << E << " Pr=" << Pr << " Pr_exit=" << Pr_exit <<
+  // std::endl;
 
   // Entrance particle scale
   if (E_cm_samp > 0.0) {
     Scale[0] = P / Pr;
   } else {
     Scale[0] = 2.0 * P * 41.80161396 / (mue * gsl_pow_2(R));
-    //Scale[0] = 1.0;
+    // Scale[0] = 1.0;
     //		G0 = 2.0 * P * G0 * 41.80161396 / (mue * gsl_pow_2(R));
   }
-	
-  //std::cout << "res " << E << " Scale[0]=" << Scale[0] << std::endl;
+
+  // std::cout << "res " << E << " Scale[0]=" << Scale[0] << std::endl;
 
   // Exit and spectator scales
   for (int i = 1; i < 3; i++) {
     if (G_samp[i] > 0.0) {
       if (i == Reac.getGamma_index()) {
         if (i == 1)
-          Scale[i] =
-            pow((Reac.Q + E - Exf) / (Reac.Q + E_cm_samp - Exf), (2. * L[i] + 1.0));
-	//std::cout << Exf << " " << L[1] << std::endl;
+          Scale[i] = pow((Reac.Q + E - Exf) / (Reac.Q + E_cm_samp - Exf),
+                         (2. * L[i] + 1.0));
+        // std::cout << Exf << " " << L[1] << std::endl;
         if (i == 2)
-          Scale[i] = pow((Reac.Q + E) / (Reac.Q + E_cm_samp), (2. * L[i] + 1.0));
+          Scale[i] =
+              pow((Reac.Q + E) / (Reac.Q + E_cm_samp), (2. * L[i] + 1.0));
       } else {
         if (i == 1)
           E_exit = Reac.Q + E - Reac.Qexit - Exf;
         if (i == 2)
           E_exit = Reac.Q + E - Reac.Qexit;
         if (E_exit > 0.0) {
-          P_exit =
-            PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2, R_exit);
+          P_exit = PenFactor(E_exit, L[i], M0 + M1 - M2, M2, Z0 + Z1 - Z2, Z2,
+                             R_exit);
           Scale[i] = P_exit / Pr_exit;
         } else {
           Scale[i] = 0.0;
@@ -1237,45 +1243,45 @@ double Resonance::getSFactor(double E, int samp){
     }
   }
 
-  double Consts = 0.656618216/mue;   // pi*hbar^2/(2*mu) in MeV.b
+  double Consts = 0.656618216 / mue; // pi*hbar^2/(2*mu) in MeV.b
   double S1 = exp(eta);
   double S2 = omega * Scale[0] * G_samp[0] * Scale[1] * G_samp[1];
   double S3 = gsl_pow_2(E_cm_samp - E) +
-              0.25 * gsl_pow_2(G_samp[0] * Scale[0] + G_samp[1] * Scale[1] + G_samp[2] * Scale[2]);
+              0.25 * gsl_pow_2(G_samp[0] * Scale[0] + G_samp[1] * Scale[1] +
+                               G_samp[2] * Scale[2]);
 
-  //std::cout << "res " << E << " Scale[1]=" << Scale[1]
-  //					<< " Scale[2]=" << Scale[2] << std::endl;
+  // std::cout << "res " << E << " Scale[1]=" << Scale[1]
+  //					<< " Scale[2]=" << Scale[2] <<
+  // std::endl;
 
   //	std::cout << omega << " " << G[0] << " " << G[1] << " ";
   //	std::cout << Scale[0] << " " << Scale[1] << " " << Scale[2] << "\n";
   //	std::cout << S1 << " " << S2 << " " << S3 << "\n";
-	
-  double SFactor = Consts * S1 * S2 / S3; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
+
+  double SFactor =
+      Consts * S1 * S2 / S3; //*3.7318e10*(pow(mue,-0.5)*pow(Temp,-1.5));
 
   return SFactor;
-	
 }
-
-
 
 void Resonance::print() {
 
   //  cout << "--------------------------------------------------" << "\n";
   // cout << "     This is resonance: " << index << "\n";
   cout << " Resonace " << std::setw(3) << index << "    E_cm = " << E_cm
-  << " +/- " << dE_cm << "\n";
+       << " +/- " << dE_cm << "\n";
   cout << "                 wg   = " << wg << " +/- " << dwg << "\n";
   cout << "                 Jr   = " << Jr << "\n";
   cout << "                 G1   = " << G[0] << " +/- " << dG[0]
-  << " (L = " << L[0] << ")\n";
+       << " (L = " << L[0] << ")\n";
   if (isUpperLimit)
     cout << "                 PT   = " << PT[0] << " +/- " << dPT[0] << "\n";
   cout << "                 G2   = " << G[1] << " +/- " << dG[1]
-  << " (L = " << L[1] << ")\n";
+       << " (L = " << L[1] << ")\n";
   if (isUpperLimit)
     cout << "                 PT   = " << PT[1] << " +/- " << dPT[1] << "\n";
   cout << "                 G3   = " << G[2] << " +/- " << dG[2]
-  << " (L = " << L[2] << ")\n";
+       << " (L = " << L[2] << ")\n";
   if (isUpperLimit)
     cout << "                 PT   = " << PT[2] << " +/- " << dPT[2] << "\n";
   cout << "                 Exf  = " << Exf << "\n";
@@ -1285,7 +1291,7 @@ void Resonance::print() {
   cout << "     Width Correlated = " << isWidthCorrelated << "\n";
   cout << "   Corresponding res. = " << CorresRes << "\n";
   cout << "                 Frac = " << Frac << "\n";
-	
+
   //  cout << "--------------------------------------------------" << "\n";
   int NPrintSamples = 5;
   cout << "First " << NPrintSamples << " samples    -------\n";
@@ -1323,19 +1329,19 @@ void Resonance::write() {
   //  logfile << "--------------------------------------------------" << "\n";
   // logfile << "     This is resonance: " << index << "\n";
   logfile << " Resonance " << std::setw(3) << index << "    E_cm = " << E_cm
-  << " +/- " << dE_cm << " MeV\n";
+          << " +/- " << dE_cm << " MeV\n";
   logfile << "                 wg   = " << wg << " +/- " << dwg << " MeV\n";
   logfile << "                 Jr   = " << Jr << "\n";
   logfile << "                 G1   = " << G[0] << " +/- " << dG[0]
-  << " MeV (L = " << L[0] << ")\n";
+          << " MeV (L = " << L[0] << ")\n";
   if (isUpperLimit)
     logfile << "                 PT   = " << PT[0] << " +/- " << dPT[0] << "\n";
   logfile << "                 G2   = " << G[1] << " +/- " << dG[1]
-  << " MeV (L = " << L[1] << ")\n";
+          << " MeV (L = " << L[1] << ")\n";
   if (isUpperLimit)
     logfile << "                 PT   = " << PT[1] << " +/- " << dPT[1] << "\n";
   logfile << "                 G3   = " << G[2] << " +/- " << dG[2]
-  << " MeV (L = " << L[2] << ")\n";
+          << " MeV (L = " << L[2] << ")\n";
   if (isUpperLimit)
     logfile << "                 PT   = " << PT[2] << " +/- " << dPT[2] << "\n";
   logfile << "            NChannels = " << NChannels << "\n";

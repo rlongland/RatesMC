@@ -25,41 +25,40 @@
    Description: Contains all of the reaction specific stuff
    ======================================================================
  */
-#include <iostream>
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
-#include <stdio.h>
+#include <iostream>
 #include <math.h>
-#include <algorithm>
 #include <numeric>
+#include <stdio.h>
 
-
+#include <gsl/gsl_integration.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf_exp.h>
 #include <gsl/gsl_sf_log.h>
-#include <gsl/gsl_integration.h>
 #include <gsl/gsl_spline.h>
 
 #include "Interference.h"
-#include "Resonance.h"
 #include "Reaction.h"
+#include "Resonance.h"
 #include "Utilities.h"
 
-//using std::cout;
-//using std::endl;
+// using std::cout;
+// using std::endl;
 
-Reaction::Reaction(){
+Reaction::Reaction() {
 
   smallestdE = 0.0;
   smallestdwg = 0.0;
-  for(int i=0; i<3; i++)
+  for (int i = 0; i < 3; i++)
     smallestdG[i] = 0.0;
-
 }
 
-Reaction::~Reaction(){}
+Reaction::~Reaction() {}
 
-void Reaction::setNonResonant(double s, double sp, double spp, double ds, double cutoffe, int part){
+void Reaction::setNonResonant(double s, double sp, double spp, double ds,
+                              double cutoffe, int part) {
   S[part] = s;
   Sp[part] = sp;
   Spp[part] = spp;
@@ -71,9 +70,8 @@ void Reaction::setNonResonant(double s, double sp, double spp, double ds, double
 }
 
 void Reaction::setNonResonantTable(std::vector<double> SE,
-				   std::vector<double> SS,
-				   std::vector<double> SdS,
-				   int part){
+                                   std::vector<double> SS,
+                                   std::vector<double> SdS, int part) {
 
   SFactorE[part] = SE;
   SFactorS[part] = SS;
@@ -81,36 +79,32 @@ void Reaction::setNonResonantTable(std::vector<double> SE,
 
   std::vector<double> A(NSamples);
   ARate.push_back(A);
-
-
 }
 
-void Reaction::
-    addResonance(int i, double E_cm, double dE_cm, double wg, double dwg, double Jr,
-		 double G1, double dG1, int L1, double PT1, double dPT1,
-		 double G2, double dG2, int L2, double PT2, double dPT2,
-		 double G3, double dG3, int L3, double PT3, double dPT3,
-		 double Exf, bool bInt, bool bUpperLimit,
-		 bool isECorrelated, bool isWidthCorrelated,
-		 int CorresRes, double Frac){
+void Reaction::addResonance(
+    int i, double E_cm, double dE_cm, double wg, double dwg, double Jr,
+    double G1, double dG1, int L1, double PT1, double dPT1, double G2,
+    double dG2, int L2, double PT2, double dPT2, double G3, double dG3, int L3,
+    double PT3, double dPT3, double Exf, bool bInt, bool bUpperLimit,
+    bool isECorrelated, bool isWidthCorrelated, int CorresRes, double Frac) {
 
   double G[3] = {G1, G2, G3};
   double dG[3] = {dG1, dG2, dG3};
   int L[3] = {L1, L2, L3};
   double PT[3] = {PT1, PT2, PT3};
   double dPT[3] = {dPT1, dPT2, dPT3};
-  
+
   // Make a resonance
-  Resonance Res(*this, i, E_cm, dE_cm, wg, dwg, Jr,
-		G, dG, L, PT, dPT, Exf, bInt, bUpperLimit,
-		isECorrelated, isWidthCorrelated, CorresRes, Frac);
-  //Res.print();
-  // Add that resonance to the list of resonances
+  Resonance Res(*this, i, E_cm, dE_cm, wg, dwg, Jr, G, dG, L, PT, dPT, Exf,
+                bInt, bUpperLimit, isECorrelated, isWidthCorrelated, CorresRes,
+                Frac);
+  // Res.print();
+  //  Add that resonance to the list of resonances
   Resonances.push_back(Res);
 }
 
-void Reaction::addInterference(int i, int IntfSign){
-	
+void Reaction::addInterference(int i, int IntfSign) {
+
   // Make an interfering pair
   Interference Intf(*this, i, IntfSign);
 
@@ -118,14 +112,11 @@ void Reaction::addInterference(int i, int IntfSign){
 }
 //----------------------------------------------------------------------
 // Add a resonance to the interference term
-void Reaction::addResonanceToInterference(int index, double E_cm,	double dE_cm, double Jr,
-					  double G1, double dG1, int L1,
-					  double PT1, double dPT1,
-					  double G2, double dG2, int L2,
-					  double PT2, double dPT2,
-					  double G3, double dG3, int L3,
-					  double PT3, double dPT3,
-					  double Exf, bool bUpperLimit, int i) {
+void Reaction::addResonanceToInterference(
+    int index, double E_cm, double dE_cm, double Jr, double G1, double dG1,
+    int L1, double PT1, double dPT1, double G2, double dG2, int L2, double PT2,
+    double dPT2, double G3, double dG3, int L3, double PT3, double dPT3,
+    double Exf, bool bUpperLimit, int i) {
 
   double G[3] = {G1, G2, G3};
   double dG[3] = {dG1, dG2, dG3};
@@ -134,45 +125,46 @@ void Reaction::addResonanceToInterference(int index, double E_cm,	double dE_cm, 
   double dPT[3] = {dPT1, dPT2, dPT3};
 
   // Make a resonance
-  Resonance *Res = new Resonance(*this, i, E_cm, dE_cm, 0.0, 0.0, Jr,
-				 G, dG, L, PT, dPT, Exf, true, bUpperLimit,
-				 false, false, index, 1.0);
+  Resonance *Res =
+      new Resonance(*this, i, E_cm, dE_cm, 0.0, 0.0, Jr, G, dG, L, PT, dPT, Exf,
+                    true, bUpperLimit, false, false, index, 1.0);
 
   // Add this resonance to the interference
   Interferences[index].addResonance(Res, i);
-
 }
 
-
 //----------------------------------------------------------------------
-void Reaction::printName(){
+void Reaction::printName() {
   std::cout << "The reaction name is: " << Name << "\n";
 }
 
-void Reaction::printReaction(){
+void Reaction::printReaction() {
 
   std::cout << "--------------------------------------------------" << "\n";
   std::cout << "     This is reaction: " << Name << "\n";
   std::cout << "   Z0        Z1       Z2" << "\n";
-  printf( "   %2d        %2d       %2d\n",Z0,Z1,Z2);
+  printf("   %2d        %2d       %2d\n", Z0, Z1, Z2);
   std::cout << "   M0        M1       M2" << "\n";
-  printf( " %5.2f     %5.2f    %5.2f\n",M0,M1,M2);
+  printf(" %5.2f     %5.2f    %5.2f\n", M0, M1, M2);
   std::cout << "   S_entrance = " << Q << "\n";
   std::cout << "   S_exit     = " << Qexit << "\n";
-  std::cout << "   The gamma ray channel is channel " << Gamma_index+1 << "\n";
+  std::cout << "   The gamma ray channel is channel " << Gamma_index + 1
+            << "\n";
   std::cout << "--------------------------------------------------" << "\n";
 
   std::cout << " Direct Capture part     \n";
   std::cout << "          S0       S'       S''    dS   CutoffE\n";
-  std::cout << " Part 1: " << S[0] << "  " << Sp[0] << "  " << Spp[0] << "  " << dS[0] << "  " << CutoffE[0] << "\n";
-  std::cout << " Part 2: " << S[1] << "  " << Sp[1] << "  " << Spp[1] << "  " << dS[1] << "  " << CutoffE[1] << "\n";
+  std::cout << " Part 1: " << S[0] << "  " << Sp[0] << "  " << Spp[0] << "  "
+            << dS[0] << "  " << CutoffE[0] << "\n";
+  std::cout << " Part 2: " << S[1] << "  " << Sp[1] << "  " << Spp[1] << "  "
+            << dS[1] << "  " << CutoffE[1] << "\n";
   std::cout << "\n";
 
   std::cout << "--------------------------------------------------" << "\n";
   std::cout << " Resonances:\n";
   // Loop through all regular resonances
   std::vector<Resonance>::iterator res;
-  for(res = Resonances.begin(); res < Resonances.end(); res++){
+  for (res = Resonances.begin(); res < Resonances.end(); res++) {
     res->print();
   }
   std::cout << "--------------------------------------------------" << "\n";
@@ -180,41 +172,45 @@ void Reaction::printReaction(){
   std::cout << " Interferences:\n";
   // Loop through all interferences
   std::vector<Interference>::iterator interf;
-  for(interf = Interferences.begin(); interf < Interferences.end(); interf++){
+  for (interf = Interferences.begin(); interf < Interferences.end(); interf++) {
     interf->print();
   }
   std::cout << "--------------------------------------------------" << "\n";
-
 }
 
-void Reaction::writeReaction(){
+void Reaction::writeReaction() {
 
   logfile << "--------------------------------------------------" << "\n";
   logfile << "     This is reaction: " << Name << "\n";
   logfile << "   Z0        Z1       Z2" << "\n";
-  logfile << std::setw(5) << Z0 << "     " << std::setw(5) << Z1 << "    " << std::setw(5) << Z2 << "\n";
+  logfile << std::setw(5) << Z0 << "     " << std::setw(5) << Z1 << "    "
+          << std::setw(5) << Z2 << "\n";
   logfile << "   M0        M1       M2" << "\n";
-  logfile << "  " <<  M0 << "  " << M1 << "  " << M2 << "\n";
+  logfile << "  " << M0 << "  " << M1 << "  " << M2 << "\n";
   logfile << "   J0        J1       J2" << "\n";
   logfile << "   " << J0 << "   " << J1 << "   " << J2 << "\n";
   logfile << "   S_entrance = " << Q << " MeV \n";
   logfile << "   S_exit     = " << Qexit << " MeV \n";
-  logfile << "   The gamma ray channel is channel " << Gamma_index+1 << "\n";
+  logfile << "   The gamma ray channel is channel " << Gamma_index + 1 << "\n";
   logfile << "--------------------------------------------------" << "\n";
 
   logfile << " Direct Capture part     \n";
   logfile << "          S0       S'       S''    dS   CutoffE\n";
-  logfile << " Part 1: " << S[0] << "  " << Sp[0] << "  " << Spp[0] << "  " << dS[0] << "  " << CutoffE[0] << "\n";
-  logfile << " Part 2: " << S[1] << "  " << Sp[1] << "  " << Spp[1] << "  " << dS[1] << "  " << CutoffE[1] << "\n";
+  logfile << " Part 1: " << S[0] << "  " << Sp[0] << "  " << Spp[0] << "  "
+          << dS[0] << "  " << CutoffE[0] << "\n";
+  logfile << " Part 2: " << S[1] << "  " << Sp[1] << "  " << Spp[1] << "  "
+          << dS[1] << "  " << CutoffE[1] << "\n";
   logfile << "\n";
 
   logfile << " Tabulated Direct Capture part     \n";
   logfile << "      E         S           dS (fractional uncertainty)  \n";
-  for(size_t i=0; i<SFactorE[0].size(); i++)
-    logfile << SFactorE[0][i] << "    " << SFactorS[0][i] << "    " << SFactordS[0][i]  << "\n ";
+  for (size_t i = 0; i < SFactorE[0].size(); i++)
+    logfile << SFactorE[0][i] << "    " << SFactorS[0][i] << "    "
+            << SFactordS[0][i] << "\n ";
   logfile << "-----------------\n";
-  for(size_t i=0; i<SFactorE[1].size(); i++)
-    logfile << SFactorE[1][i] << "    " << SFactorS[1][i] << "    " << SFactordS[1][i]  << "\n ";
+  for (size_t i = 0; i < SFactorE[1].size(); i++)
+    logfile << SFactorE[1][i] << "    " << SFactorS[1][i] << "    "
+            << SFactordS[1][i] << "\n ";
   logfile << "\n";
 
   logfile << "--------------------------------------------------" << "\n";
@@ -222,207 +218,207 @@ void Reaction::writeReaction(){
 
   // Loop through all regular resonances
   std::vector<Resonance>::iterator res;
-  for(res = Resonances.begin(); res < Resonances.end(); res++){
+  for (res = Resonances.begin(); res < Resonances.end(); res++) {
     //    std::cout << "Res: " << res->getIndex() << "\n";
     res->write();
   }
-  //std::cout << "Done!\n";
+  // std::cout << "Done!\n";
   logfile << "--------------------------------------------------" << "\n";
   logfile << " Interferences:\n";
   // Loop through all interferences
   std::vector<Interference>::iterator interf;
-  for(interf = Interferences.begin(); interf < Interferences.end(); interf++){
+  for (interf = Interferences.begin(); interf < Interferences.end(); interf++) {
     interf->write();
   }
   logfile << "--------------------------------------------------" << "\n";
   logfile << " Correlations:\n";
-  if(!bEnergyCorrelations){
+  if (!bEnergyCorrelations) {
     logfile << "No energy correlations are being used\n";
   } else {
-    logfile << " The smallest dE value = " << smallestdE << 
-    " for resonance at " << EofSmallestdE << " MeV\n";
+    logfile << " The smallest dE value = " << smallestdE << " for resonance at "
+            << EofSmallestdE << " MeV\n";
   }
-  if(!bPartialWidthCorrelations){
+  if (!bPartialWidthCorrelations) {
     logfile << "No width correlations are being used\n";
   } else {
-    logfile << " The smallest dwg/wg value = " << smallestdwg   <<
-    " for resonance at " << EofSmallestdwg << " MeV\n";
-    logfile << " The smallest dG1/G1 value = " << smallestdG[0] <<
-    " for resonance at " << EofSmallestdG[0] << " MeV\n";
-    logfile << " The smallest dG2/G2 value = " << smallestdG[1] <<
-    " for resonance at " << EofSmallestdG[1] << " MeV\n";
-    logfile << " The smallest dG3/G3 value = " << smallestdG[2] <<
-    " for resonance at " << EofSmallestdG[2] << " MeV\n";
+    logfile << " The smallest dwg/wg value = " << smallestdwg
+            << " for resonance at " << EofSmallestdwg << " MeV\n";
+    logfile << " The smallest dG1/G1 value = " << smallestdG[0]
+            << " for resonance at " << EofSmallestdG[0] << " MeV\n";
+    logfile << " The smallest dG2/G2 value = " << smallestdG[1]
+            << " for resonance at " << EofSmallestdG[1] << " MeV\n";
+    logfile << " The smallest dG3/G3 value = " << smallestdG[2]
+            << " for resonance at " << EofSmallestdG[2] << " MeV\n";
   }
   logfile << std::endl;
 }
 
 //----------------------------------------------------------------------
 // Set up the contribution file header
-void Reaction::setupContribHeader(){
+void Reaction::setupContribHeader() {
 
   contribfile << "#Temp" << "   ";
-  for(int i=0;i<3;i++)
+  for (int i = 0; i < 3; i++)
     contribfile << "A-Rate-1   ";
-  for(int i=0;i<3;i++)
+  for (int i = 0; i < 3; i++)
     contribfile << "A-Rate-2   ";
-  for(Resonance &Res : Resonances){
-    for(int i=0; i<3; i++){
-      contribfile << "Res" << Res.getIndex()+1 << "       ";
+  for (Resonance &Res : Resonances) {
+    for (int i = 0; i < 3; i++) {
+      contribfile << "Res" << Res.getIndex() + 1 << "       ";
     }
   }
   contribfile << std::endl;
-
 }
 
 //----------------------------------------------------------------------
 // Calculate the resonant reaction rate
-double Reaction::calcResonant(double Temp){
+double Reaction::calcResonant(double Temp) {
 
   // Factor for final rate (iliadis Eqn 3.114)
-  double mue = M0*M1/(M0+M1);
-  double RateFactorNarrow = (1.5399e11/pow(mue*Temp,1.5));
-  double RateFactorBroad = 3.7318e10/(pow(mue,0.5)*pow(Temp,1.5));
-  
+  double mue = M0 * M1 / (M0 + M1);
+  double RateFactorNarrow = (1.5399e11 / pow(mue * Temp, 1.5));
+  double RateFactorBroad = 3.7318e10 / (pow(mue, 0.5) * pow(Temp, 1.5));
+
   // Vector of rate storage
-  std::vector<double> individualRate;   // individualRate stores the "classical" rate for each resonance
-  double classicalRate=0.0;             // classicalRate is to summed individialRate
+  std::vector<double> individualRate; // individualRate stores the "classical"
+                                      // rate for each resonance
+  double classicalRate = 0.0; // classicalRate is to summed individialRate
 
   // Loop over all resonances
-  for(Resonance &R : Resonances){
+  for (Resonance &R : Resonances) {
     // if the resonance is narrow
-    if(!R.getisBroad()){
+    if (!R.getisBroad()) {
       //      std::cout << "Resonance " << R.getIndex() << " at "
       //      		<< R.getE_cm() << " keV is narrow\n";
-      double nRate = RateFactorNarrow*R.calcNarrow(Temp);
+      double nRate = RateFactorNarrow * R.calcNarrow(Temp);
 
-      // Only  store the rate for the first possibility if multiple resonance possibilities 
-      if(R.getIndex() == R.getCorresRes())
-	individualRate.push_back(nRate);
+      // Only  store the rate for the first possibility if multiple resonance
+      // possibilities
+      if (R.getIndex() == R.getCorresRes())
+        individualRate.push_back(nRate);
       // Multiply every sample by the reaction rate constant above
       R.scaleByConstant(RateFactorNarrow);
       // If it's broad
     } else {
       //      std::cout << "Resonance " << R.getIndex() << " at "
-      //      		<< R.getE_cm() << " keV is being numerically integrated\n";
-      double bRate = RateFactorBroad*R.calcBroad(Temp);
-      // Only  store the rate for the first possibility if multiple resonance possibilities 
-      if(R.getIndex() == R.getCorresRes())
-	individualRate.push_back(bRate);
+      //      		<< R.getE_cm() << " keV is being numerically
+      //      integrated\n";
+      double bRate = RateFactorBroad * R.calcBroad(Temp);
+      // Only  store the rate for the first possibility if multiple resonance
+      // possibilities
+      if (R.getIndex() == R.getCorresRes())
+        individualRate.push_back(bRate);
 
       // Multiply every sample by the reaction rate constant above
       R.scaleByConstant(RateFactorBroad);
     }
 
     // Once calculated, print the rate and some diagnostics for each resonance
-    //R.printRate();
+    // R.printRate();
   }
 
   // Also loop over the interferences
-  for(Interference &Inter : Interferences){
+  for (Interference &Inter : Interferences) {
 
-    double bRate = RateFactorBroad*Inter.calcBroad(Temp);
+    double bRate = RateFactorBroad * Inter.calcBroad(Temp);
     individualRate.push_back(bRate);
-		
+
     // Multiply every sample by the reaction rate constant above
     Inter.scaleByConstant(RateFactorBroad);
-
   }
 
-	
   // Sum all the classical individual resonanances
-  classicalRate = std::accumulate(individualRate.begin(), individualRate.end(), 0.0);
+  classicalRate =
+      std::accumulate(individualRate.begin(), individualRate.end(), 0.0);
 
-  //	std::cout << "Total classical rate from resonances = " << classicalRate << "\n";
+  //	std::cout << "Total classical rate from resonances = " << classicalRate
+  //<< "\n";
 
   return classicalRate;
 }
 
-
 //----------------------------------------------------------------------
 // For resonances that have a list of possibilities, use this function
 // to combine them
-void Reaction::CombineResonancePossibilities(){
+void Reaction::CombineResonancePossibilities() {
 
-  int sstart=0, send=0, ds=0;
-  for(Resonance &R : Resonances){
+  int sstart = 0, send = 0, ds = 0;
+  for (Resonance &R : Resonances) {
 
-    ds = (int)(R.getFrac()*NSamples);
+    ds = (int)(R.getFrac() * NSamples);
     // Is the corresponding resonance a different one?
-    if(R.getCorresRes() != R.getIndex()){
+    if (R.getCorresRes() != R.getIndex()) {
       Resonance &RCorres = Resonances[R.getCorresRes()];
       sstart = send;
-      send = sstart+ds;
-      //			std::cout << R.getIndex() << "<->" << R.getCorresRes()  << ": sstart = " << sstart << " send = " << send << "\n";
-      for(int s=sstart; s<send; s++)
-	RCorres.putRateSample(s, R.getRateSample(s));
+      send = sstart + ds;
+      //			std::cout << R.getIndex() << "<->" <<
+      // R.getCorresRes()  << ": sstart = " << sstart << " send = " << send <<
+      //"\n";
+      for (int s = sstart; s < send; s++)
+        RCorres.putRateSample(s, R.getRateSample(s));
     } else {
       sstart = 0;
       send = sstart + ds;
     }
-
   }
-
 }
 
 //----------------------------------------------------------------------
 // Collect the resonant rates for sample s
-std::vector<double> Reaction::getResonantRateSample(int s){
+std::vector<double> Reaction::getResonantRateSample(int s) {
 
   std::vector<double> Rate_s;
-  
-  for(Resonance &R : Resonances){
-    //R.printRate();
-    if(R.getCorresRes() == R.getIndex())
+
+  for (Resonance &R : Resonances) {
+    // R.printRate();
+    if (R.getCorresRes() == R.getIndex())
       Rate_s.push_back(R.getRateSample(s));
   }
 
-  for(Interference &Inter : Interferences){
-    //R.printRate();
+  for (Interference &Inter : Interferences) {
+    // R.printRate();
     Rate_s.push_back(Inter.getRateSample(s));
   }
-  //std::cout << Rate_s[0] << "   ";
+  // std::cout << Rate_s[0] << "   ";
   return Rate_s;
 }
 
 //----------------------------------------------------------------------
 // Calculate the direct capture, non-resonant part of the reaction rate
-double Reaction::calcNonResonant(double Temp, int j){
+double Reaction::calcNonResonant(double Temp, int j) {
 
   //  std::cout << Temp << " " << j << "\n";
-  double mue = M0*M1/(M0+M1);
+  double mue = M0 * M1 / (M0 + M1);
   //  double mu, sigma;
-  double cutoff_T = 19.92*pow(CutoffE[j],1.5)/sqrt(pow(Z0*Z1,2.)*mue);
+  double cutoff_T = 19.92 * pow(CutoffE[j], 1.5) / sqrt(pow(Z0 * Z1, 2.) * mue);
 
-  double ADRate,mu,sigma;
+  double ADRate, mu, sigma;
   // e designates exact numbers
-  double C1e,C2e,C3e,C4e,C5e,C6e,C7e;
+  double C1e, C2e, C3e, C4e, C5e, C6e, C7e;
 
-  C1e = 7.8324e9*pow((pow(Z0*Z1,2.)*mue),1./6.) *S[j] / sqrt(mue);
-  C2e = 4.2475*pow((pow(Z0*Z1,2.)*mue),1./3.);
-  C3e = 9.810e-2*pow((pow(Z0*Z1,2.)*mue),-1./3.);
-  C4e = 0.1220*(Sp[j]/S[j])*pow((pow(Z0*Z1,2.)*mue),1./3.);
-  C5e = 8.377e-2*(Sp[j]/S[j]);
-  C6e = 7.442e-3*(Spp[j]/S[j])*pow((pow(Z0*Z1,2.)*mue),2./3.);
-  C7e = 1.299e-2*(Spp[j]/S[j])*pow((pow(Z0*Z1,2.)*mue),1./3.);
-  
+  C1e = 7.8324e9 * pow((pow(Z0 * Z1, 2.) * mue), 1. / 6.) * S[j] / sqrt(mue);
+  C2e = 4.2475 * pow((pow(Z0 * Z1, 2.) * mue), 1. / 3.);
+  C3e = 9.810e-2 * pow((pow(Z0 * Z1, 2.) * mue), -1. / 3.);
+  C4e = 0.1220 * (Sp[j] / S[j]) * pow((pow(Z0 * Z1, 2.) * mue), 1. / 3.);
+  C5e = 8.377e-2 * (Sp[j] / S[j]);
+  C6e = 7.442e-3 * (Spp[j] / S[j]) * pow((pow(Z0 * Z1, 2.) * mue), 2. / 3.);
+  C7e = 1.299e-2 * (Spp[j] / S[j]) * pow((pow(Z0 * Z1, 2.) * mue), 1. / 3.);
 
   /*cout << C1e << "\t" << C2e << "\t" << C3e << "\t" << C4e << "\t" <<
     C5e << "\t" << C6e << "\t" << C7e << std::endl;
     cout << "Cutoff T = " << cutoff_T << std::endl;*/
 
   // Calculate the rate first and then sample at the end.
-  
+
   // Turn off the error handler in case exp returns zero
   gsl_set_error_handler_off();
-  ADRate = 1.0e-3*(C1e/pow(Temp,2./3.))*gsl_sf_exp(-C2e/pow(Temp,1./3.)-
-						   pow(Temp/cutoff_T,2.))*
-	   (1 + C3e*pow(Temp,1./3.) + C4e*pow(Temp,2./3.) + C5e*Temp +
-	    C6e*pow(Temp,4./3.) + C7e*pow(Temp,5./3.));
+  ADRate = 1.0e-3 * (C1e / pow(Temp, 2. / 3.)) *
+           gsl_sf_exp(-C2e / pow(Temp, 1. / 3.) - pow(Temp / cutoff_T, 2.)) *
+           (1 + C3e * pow(Temp, 1. / 3.) + C4e * pow(Temp, 2. / 3.) +
+            C5e * Temp + C6e * pow(Temp, 4. / 3.) + C7e * pow(Temp, 5. / 3.));
 
   gsl_set_error_handler(NULL); // Turn error handler back on again
-  
-  
+
   /*cout << (C1e/pow(Temp,2./3.))*exp(-C2e/pow(Temp,1./3.)-
     pow(Temp/cutoff_T,2.)) << std::endl;
     cout << C3e*pow(Temp,1./3.) << std::endl;
@@ -433,33 +429,35 @@ double Reaction::calcNonResonant(double Temp, int j){
     cout << "About to Lognormalise" << std::endl;*/
 
   // If ADRate is negative, set to zero, this is unphysical
-  if(ADRate < 0.){
+  if (ADRate < 0.) {
     ErrorFlag = true;
-    logfile << "\tWARNING: The non-resonant part caused a negative rate, \n\t\tsetting to zero." << std::endl;
+    logfile << "\tWARNING: The non-resonant part caused a negative rate, "
+               "\n\t\tsetting to zero."
+            << std::endl;
     ADRate = 0.0;
-    for(int i=0;i<NSamples;i++){
-      ARate[j][i]=0.0;
+    for (int i = 0; i < NSamples; i++) {
+      ARate[j][i] = 0.0;
     }
   } else {
-    logNormalize(ADRate,dS[j]*ADRate,mu,sigma);
-    
+    logNormalize(ADRate, dS[j] * ADRate, mu, sigma);
+
     // if mu and sigma return as zero, the rate is zero (very small)
-    if((mu==0. && sigma==0.)){
-      ADRate=0.0;
-      for(int i=0;i<NSamples;i++){
-	ARate[j][i]=0.0;
+    if ((mu == 0. && sigma == 0.)) {
+      ADRate = 0.0;
+      for (int i = 0; i < NSamples; i++) {
+        ARate[j][i] = 0.0;
       }
     } else {
-      for(int i=0;i<NSamples;i++){
-	ARate[j][i] = gsl_ran_lognormal(r,mu,sigma);///(1.5399e11/pow(mue*Temp,1.5));
-	//	std::cout << ARate[j][i] << "\n";
+      for (int i = 0; i < NSamples; i++) {
+        ARate[j][i] =
+            gsl_ran_lognormal(r, mu, sigma); ///(1.5399e11/pow(mue*Temp,1.5));
+        //	std::cout << ARate[j][i] << "\n";
       }
     }
   }
 
+  // ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
 
-  //ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
-  
   return ADRate;
 }
 
@@ -467,127 +465,133 @@ double Reaction::calcNonResonant(double Temp, int j){
 // Calculate the non-resonant part of the reaction rate by integrating the
 // astrophysical s-factor
 // Ugly-ass hack
-Reaction * ReactionPtr;
-double NonResonantIntegrandWrapper(double x, void *params)
-{
+Reaction *ReactionPtr;
+double NonResonantIntegrandWrapper(double x, void *params) {
   return ReactionPtr->NonResonantIntegrand(x, params);
 }
-struct my_f_params { double mue; double T; double Z0Z1; int writeIntegrand;
-  gsl_spline *Sspline; gsl_interp_accel *facc;};
-double NonResonantTabulatedWrapper(double x, void *params)
-{
+struct my_f_params {
+  double mue;
+  double T;
+  double Z0Z1;
+  int writeIntegrand;
+  gsl_spline *Sspline;
+  gsl_interp_accel *facc;
+};
+double NonResonantTabulatedWrapper(double x, void *params) {
   return ReactionPtr->NonResonantTabulatedIntegrand(x, params);
 }
 // end ugly-ass hack
-double Reaction::calcNonResonantIntegrated(double Temp, int j){
+double Reaction::calcNonResonantIntegrated(double Temp, int j) {
 
-  //std::cout << Temp << " " << j << "\n";
-  double mue = M0*M1/(M0+M1);
+  // std::cout << Temp << " " << j << "\n";
+  double mue = M0 * M1 / (M0 + M1);
   //  double mu, sigma;
 
-  double ADRate,mu,sigma;
+  double ADRate, mu, sigma;
 
   // Calculate the rate first and then sample at the end.
   double E_min = EMin;
-  double E_max = CutoffE[j]/1000.0;
-  //std::cout << "E_max = " << E_max << std::endl;
-  // GSL Integration functions
+  double E_max = CutoffE[j] / 1000.0;
+  // std::cout << "E_max = " << E_max << std::endl;
+  //  GSL Integration functions
   double result, error;
-  
+
   // Define integration limits
-  //double x = E_min, x1 = E_max;
+  // double x = E_min, x1 = E_max;
 
   // The array that needs to be passed to the integration function
   double alpha[7];
-  alpha[0] = j;  // The index of the non-resonant part
+  alpha[0] = j; // The index of the non-resonant part
   alpha[1] = mue;
   alpha[2] = Temp;
-  alpha[3] = S[j]/1000.0;
+  alpha[3] = S[j] / 1000.0;
   alpha[4] = Sp[j];
-  alpha[5] = Spp[j]*1000.0;
-  alpha[6] = Z0*Z1;
-  //alpha[1] = (int)writeIntegrand;
-
+  alpha[5] = Spp[j] * 1000.0;
+  alpha[6] = Z0 * Z1;
+  // alpha[1] = (int)writeIntegrand;
 
   // Turn off the error handler
   gsl_set_error_handler_off();
 
-  gsl_integration_workspace * w = gsl_integration_workspace_alloc(1000);
+  gsl_integration_workspace *w = gsl_integration_workspace_alloc(1000);
   gsl_function F;
   // Can't use Integrand directly because GSL is shit
   F.function = &NonResonantIntegrandWrapper;
   //  F.function = &Integrand;
   F.params = &alpha;
 
-  int status = gsl_integration_qag(&F,      // Function to be integrated
-				   E_min,   // Start of integration
-				   E_max,   // End of integration
-				   0,       // absolute error
-				   1e-3,    // relative error
-				   1000,    // max number of steps (cannot exceed size of workspace
-				   6,       // key - (6=61 point Gauss-Kronrod rules)
-				   w,       // workspace
-				   &result, // The result
-				   &error);
+  int status = gsl_integration_qag(
+      &F,      // Function to be integrated
+      E_min,   // Start of integration
+      E_max,   // End of integration
+      0,       // absolute error
+      1e-3,    // relative error
+      1000,    // max number of steps (cannot exceed size of workspace
+      6,       // key - (6=61 point Gauss-Kronrod rules)
+      w,       // workspace
+      &result, // The result
+      &error);
 
-  if(status != 0){
+  if (status != 0) {
     std::cout << "ERROR: Problem integrating non-resonant input\n";
     exit(EXIT_FAILURE);
   }
-	
+
   gsl_set_error_handler(NULL);
 
-  ADRate = result*(3.7318e10/(sqrt(mue)*pow(Temp,1.5)));
+  ADRate = result * (3.7318e10 / (sqrt(mue) * pow(Temp, 1.5)));
 
   //  std::cout << "AD Rate = " << ADRate << std::endl;
-  
 
   // If ADRate is negative, set to zero, this is unphysical
-  if(ADRate < 0.){
+  if (ADRate < 0.) {
     ErrorFlag = true;
-    logfile << "\tWARNING: The non-resonant part caused a negative rate, \n\t\tsetting to zero." << std::endl;
+    logfile << "\tWARNING: The non-resonant part caused a negative rate, "
+               "\n\t\tsetting to zero."
+            << std::endl;
     ADRate = 0.0;
-    for(int i=0;i<NSamples;i++){
-      ARate[j][i]=0.0;
+    for (int i = 0; i < NSamples; i++) {
+      ARate[j][i] = 0.0;
     }
   } else {
     // Either use the fractional uncertainty in S
-    if(dS[j] >= 0){
-      logNormalize(ADRate,dS[j]*ADRate,mu,sigma);
+    if (dS[j] >= 0) {
+      logNormalize(ADRate, dS[j] * ADRate, mu, sigma);
       // Or interpret it as a factor uncertainty
     } else {
       mu = gsl_sf_log(ADRate);
       sigma = gsl_sf_log(-dS[j]);
     }
     // if mu and sigma return as zero, the rate is zero (very small)
-    if((mu==0. && sigma==0.)){
-      ADRate=0.0;
-      for(int i=0;i<NSamples;i++){
-	//				std::cout << "j=" << j << " i = " << i << "\n";
-        ARate[j][i]=0.0;
+    if ((mu == 0. && sigma == 0.)) {
+      ADRate = 0.0;
+      for (int i = 0; i < NSamples; i++) {
+        //				std::cout << "j=" << j << " i = " << i
+        //<< "\n";
+        ARate[j][i] = 0.0;
       }
     } else {
-      for(int i=0;i<NSamples;i++){
-	ARate[j][i] = gsl_ran_lognormal(r,mu,sigma);///(1.5399e11/pow(mue*Temp,1.5));
-	//std::cout << ARate[j][i] << "\n";
+      for (int i = 0; i < NSamples; i++) {
+        ARate[j][i] =
+            gsl_ran_lognormal(r, mu, sigma); ///(1.5399e11/pow(mue*Temp,1.5));
+        // std::cout << ARate[j][i] << "\n";
       }
     }
   }
 
-	
   gsl_integration_workspace_free(w);
-  //ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
+  // ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
 
   //  integrandfile << "\n"  << std::endl;
-  
+
   return ADRate;
 }
 
-double Reaction::NonResonantIntegrand(double x, void * params){
+double Reaction::NonResonantIntegrand(double x, void *params) {
 
-  //  std::cout << "inside " << x << std::endl; 
-  double* par = (double*)params;
-  //int index = (int)par[0];
+  //  std::cout << "inside " << x << std::endl;
+  double *par = (double *)params;
+  // int index = (int)par[0];
   double mue = (double)par[1];
   double T = (double)par[2];
   double S = (double)par[3];
@@ -597,15 +601,15 @@ double Reaction::NonResonantIntegrand(double x, void * params){
 
   //  std::cout << index << " " << mue << " " << T << std::endl;
   //  std::cout << S << std::endl;
-  double Ssum = S + Sp*x + 0.5*Spp*x*x;
+  double Ssum = S + Sp * x + 0.5 * Spp * x * x;
 
   //  std::cout << "Ssum = " << Ssum << std::endl;
-  
-  double eta = 0.989510*Z0Z1*sqrt(mue/x);
+
+  double eta = 0.989510 * Z0Z1 * sqrt(mue / x);
   double Sommerfeld = gsl_sf_exp(-eta);
-  double Boltzmann = gsl_sf_exp(-11.605*x/T);
-  
-  double integrand = Ssum*Sommerfeld*Boltzmann;
+  double Boltzmann = gsl_sf_exp(-11.605 * x / T);
+
+  double integrand = Ssum * Sommerfeld * Boltzmann;
 
   return integrand;
 }
@@ -613,60 +617,61 @@ double Reaction::NonResonantIntegrand(double x, void * params){
 //----------------------------------------------------------------------
 // Calculate the reaction rate by integrating a tabulated
 // astrophysical s-factor
-double Reaction::calcNonResonantTabulated(double Temp, int j){
+double Reaction::calcNonResonantTabulated(double Temp, int j) {
 
   int writeIntegrand;
-  
+
   //  std::cout << Temp << " " << j << "\n";
-  double mue = M0*M1/(M0+M1);
+  double mue = M0 * M1 / (M0 + M1);
   //  double mu, sigma;
 
   double ADRate;
 
   // Calculate the rate first and then sample at the end.
   double E_min = EMin;
-  double E_max = CutoffE[j]/1000.0;
+  double E_max = CutoffE[j] / 1000.0;
   //  double E_max = SFactorE[SFactorE.size()-1];
-  //std::cout << "E_min = " << E_min << std::endl;
-  //std::cout << "E_max = " << E_max << std::endl;
+  // std::cout << "E_min = " << E_min << std::endl;
+  // std::cout << "E_max = " << E_max << std::endl;
 
   // If there is no s-factor, return zero!
-  if(isZero(E_max))
+  if (isZero(E_max))
     return 0.0;
 
   // If the lowest energy grid point is greater than EMin, throw an error
-  if(SFactorE[j][0] > EMin){
-    std::cout << "\nERROR: Your first non-resonant tabulated energy is greater than EMin!\n";
+  if (SFactorE[j][0] > EMin) {
+    std::cout << "\nERROR: Your first non-resonant tabulated energy is greater "
+                 "than EMin!\n";
     abort();
   }
-		 
+
   gsl_interp_accel *acc = gsl_interp_accel_alloc();
-  gsl_spline *Sspline = gsl_spline_alloc (gsl_interp_linear, SFactorE[j].size());
+  gsl_spline *Sspline = gsl_spline_alloc(gsl_interp_linear, SFactorE[j].size());
 
   // Now integrate the S-factor for each sample
-  for(int s=0; s<=NSamples; s++){
+  for (int s = 0; s <= NSamples; s++) {
     std::vector<double> SFac;
     SFac.resize(SFactorE[j].size());
 
-		
-    for(size_t k=0; k<SFactorE[j].size(); k++){
+    for (size_t k = 0; k < SFactorE[j].size(); k++) {
       //			if(SFactordS[j][k] > 0){
-      SFac[k] = SFactorS[j][k]*gsl_sf_exp(SScale_sample[j][s] * SFactordS[j][k]);
+      SFac[k] =
+          SFactorS[j][k] * gsl_sf_exp(SScale_sample[j][s] * SFactordS[j][k]);
       //} else {
-      //SFac[k] = SFactorS[j][k] * SScale_sample[j][s] * SFactordS[j][k];
+      // SFac[k] = SFactorS[j][k] * SScale_sample[j][s] * SFactordS[j][k];
       //}
     }
 
     writeIntegrand = 0;
     // The very last one should be the "classical" result
-    if(s == NSamples){
+    if (s == NSamples) {
       SFac = SFactorS[j];
       writeIntegrand = 1;
     }
 
     // Create an interpolation routine
     gsl_spline_init(Sspline, SFactorE[j].data(), SFac.data(),
-		    SFactorE[j].size());
+                    SFactorE[j].size());
 
     /*
       for(size_t i=0; i<SFactorE[j].size(); i++){
@@ -674,69 +679,67 @@ double Reaction::calcNonResonantTabulated(double Temp, int j){
       SFactorS[j].data()[i] << "\n";
       }
      */
-		
+
     // GSL Integration functions
     double result, error;
-		
+
     // Define integration limits
     // double x = E_min, x1 = E_max;
-		
+
     // The array that needs to be passed to the integration function
-    struct my_f_params params = {mue, Temp, (double)(Z0 * Z1), writeIntegrand,
-			Sspline, acc};
+    struct my_f_params params = {
+        mue, Temp, (double)(Z0 * Z1), writeIntegrand, Sspline, acc};
 
     // Turn off the error handler
     gsl_set_error_handler_off();
-		
-    gsl_integration_workspace *w =
-      gsl_integration_workspace_alloc(1000);
+
+    gsl_integration_workspace *w = gsl_integration_workspace_alloc(1000);
     gsl_function F;
     // Can't use Integrand directly because GSL is shit
     F.function = &NonResonantTabulatedWrapper;
     //  F.function = &Integrand;
     F.params = &params;
 
-    int status = gsl_integration_qag(
-				     &F,      // Function to be integrated
-				     E_min,   // Start of integration
-				     E_max,   // End of integration
-				     0,       // absolute error
-				     1e-3,    // relative error
-				     1000,    // max number of steps
-				     // (cannot exceed size of workspace
-				     6,       // key - (6=61 point Gauss-Kronrod rules)
-				     w,       // workspace
-				     &result, // The result
-				     &error);
+    int status =
+        gsl_integration_qag(&F,    // Function to be integrated
+                            E_min, // Start of integration
+                            E_max, // End of integration
+                            0,     // absolute error
+                            1e-3,  // relative error
+                            1000,  // max number of steps
+                            // (cannot exceed size of workspace
+                            6,       // key - (6=61 point Gauss-Kronrod rules)
+                            w,       // workspace
+                            &result, // The result
+                            &error);
 
     if (status != 0) {
-      std::cout
-      << "ERROR: Problem integrating non-resonant input\n";
+      std::cout << "ERROR: Problem integrating non-resonant input\n";
       exit(EXIT_FAILURE);
     }
 
     gsl_set_error_handler(NULL);
 
-    ADRate = result*(3.7318e10/(sqrt(mue)*pow(Temp,1.5)));
+    ADRate = result * (3.7318e10 / (sqrt(mue) * pow(Temp, 1.5)));
 
-    if(s<NSamples)
+    if (s < NSamples)
       ARate[j][s] = ADRate;
 
     gsl_integration_workspace_free(w);
-    //ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
+    // ADRate = ADRate/(1.5399e11/pow(mue*Temp,1.5));
   }
 
-  gsl_spline_free (Sspline);
-  gsl_interp_accel_free (acc);
+  gsl_spline_free(Sspline);
+  gsl_interp_accel_free(acc);
 
   integrandfile << std::endl;
 
   return ADRate;
 }
 
-double Reaction::NonResonantTabulatedIntegrand(double x, void * params){
+double Reaction::NonResonantTabulatedIntegrand(double x, void *params) {
 
-  struct my_f_params * p = (struct my_f_params *)params;
+  struct my_f_params *p = (struct my_f_params *)params;
   double mue = (p->mue);
   double T = (p->T);
   double Z0Z1 = (p->Z0Z1);
@@ -750,17 +753,17 @@ double Reaction::NonResonantTabulatedIntegrand(double x, void * params){
   //		testfile << x << " ";
   double Ssum = gsl_spline_eval(Sspline, x, facc);
   //  std::cout << "Ssum = " << Ssum << std::endl;
-  
-  double eta = 0.989510*Z0Z1*sqrt(mue/x);
-  double Sommerfeld = gsl_sf_exp(-eta);
-  double Boltzmann = gsl_sf_exp(-11.605*x/T);
-  
-  double integrand = Ssum*Sommerfeld*Boltzmann;
 
-  if(writeIntegrand)
-    integrandfile << std::scientific << std::setprecision(9) << x << " " << integrand
-    << " " << Ssum << " " << "nonres" << std::endl;
-  
+  double eta = 0.989510 * Z0Z1 * sqrt(mue / x);
+  double Sommerfeld = gsl_sf_exp(-eta);
+  double Boltzmann = gsl_sf_exp(-11.605 * x / T);
+
+  double integrand = Ssum * Sommerfeld * Boltzmann;
+
+  if (writeIntegrand)
+    integrandfile << std::scientific << std::setprecision(9) << x << " "
+                  << integrand << " " << Ssum << " " << "nonres" << std::endl;
+
   //	if(T == 0.01)
   //		testfile << integrand << "\n";
 
@@ -768,8 +771,8 @@ double Reaction::NonResonantTabulatedIntegrand(double x, void * params){
 }
 
 //----------------------------------------------------------------------
-// Prepare the Monte Carlo samples. 
-void Reaction::prepareSamples(){
+// Prepare the Monte Carlo samples.
+void Reaction::prepareSamples() {
 
   std::cout << "Preparing " << NSamples << " samples\n\n";
 
@@ -782,9 +785,9 @@ void Reaction::prepareSamples(){
   // These are stored by [row][column] where each row is a sample
   std::vector<double> row;
   row.resize(4);
-  for(int s=0;s<NSamples;s++){
-    for(int j=0; j<4; j++){
-      row[j] = gsl_ran_gaussian(r,1.0);
+  for (int s = 0; s < NSamples; s++) {
+    for (int j = 0; j < 4; j++) {
+      row[j] = gsl_ran_gaussian(r, 1.0);
     }
     Ref_sample.push_back(row);
   }
@@ -800,82 +803,80 @@ void Reaction::prepareSamples(){
   // Next some more standard normals for the non-resonant part
   // These are stored by [row][column] where each column is a sample
   row.resize(NSamples);
-  for(int j=0; j<2; j++){
-    for(int s=0; s<NSamples; s++){
-      row[s] = gsl_ran_gaussian(r,1.0);
+  for (int j = 0; j < 2; j++) {
+    for (int s = 0; s < NSamples; s++) {
+      row[s] = gsl_ran_gaussian(r, 1.0);
     }
     SScale_sample.push_back(row);
   }
 
   // For each resonance, go through and calculate all random samples
-  for(Resonance &Res : Resonances){
-    //std::cout << Res.getIndex() << "\n";
+  for (Resonance &Res : Resonances) {
+    // std::cout << Res.getIndex() << "\n";
     Res.makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
-    //std::cout << "done\n";
+    // std::cout << "done\n";
   }
-  for(Interference &Intf : Interferences){
+  for (Interference &Intf : Interferences) {
     Intf.makeSamples(Ref_sample, smallestdE, smallestdwg, smallestdG);
   }
-  
 }
-
 
 //----------------------------------------------------------------------
 // Write all input parameter samples to a file
-void Reaction::writeSamples(){
+void Reaction::writeSamples() {
 
   std::cout << "Writing sample file. This may take a while...\n";
-  
+
   std::ofstream samplefile;
   samplefile.open("ParameterSamples.dat");
-  
+
   // Each column corresponds to a parameter, rows are samples
   // Write the header
-  samplefile <<    "                                           ";
-  for(Resonance &Res : Resonances){
+  samplefile << "                                           ";
+  for (Resonance &Res : Resonances) {
     samplefile << " |         Resonance " << std::setw(3) << Res.getIndex()
-    << " at E_cm = " << std::setw(7) << Res.getE_cm() << " MeV            ";
+               << " at E_cm = " << std::setw(7) << Res.getE_cm()
+               << " MeV            ";
   }
   samplefile << "\n";
   //               "1234567890x1234567890x1234567890x123456789012"
-  samplefile <<    " Standard1  Standard2  Standard3  Standard4";
-  for(std::size_t i=0; i < Resonances.size(); i++){// &Res : Resonances){
+  samplefile << " Standard1  Standard2  Standard3  Standard4";
+  for (std::size_t i = 0; i < Resonances.size(); i++) { // &Res : Resonances){
     samplefile << " |           E         wg         G1         G2         G3";
   }
-  for(std::size_t i=0; i < (2*Interferences.size()); i++){
+  for (std::size_t i = 0; i < (2 * Interferences.size()); i++) {
     samplefile << " |           E         wg         G1         G2         G3";
   }
   samplefile << std::endl;
-  
+
   // Now the samples
-  for(int s=0; s<NSamples; s++){
+  for (int s = 0; s < NSamples; s++) {
     //    samplefile << "  ";
     // Reference randoms for correlations
-    for(int channel=0; channel<4; channel++){
+    for (int channel = 0; channel < 4; channel++) {
       samplefile << std::setw(10) << Ref_sample[s][channel] << " ";
     }
     samplefile << " ";
     // Now the resonances
-    for(Resonance &Res: Resonances){
+    for (Resonance &Res : Resonances) {
       Res.writeSamples(samplefile, s);
     }
 
     // Now the Interferences
-    for(Interference &Inter: Interferences){
+    for (Interference &Inter : Interferences) {
       Inter.writeSamples(samplefile, s);
     }
 
-		
     samplefile << "\n";
   }
 
   samplefile.close();
-  
+
   std::cout << "Done!\n\n";
 }
 
 //----------------------------------------------------------------------
-void Reaction::writeSFactor(bool MCSamples=false){
+void Reaction::writeSFactor(bool MCSamples = false) {
 
   // First open the S-Factor file
   std::ofstream sfactorfile;
@@ -885,23 +886,25 @@ void Reaction::writeSFactor(bool MCSamples=false){
 
   double E_min = EMin;
 
-  double thresh = std::max(0.0, -1*Q);
-  E_min = std::max(EMin,thresh);
-	
+  double thresh = std::max(0.0, -1 * Q);
+  E_min = std::max(EMin, thresh);
+
   gsl_interp_accel *acc0, *acc1;
   gsl_spline *Sspline0, *Sspline1;
 
-  if(bTabulatedNonResonant){
+  if (bTabulatedNonResonant) {
     // Create an interpolation routine
-    if(CutoffE[0] > 0){
+    if (CutoffE[0] > 0) {
       acc0 = gsl_interp_accel_alloc();
-      Sspline0 = gsl_spline_alloc (gsl_interp_linear, SFactorE[0].size());
-      gsl_spline_init(Sspline0, SFactorE[0].data(), SFactorS[0].data(), SFactorE[0].size());
+      Sspline0 = gsl_spline_alloc(gsl_interp_linear, SFactorE[0].size());
+      gsl_spline_init(Sspline0, SFactorE[0].data(), SFactorS[0].data(),
+                      SFactorE[0].size());
     }
-    if(CutoffE[1] > 0){
+    if (CutoffE[1] > 0) {
       acc1 = gsl_interp_accel_alloc();
-      Sspline1 = gsl_spline_alloc (gsl_interp_linear, SFactorE[1].size());
-      gsl_spline_init(Sspline1, SFactorE[1].data(), SFactorS[1].data(), SFactorE[1].size());
+      Sspline1 = gsl_spline_alloc(gsl_interp_linear, SFactorE[1].size());
+      gsl_spline_init(Sspline1, SFactorE[1].data(), SFactorS[1].data(),
+                      SFactorE[1].size());
     }
     // Use the minimum tabulated energies to start the integration (so
     // we're not extrapolating)
@@ -909,59 +912,59 @@ void Reaction::writeSFactor(bool MCSamples=false){
     E_min = std::max(E_min, SFactorE[1][0]);
   }
 
-
   // Loop through energies on a defined grid. At each energy, find the
   // S-factor of each resonance and analytical contribution
-  for(double E=E_min; E<10.0; E+=0.001){
+  for (double E = E_min; E < 10.0; E += 0.001) {
 
-    //std::cout << "E = " << E << "\n";
-          
+    // std::cout << "E = " << E << "\n";
+
     // Write the energy
     sfactorfile << std::scientific << std::setprecision(3) << E << "   ";
 
-    if(bTabulatedNonResonant){
+    if (bTabulatedNonResonant) {
       // Tabulated S-factor
       double Ssum = 0.0;
-      if(E < (CutoffE[0]/1000.0))
-	Ssum = gsl_spline_eval(Sspline0, E, acc0);
+      if (E < (CutoffE[0] / 1000.0))
+        Ssum = gsl_spline_eval(Sspline0, E, acc0);
       sfactorfile << Ssum << "   ";
       Ssum = 0.0;
-      if(E < (CutoffE[1]/1000.0))
-	Ssum = gsl_spline_eval(Sspline1, E, acc1);
+      if (E < (CutoffE[1] / 1000.0))
+        Ssum = gsl_spline_eval(Sspline1, E, acc1);
       sfactorfile << Ssum << "   ";
 
     } else {
       // Analytical parts
-      for(int i=0; i<2; i++){
-	double Si = S[i]/1000.0;
-	double Spi = Sp[i];
-	double Sppi = Spp[i]*1000.0;
-	double Ssum = Si + Spi*E + 0.5*Sppi*E*E;
-	if(E > (CutoffE[i]/1000.0))Ssum=0.0;
-	sfactorfile << Ssum << "   ";
+      for (int i = 0; i < 2; i++) {
+        double Si = S[i] / 1000.0;
+        double Spi = Sp[i];
+        double Sppi = Spp[i] * 1000.0;
+        double Ssum = Si + Spi * E + 0.5 * Sppi * E * E;
+        if (E > (CutoffE[i] / 1000.0))
+          Ssum = 0.0;
+        sfactorfile << Ssum << "   ";
       }
     }
-		
+
     // Collect S-factor for each resonance
-    for(Resonance &Res : Resonances){
-      //std::cout << "\nRes " << Res.getIndex() << "\n";
-      // Pass -1 to get the sfactor with recommended input values
-      sfactorfile << Res.getSFactor(E,-1) << "  ";
+    for (Resonance &Res : Resonances) {
+      // std::cout << "\nRes " << Res.getIndex() << "\n";
+      //  Pass -1 to get the sfactor with recommended input values
+      sfactorfile << Res.getSFactor(E, -1) << "  ";
     }
 
     // Same for interferences
-    for(Interference &Inter : Interferences){
-      //std::cout << "\nInt " << Inter.getIndex() << "\n";
-      switch(Inter.getSign()){
-      case(1):
-	sfactorfile << Inter.getSFactor(E, 1, -1) << "  ";
-	break;
-      case(-1):
-	sfactorfile << Inter.getSFactor(E, -1, -1) << "  ";
-	break;
+    for (Interference &Inter : Interferences) {
+      // std::cout << "\nInt " << Inter.getIndex() << "\n";
+      switch (Inter.getSign()) {
+      case (1):
+        sfactorfile << Inter.getSFactor(E, 1, -1) << "  ";
+        break;
+      case (-1):
+        sfactorfile << Inter.getSFactor(E, -1, -1) << "  ";
+        break;
       default:
-	sfactorfile << Inter.getSFactor(E, 1, -1) << "  ";
-	sfactorfile << Inter.getSFactor(E, -1, -1) << "  ";
+        sfactorfile << Inter.getSFactor(E, 1, -1) << "  ";
+        sfactorfile << Inter.getSFactor(E, -1, -1) << "  ";
       }
     }
     sfactorfile << std::endl;
@@ -973,50 +976,50 @@ void Reaction::writeSFactor(bool MCSamples=false){
     // Make another s-factor file to save the MC total S-factor curve
     std::ofstream mcsfactorfile;
     mcsfactorfile.open("RatesMC.mcsfact");
-		
+
     // Loop through energies on a defined grid. At each energy, find the
     // S-factor of each resonance and analytical contribution
 
     for (double E = EMin; E < 10.0; E += 0.001) {
 
       // Write the energy
-      mcsfactorfile << std::scientific << std::setprecision(3) << E
-      << "   ";
+      mcsfactorfile << std::scientific << std::setprecision(3) << E << "   ";
 
       for (int samp = 0; samp < std::min(1000, NSamples); samp++) {
-				
-	double sfactorSum = 0.0;
-				
-	// Analytical parts
-	for (int i = 0; i < 2; i++) {
-	  double Si = S[i] / 1000.0;
-	  double Spi = Sp[i];
-	  double Sppi = Spp[i] * 1000.0;
-	  double Ssum = Si + Spi * E + Sppi * E * E;
-	  if (E > (CutoffE[i] / 1000.0))
-	    Ssum = 0.0;
-	  double mu, sigma;
-	  logNormalize(Ssum, dS[i] * Ssum, mu, sigma);
-	  //					double Ssum_samp = gsl_ran_lognormal(r, mu, sigma);
-	  // Ignore the non-resonant part for now
-	  // sfactorSum += Ssum_samp;
-	}
 
-	// Collect S-factor for each resonance
-	for (Resonance &Res : Resonances) {
-	  // std::cout << "\nRes " << Res.getIndex() << "\n";
-	  sfactorSum += Res.getSFactor(E, samp);
-	}
+        double sfactorSum = 0.0;
 
-	// Same for interferences
-	for (Interference &Inter : Interferences) {
-	  // std::cout << "\nInt " << Inter.getIndex() << "\n";
-	  sfactorSum += Inter.getSFactor(E, 1, samp);
-	}
+        // Analytical parts
+        for (int i = 0; i < 2; i++) {
+          double Si = S[i] / 1000.0;
+          double Spi = Sp[i];
+          double Sppi = Spp[i] * 1000.0;
+          double Ssum = Si + Spi * E + Sppi * E * E;
+          if (E > (CutoffE[i] / 1000.0))
+            Ssum = 0.0;
+          double mu, sigma;
+          logNormalize(Ssum, dS[i] * Ssum, mu, sigma);
+          //					double Ssum_samp =
+          // gsl_ran_lognormal(r, mu, sigma);
+          // Ignore the non-resonant part for now
+          // sfactorSum += Ssum_samp;
+        }
 
-	mcsfactorfile << sfactorSum << "  ";
+        // Collect S-factor for each resonance
+        for (Resonance &Res : Resonances) {
+          // std::cout << "\nRes " << Res.getIndex() << "\n";
+          sfactorSum += Res.getSFactor(E, samp);
+        }
+
+        // Same for interferences
+        for (Interference &Inter : Interferences) {
+          // std::cout << "\nInt " << Inter.getIndex() << "\n";
+          sfactorSum += Inter.getSFactor(E, 1, samp);
+        }
+
+        mcsfactorfile << sfactorSum << "  ";
       }
-			
+
       mcsfactorfile << "\n";
     }
   } // end if(MCSamples)
@@ -1024,28 +1027,32 @@ void Reaction::writeSFactor(bool MCSamples=false){
 
 //----------------------------------------------------------------------
 // Set up the s-factor file header
-void Reaction::setupSFactorHeader(std::ofstream &sfactorfile){
+void Reaction::setupSFactorHeader(std::ofstream &sfactorfile) {
 
   sfactorfile << "E(MeV)      ";
   sfactorfile << "A-Rate-1    ";
   sfactorfile << "A-Rate-2    ";
-  for(Resonance &Res : Resonances){
-    sfactorfile << "Res" << std::setw(3) << std::setfill('0') << (Res.getIndex()+1) << "     ";
+  for (Resonance &Res : Resonances) {
+    sfactorfile << "Res" << std::setw(3) << std::setfill('0')
+                << (Res.getIndex() + 1) << "     ";
   }
-  for(Interference &Inter : Interferences){
-    switch(Inter.getSign()){
-    case(0):
-      sfactorfile << "Int" << std::setw(3) << std::setfill('0') << (Inter.getIndex()+1) << "+    ";
-      sfactorfile << "Int" << std::setw(3) << std::setfill('0') << (Inter.getIndex()+1) << "-    ";
+  for (Interference &Inter : Interferences) {
+    switch (Inter.getSign()) {
+    case (0):
+      sfactorfile << "Int" << std::setw(3) << std::setfill('0')
+                  << (Inter.getIndex() + 1) << "+    ";
+      sfactorfile << "Int" << std::setw(3) << std::setfill('0')
+                  << (Inter.getIndex() + 1) << "-    ";
       break;
-    case(1):
-      sfactorfile << "Int" << std::setw(3) << std::setfill('0') << (Inter.getIndex()+1) << "+    ";
+    case (1):
+      sfactorfile << "Int" << std::setw(3) << std::setfill('0')
+                  << (Inter.getIndex() + 1) << "+    ";
       break;
-    case(-1):
-      sfactorfile << "Int" << std::setw(3) << std::setfill('0') << (Inter.getIndex()+1) << "-    ";
+    case (-1):
+      sfactorfile << "Int" << std::setw(3) << std::setfill('0')
+                  << (Inter.getIndex() + 1) << "-    ";
       break;
     }
   }
   sfactorfile << std::endl;
-
 }
