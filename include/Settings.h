@@ -23,10 +23,9 @@
 #ifndef _Settings_h_
 #define _Settings_h_
 
-class Settings{
+class Settings {
 
- public:
-
+public:
   Settings();
   ~Settings();
 
@@ -34,17 +33,13 @@ class Settings{
   void getR0();
 
   // Setters
-  void setR0(double r0){R0=r0;}
+  void setR0(double r0) { R0 = r0; }
 
   // Print the settings
   void printSettings();
 
-
- private:
-
+private:
   double R0;
-
 };
-
 
 #endif

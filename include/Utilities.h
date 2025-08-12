@@ -30,12 +30,12 @@ extern std::string VersionNumber;
 extern std::string VersionDate;
 
 // Random number generator
-extern gsl_rng * r;
+extern gsl_rng *r;
 
 // program control parameters
-extern int NSamples,NHists;
+extern int NSamples, NHists;
 extern int NTemps;
-extern double EMin,R0;
+extern double EMin, R0;
 extern double EPS;
 
 extern double ElectronMass;
@@ -49,8 +49,8 @@ extern bool bEnergyCorrelations;
 extern bool bTabulatedNonResonant;
 
 // Counters
-extern int PenZeroCount,IntegratedCount,SubSampledPosCount,SampledNegCount,
-  NANCount,InfCount,BelowIntLimit,IntfNANCount, LogZeroCount;
+extern int PenZeroCount, IntegratedCount, SubSampledPosCount, SampledNegCount,
+    NANCount, InfCount, BelowIntLimit, IntfNANCount, LogZeroCount;
 
 // Flags
 extern bool ErrorFlag;
@@ -74,7 +74,7 @@ extern std::vector<double> Temp;
 int ReadInputFile(std::string inputfilename, Reaction *R);
 
 // Is a read thing a number?
-bool isNumber(const std::string& str);
+bool isNumber(const std::string &str);
 // Read integer and double from single line
 int readInt(std::ifstream &in);
 double readDouble(std::ifstream &in);
@@ -96,32 +96,34 @@ void readInterferingResonanceBlock(std::ifstream &in, Reaction &R);
 // Define the temperature array
 void defineTemperatures();
 
-// Utility to take expectation value and variance and turn them into lognormal mu and sigma
-void logNormalize(double exp, double sd, double& mu, double& sigma);
+// Utility to take expectation value and variance and turn them into lognormal
+// mu and sigma
+void logNormalize(double exp, double sd, double &mu, double &sigma);
 
 // Penetration Factor calculation
-double PenFactor(double E, double L, double Mass0, double Mass1,
-		 int Charge0, int Charge1, double R);
+double PenFactor(double E, double L, double Mass0, double Mass1, int Charge0,
+                 int Charge1, double R);
 
 // Transpose a 2D double vector
-void transpose(std::vector<std::vector<double> > &b);
+void transpose(std::vector<std::vector<double>> &b);
 
 // Write headers (reaction name, etc) into output files
 void writeOutputFileHeaders(Reaction *R);
 // Write the contributions of each resonance to file
-void writeContributions(std::vector<std::vector<double> > Contributions, double Temperature);
+void writeContributions(std::vector<std::vector<double>> Contributions,
+                        double Temperature);
 // Write the rates to file
 void writeRates(std::vector<double> Rates, double ARate, double Temperature);
 // Write the LaTeX file
-void WriteLatex2(double Temperature, double LowRate, double MedianRate, double HighRate,
-		 double RateSigma);
+void WriteLatex2(double Temperature, double LowRate, double MedianRate,
+                 double HighRate, double RateSigma);
 // Write the sample file
 void writeRateSamples(std::vector<double> RateSample, double Temp);
 // Write a summary of all errors at this temperature to the log file
 void summarizeErrors(double Temp);
 
 // Check how well the lognormal fits
-double CalcAD(std::vector<double> Rates,double Mu,double Sigma);
+double CalcAD(std::vector<double> Rates, double Mu, double Sigma);
 
 // Check for zero
 bool isZero(double x);
@@ -132,24 +134,23 @@ double atomicToNuclear(double A, double Z);
 bool isNumeric(std::string str);
 
 // Check whether a file exists
-inline bool fileExists (const std::string& name);
+inline bool fileExists(const std::string &name);
 
 // Setup the random number generator
 void setupRandom();
 unsigned long int random_seed();
 
 // Count the number of numbers in a single line
-class NumberCounter{
- public:
+class NumberCounter {
+public:
   NumberCounter();
   void count(std::ifstream &in);
-  friend std::ostream& operator<<(std::ostream &out, const NumberCounter &w);
+  friend std::ostream &operator<<(std::ostream &out, const NumberCounter &w);
 
- private:
+private:
   int numbers;
   int spaces;
   int comments;
 };
-
 
 #endif

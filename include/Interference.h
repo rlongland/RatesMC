@@ -26,33 +26,30 @@
 #include <iostream>
 #include <vector>
 
-
 class Reaction;
 class Resonance;
 
 class Interference {
 
- public:
-
-
+public:
   // Constructor
-  Interference(Reaction & R, int i, int IntfSign); 
+  Interference(Reaction &R, int i, int IntfSign);
   // Destructor
   ~Interference();
 
   // Getters
-  int getIndex(){return index;}
-	int getSign(){return IntfSign;}
-  
+  int getIndex() { return index; }
+  int getSign() { return IntfSign; }
+
   // Setters
-  void setIndex(int i){index=i;}
+  void setIndex(int i) { index = i; }
 
-	void addResonance(Resonance* Res, int index);
+  void addResonance(Resonance *Res, int index);
 
-	// Make the MC samples
-	void makeSamples(std::vector<std::vector<double> > Ref_sample,
-									 double, double, double[3]);
-	
+  // Make the MC samples
+  void makeSamples(std::vector<std::vector<double>> Ref_sample, double, double,
+                   double[3]);
+
   // Functions that do stuff
   // Functions to calculate the rate from this resonance. They return
   // the traditional rate and fill 'Rate', which is a vector of rate
@@ -60,63 +57,61 @@ class Interference {
   double calcBroad(double T);
 
   void scaleByConstant(double RateFactor);
-  
+
   void printRate();
 
-	void putRateSample(int s, double rate){Rate_sample[s] = rate;}
-  double getRateSample(int s){return Rate_sample[s];}
+  void putRateSample(int s, double rate) { Rate_sample[s] = rate; }
+  double getRateSample(int s) { return Rate_sample[s]; }
 
-	double getSFactor(double E, int sign, int samp);
-	
+  double getSFactor(double E, int sign, int samp);
+
   // Function to integrate a broad resonance
-  double NumericalRate(double T,  double E_sample[2], double G_sample[2][3],
-											 double erFrac[2][3], double sign_sample, bool writeIntegrand);
+  double NumericalRate(double T, double E_sample[2], double G_sample[2][3],
+                       double erFrac[2][3], double sign_sample,
+                       bool writeIntegrand);
   // The resonance integrand to be integrated in the function above
-  //extern "C" {
-  double Integrand(double x, void * params);
-	int rhs(double x, const double y[], double dydx[], void * params);
+  // extern "C" {
+  double Integrand(double x, void *params);
+  int rhs(double x, const double y[], double dydx[], void *params);
   //}
 
-  void writeSamples(std::ofstream& samplefile, int s);
-	
+  void writeSamples(std::ofstream &samplefile, int s);
+
   // print a summary of the resonance
   void print();
   void write();
-  
- private:
 
+private:
   // Access to the reaction
-  Reaction & Reac;
-  
+  Reaction &Reac;
+
   // Control and bookkeeping
   bool ErrorFlag;
 
-	// TODO Should just hold two resonances, not the rest of this junk
-	Resonance* Res[2];
+  // TODO Should just hold two resonances, not the rest of this junk
+  Resonance *Res[2];
 
-	int IntfSign;
-	double mue;
+  int IntfSign;
+  double mue;
 
-	int index;
-	double M0,M1,M2;
-	int Z0,Z1,Z2;
-	double Jr[2],J0,J1;
-	double R;
-	double E_cm[2];
-	double G[2][3];
-	double Exf[2];
-	double NChannels[2];
-	int L[2][3];
-	
-	std::vector<int> sign_sample;
-	  
+  int index;
+  double M0, M1, M2;
+  int Z0, Z1, Z2;
+  double Jr[2], J0, J1;
+  double R;
+  double E_cm[2];
+  double G[2][3];
+  double Exf[2];
+  double NChannels[2];
+  int L[2][3];
+
+  std::vector<int> sign_sample;
+
   // The rate from this interfering pair
-  //double classicalRate;
-  std::vector<double> Rate_sample;   // length is number of samples
+  // double classicalRate;
+  std::vector<double> Rate_sample; // length is number of samples
   double MeanRate, MedianRate, RateMu, RateSigma;
-
 };
-
 
 // Junk to get GSL to play with classes
 /*

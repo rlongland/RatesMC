@@ -27,8 +27,7 @@
 
 class AMEReader {
 
- public:
-
+public:
   // Constructor
   AMEReader(std::string massfilename, std::string nubasefilename);
   // Destructor
@@ -36,23 +35,21 @@ class AMEReader {
 
   double readMass(std::string nucname);
   double readMassFromAandZ(int A, int Z);
-	int readCharge(std::string nucname);
+  int readCharge(std::string nucname);
   double readSpin(std::string nucname);
 
-	void toggleAMEcharge(int i){AMEcharge[i]=true;}
-	void toggleAMEmass(int i){AMEmass[i]=true;}
+  void toggleAMEcharge(int i) { AMEcharge[i] = true; }
+  void toggleAMEmass(int i) { AMEmass[i] = true; }
 
-	bool getAMEmass(int i){return AMEmass[i];}
-	
- private:
+  bool getAMEmass(int i) { return AMEmass[i]; }
 
+private:
   std::ifstream amefile;
-	std::ifstream nubasefile;
+  std::ifstream nubasefile;
 
-	// flags
-	bool AMEcharge[3]={false};
-	bool AMEmass[3]={false};
-	
+  // flags
+  bool AMEcharge[3] = {false};
+  bool AMEmass[3] = {false};
 };
 
 #endif
