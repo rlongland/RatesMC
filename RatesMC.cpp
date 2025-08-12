@@ -20,38 +20,37 @@
  *
  */
 
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <limits>
 #include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <limits>
 
-//#include "omp.h"
+// #include "omp.h"
 
 #include "gsl/gsl_sf_log.h"
 
 #include "RatesMC.h"
-#include "Utilities.h"
 #include "Reaction.h"
 #include "Resonance.h"
+#include "Utilities.h"
 
 #ifndef GIT_COMMIT_HASH
 #define GIT_COMMIT_HASH "?"
 #endif
 
-int main(int argc, char** argv){
-
+int main(int argc, char **argv) {
 
   //  gsl_error_handler_t myHandler;
   //  gsl_set_error_handler(&);
-  //gsl_sf_log(0.0);
-  //gsl_set_error_handler(NULL);
-  
+  // gsl_sf_log(0.0);
+  // gsl_set_error_handler(NULL);
+
   // Input and output files
   std::string ofilename;
   std::string ofullfilename;
   std::string ifilename;
-  if(argc==1){
+  if (argc == 1) {
     ifilename = "RatesMC.in";
     ofilename = "RatesMC.out";
     ofullfilename = "RatesMC.full";
@@ -75,52 +74,51 @@ int main(int argc, char** argv){
   // Contribution file
   contribfile.open("RatesMC.cont");
   // Test file for storing debugging
-  //testfile.open("test.dat");
+  // testfile.open("test.dat");
 
   // Write the welcome screen
   WelcomeScreen();
 
-  
   // Make a reaction. This is where everything is held
   Reaction *Reac = new Reaction();
-  
+
   // Open the input file
   int ret = ReadInputFile(ifilename, Reac);
 
-  if(ret != 0){
+  if (ret != 0) {
     std::cout << "ERROR: You should never see this message!\n";
     exit(EXIT_FAILURE);
   }
-	
+
   // Make output file headers
   writeOutputFileHeaders(Reac);
-  Reac -> setupContribHeader();
-  
+  Reac->setupContribHeader();
+
   // Set up the random sampler
   setupRandom();
 
   // Prepare MC samples
   //  - For each resonance, sample all input parameters
-  //  - Store every input parameter in a matrix (column = parameter, row = sample)
-  //  - 
-  Reac -> prepareSamples();
+  //  - Store every input parameter in a matrix (column = parameter, row =
+  //  sample)
+  //  -
+  Reac->prepareSamples();
 
   // Write the reaction information to log file for diagnostics
-  //Reac -> printReaction();
-  Reac -> writeReaction();
+  // Reac -> printReaction();
+  Reac->writeReaction();
 
   // Before we write anything long, write the astrophysical S-factor
-  Reac -> writeSFactor(false);
+  Reac->writeSFactor(false);
 
   // Write all samples to a file for later analysis
-  Reac -> writeSamples();
-
+  Reac->writeSamples();
 
   // Loop through temperatures (this is parallelization happens)
   // At each temperature
   //  - Calculate rate
   //  - Store in rate matrix
-  //  - 
+  //  -
   // First define the temperatures
   defineTemperatures();
 
@@ -130,90 +128,87 @@ int main(int argc, char** argv){
   // Now do the big loop over temperatures in parallel!!
   // Do all of the calculations first, then collect everything together
   std::vector<double>::iterator it;
-  //omp_set_num_threads(1);
-  //#pragma omp parallel for ordered
-  for(it = Temp.begin(); it < Temp.end(); ++it){
+  // omp_set_num_threads(1);
+  // #pragma omp parallel for ordered
+  for (it = Temp.begin(); it < Temp.end(); ++it) {
     // ------------------------
     // FOR EACH TEMPERATURE
     // ------------------------
     double T = *it;
-    
-    int ID = 0;//omp_get_thread_num();
+
+    int ID = 0; // omp_get_thread_num();
     std::cout << std::endl;
     std::cout << "--------------------------------------------------\n";
     std::cout << "Proc(" << ID << ") T = " << T; // << "\n";
-    std::cout << "\n" ;
-    
+    std::cout << "\n";
 
-    
-    //logfile << "--------------------\n";
+    // logfile << "--------------------\n";
     logfile << "Temperature = " << T << " GK" << std::endl;
     integrandfile << "Temperature = " << T << " GK" << std::endl;
-		
+
     // ------------------------
     // CALCULATE RATE
     // ------------------------
-    
+
     // Calculate the non-resonant rate
     double ADRate[2];
-    for(int j=0; j<2; j++){
-      if(bTabulatedNonResonant){
-	// Calculate the non-resonant rate from a tabulated S-factor
-	// For now, put it in the second ADRate entry
-	ADRate[j] = Reac -> calcNonResonantTabulated(T, j);
+    for (int j = 0; j < 2; j++) {
+      if (bTabulatedNonResonant) {
+        // Calculate the non-resonant rate from a tabulated S-factor
+        // For now, put it in the second ADRate entry
+        ADRate[j] = Reac->calcNonResonantTabulated(T, j);
       } else {
-	// New method of simply integrating the astrophysical s-factor
-	ADRate[j] = Reac -> calcNonResonantIntegrated(T, j);
+        // New method of simply integrating the astrophysical s-factor
+        ADRate[j] = Reac->calcNonResonantIntegrated(T, j);
       }
     }
-		
+
     // Calculate the resonant rate
-    double ResRate = Reac -> calcResonant(T);
+    double ResRate = Reac->calcResonant(T);
 
     // ------------------------
     // COLLECT RATE
     // ------------------------
 
     // The classical rates can be easily summed
-    classicalRate.push_back(ADRate[0]+ADRate[1]+ResRate);
-    //std::cout << "Classical Total Rate = " << classicalRate.back() << "\n";
+    classicalRate.push_back(ADRate[0] + ADRate[1] + ResRate);
+    // std::cout << "Classical Total Rate = " << classicalRate.back() << "\n";
 
     // Combine Resonance possibilities into the main corresponding resonance
-    Reac -> CombineResonancePossibilities();
-		
+    Reac->CombineResonancePossibilities();
+
     // Contribution array (NSamples)by(NRes+2)
-    std::vector<std::vector<double> > Contributions;
+    std::vector<std::vector<double>> Contributions;
     // Vector of rate samples at this temperature
     std::vector<double> RateSample;
-    
-    for(int s=0; s<NSamples; s++){
+
+    for (int s = 0; s < NSamples; s++) {
 
       // The non-resonant rate
-      double ADRate0 = Reac -> getARate(s, 0);
-      double ADRate1 = Reac -> getARate(s, 1);
+      double ADRate0 = Reac->getARate(s, 0);
+      double ADRate1 = Reac->getARate(s, 1);
 
       // Next get a vector that contains sample s from every resonance
-      std::vector<double> resonancesSample = Reac -> getResonantRateSample(s);
+      std::vector<double> resonancesSample = Reac->getResonantRateSample(s);
 
       // Sum the total rate
       double totalRate = ADRate0 + ADRate1;
-      for(double res : resonancesSample){
-	//if( !std::isnan(res) )
-	totalRate += res;
+      for (double res : resonancesSample) {
+        // if( !std::isnan(res) )
+        totalRate += res;
       }
-      //std::cout << s << "  " << totalRate << "\n";
+      // std::cout << s << "  " << totalRate << "\n";
 
-      // Calculate contribution for each resonance. 
+      // Calculate contribution for each resonance.
       std::vector<double> Cont;
-      Cont.push_back(ADRate0/totalRate);
-      Cont.push_back(ADRate1/totalRate);
-      for(double res : resonancesSample)
-	Cont.push_back(res/totalRate);
+      Cont.push_back(ADRate0 / totalRate);
+      Cont.push_back(ADRate1 / totalRate);
+      for (double res : resonancesSample)
+        Cont.push_back(res / totalRate);
       Contributions.push_back(Cont);
-      
+
       // Fill the total reaction rate vector
       RateSample.push_back(totalRate);
-      
     }
 
     // Write the contributions
@@ -224,7 +219,7 @@ int main(int argc, char** argv){
 
     // Write the rate samples
     writeRateSamples(RateSample, T);
-    
+
     /*
       #pragma omp critical
       {
@@ -240,47 +235,50 @@ int main(int argc, char** argv){
     integrandfile << std::endl;
   }
 
-  
-  
   std::cout << " **************************************************\n";
   std::cout << " *                 Farewell!                      *\n";
   std::cout << " **************************************************\n";
-  
-  
+
   // Close the logfile
   logfile.close();
   integrandfile.close();
   ptfile.close();
   outfile.close();
   outfullfile.close();
-  //testfile.close();
-	
+  // testfile.close();
+
   return 1;
 }
 
-
-
-void WelcomeScreen(){
+void WelcomeScreen() {
   std::string hash = GIT_COMMIT_HASH;
   std::cout << std::endl;
-  std::cout << " **************************************************" << std::endl;
-  std::cout << " *                   RatesMC                      *" << std::endl;
-  std::cout << " *        Copyright (C) 2022  R. Longland         *" << std::endl;
-  std::cout << " *            V. " << VersionNumber << "  " << VersionDate 
-  << "             *" << std::endl;
-  std::cout << " *             git hash: " << hash << "               *" << std::endl;
-  std::cout << " * This program comes with ABSOLUTELY NO WARRANTY *" << std::endl;
-  std::cout << " *                                                *" << std::endl;
-  std::cout << " **************************************************" << std::endl;
+  std::cout << " **************************************************"
+            << std::endl;
+  std::cout << " *                   RatesMC                      *"
+            << std::endl;
+  std::cout << " *        Copyright (C) 2022  R. Longland         *"
+            << std::endl;
+  std::cout << " *            V. " << VersionNumber << "  " << VersionDate
+            << "             *" << std::endl;
+  std::cout << " *             git hash: " << hash << "               *"
+            << std::endl;
+  std::cout << " * This program comes with ABSOLUTELY NO WARRANTY *"
+            << std::endl;
+  std::cout << " *                                                *"
+            << std::endl;
+  std::cout << " **************************************************"
+            << std::endl;
   std::cout << "\n" << std::endl;
 
   logfile << std::endl;
   logfile << " **************************************************" << std::endl;
   logfile << " *                   RatesMC                      *" << std::endl;
   logfile << " *        Copyright (C) 2022  R. Longland         *" << std::endl;
-  logfile << " *            V. " << VersionNumber << "  " << VersionDate 
-  << "             *" << std::endl;
-  logfile << " *             git hash: " << hash << "               *" << std::endl;
+  logfile << " *            V. " << VersionNumber << "  " << VersionDate
+          << "             *" << std::endl;
+  logfile << " *             git hash: " << hash << "               *"
+          << std::endl;
   logfile << " * This program comes with ABSOLUTELY NO WARRANTY *" << std::endl;
   logfile << " *                                                *" << std::endl;
   logfile << " **************************************************" << std::endl;
