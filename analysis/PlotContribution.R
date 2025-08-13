@@ -173,9 +173,9 @@ mypdf("GraphContribution.pdf",width=6,height=5)
 
 oldpar <- par(mar=c(4,5,2.5,1)+0.1)
 
-maxy <- 1.3
+maxy <- 1.38
 plot(range(logT),c(0,maxy),type="n",
-     ylim=c(0,maxy),xaxt='n',xaxs='i',yaxs='i',
+     ylim=c(0,maxy),yaxt='n',xaxt='n',xaxs='i',yaxs='i',
      xlab="",ylab="Fractional contribution")
 
 abline(h=1,lty=2)
@@ -234,12 +234,12 @@ if(length(others)>0)lines(x=logT,y=others,lty=3)
 ## Need to plot the labels
 xxmin <- grconvertX(0.1,from="npc",to="user")
 xxmax <- grconvertX(0.9,from="npc",to="user")
-yymin <- 1.0
-yymax <- maxy-0.05
+yymin <- 1.03
+yymax <- maxy-0.03
 
 ## Make a matrix of used label coordinates
 stepx <- grconvertX(0.04,from="npc",to="user")-
-  grconvertX(0,from="npc",to="user")
+    grconvertX(0,from="npc",to="user")
 lx <- seq(from=xxmin,to=xxmax,by=stepx)
 stepy <- 0.06
 ly <- seq(from=yymax,to=yymin,by=-stepy)
@@ -252,22 +252,33 @@ plotCoord <- sapply(contributors,function(i){
   ## this resonance
   ixx <- which.min(abs(logT[which.max(toplot[,sel])]-lx))
   xx <- lx[ixx]
-  ## Clear out a range around this position to that text doesn't overlap
-  clearrange <- 3
-  iixx <- seq(from=max(1,ixx-clearrange),
-              to=min(length(lx),ixx+clearrange),by=1)
 
-  ## Find the row to put this text that doesn't already have something
-  iyy <- which(!usedCoord[,ixx])[1]
-  yy <- ly[iyy]
+  for(offset in c(0,1,-1)){
+      ixx.offset <- ixx+offset
+      xx <- lx[ixx.offset]
+      ## Clear out a range around this position to that text doesn't overlap
+      clearrange <- 3
+      iixx <- seq(from=max(1,ixx.offset-clearrange),
+		  to=min(length(lx),ixx.offset+clearrange),by=1)
 
+      ## Find the row to put this text that doesn't already have something
+      iyy <- which(!usedCoord[,ixx.offset])[1]
+      yy <- ly[iyy]
+      if(!is.na(yy)) break
+
+  }
   ## Mark usedCoord to make sure future text isn't written here
   usedCoord[iyy,iixx] <<- TRUE
 
-  if(is.na(xx) | is.na(yy))
-    cat("\nWARNING!:\n",
-        " Some resonance labels couldn't be plotted. There's no room!\n",sep="")
+  if(is.na(xx) | is.na(yy)){
+    cat("\033[91m\n WARNING!:\n",
+        " Resonance label (",resNames[which(contributors==i)],") couldn't be plotted. There's no room!\n",
+	"\033[0m",sep="")
+    usedCoord[iyy,iixx] <<- FALSE
+    ##print(xx)
+    ##print(yy)
 
+  }
   ## return the chosen text coordinate
   c(xx,yy)
 })
@@ -295,8 +306,11 @@ if(max(T)/min(T) < 100){   ## Small Ranges
 axis(1,at=aXM,labels=10^aXM)
 mtext("Temperature (GK)",side=1,line=2.3,cex=1.5)
 axis(1,at=aXm,labels=FALSE,tcl=0.3)
-axis(3,at=aXM,labels=FALSE)
-axis(3,at=aXm,labels=FALSE,tcl=0.3)
+##axis(3,at=aXM,labels=FALSE)
+##axis(3,at=aXm,labels=FALSE,tcl=0.3)
+
+## y-axis
+axis(2,at=c(0,0.2,0.4,0.6,0.8,1.0))
 
 ## Plot the title
 xpos <- grconvertX(0.5,from="npc",to="user")
