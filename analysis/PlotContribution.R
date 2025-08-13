@@ -255,6 +255,7 @@ plotCoord <- sapply(contributors,function(i){
 
   for(offset in c(0,1,-1)){
       ixx.offset <- ixx+offset
+      if(ixx.offset<1 || ixx.offset>dim(usedCoord)[2]) break
       xx <- lx[ixx.offset]
       ## Clear out a range around this position to that text doesn't overlap
       clearrange <- 3
