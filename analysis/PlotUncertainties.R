@@ -349,8 +349,8 @@ if(YRangeLog){
 ##	seq_minors <- seq(aY[i], aY[i+1], length.out=5)
 ##	minory <- c(minory, seq_minors)
 ##    }
-    axis(2,at=minory,labels=FALSE,tcl=0.3)
-    axis(4,at=minory,labels=FALSE,tcl=0.3)
+    ## axis(2,at=minory,labels=FALSE,tcl=0.3)
+    ## axis(4,at=minory,labels=FALSE,tcl=0.3)
 }
 
 
