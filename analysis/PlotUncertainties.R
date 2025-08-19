@@ -258,7 +258,7 @@ minBase10 <- floor(log10(YRange[1]))
 maxBase10 <- ceiling(log10(YRange[2]))
 aY <- pretty(seq(minBase10,maxBase10,length.out=1+maxBase10-minBase10),high.u.bias = 10)
 aY <- seq(from=minBase10,to=maxBase10,by=1)
-if(length(aY)>7)aY <- aY[1:length(aY):2]
+if(length(aY)>9)aY <- aY[seq(from=1,to=length(aY),by=2)]
 
 
 Temps <- MyRate[,1]
