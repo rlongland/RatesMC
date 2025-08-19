@@ -11,6 +11,11 @@ sampfile <- "RatesMC.samp"
 extraSuper <- ""            ## Use to put a superscript at the end
                             ## e.g. "g" for ^{26}Al^g
 
+## Y-axis 
+YRangeUser <- NULL     ## range (set to NULL for automatic plotting)
+YRangeLog  <- TRUE     ## Set to FALSE for linear range
+
+
 ## Is literature a RatesMC.out file?
 litisRatesMC <- TRUE
 
@@ -26,8 +31,6 @@ pal <- c("#BDD7E7", "#6BAED6", "#2171B5")
 ## Temeprature range to plot
 TMin <- 0.01
 TMax <- 10
-## Y-axis range (set to NULL for automatic plotting)
-YRangeUser <- NULL
 
 ## Control to change the axis and tick label scales
 axislabelscale <- 1.0
@@ -237,13 +240,14 @@ mypdf(file="GraphUncertainties.pdf",width=6,height=6,onefile=F)
 
 ## set up the parameters for plotting
 ##oldsettings <- par(cex.lab=2.2,cex.axis=1.8,tcl=0.8)
-
+logs <- "x"
+if(YRangeLog)logs <- "xy"
 ## Finally make the plot.
 plot(1,1,type='n',
      xlim=c(TMin,TMax),
      ylim=YRange,
      xaxs='i',
-     log='xy',
+     log=logs,
      yaxt='n',xaxt='n',
      xlab="", ylab="Reaction Rate Ratio",
      cex.lab=par("cex.lab")*axislabelscale)
@@ -254,12 +258,15 @@ title(xlab="Temperature (GK)",line=2.5)
 aX <- c(-2,-1,0,1,2)
 
 ## y-axis ticks
-minBase10 <- floor(log10(YRange[1]))
-maxBase10 <- ceiling(log10(YRange[2]))
-aY <- pretty(seq(minBase10,maxBase10,length.out=1+maxBase10-minBase10),high.u.bias = 10)
-aY <- seq(from=minBase10,to=maxBase10,by=1)
-if(length(aY)>9)aY <- aY[seq(from=1,to=length(aY),by=2)]
-
+if(YRangeLog){
+    minBase10 <- floor(log10(YRange[1]))
+    maxBase10 <- ceiling(log10(YRange[2]))
+    aY <- pretty(seq(minBase10,maxBase10,length.out=1+maxBase10-minBase10),high.u.bias = 10)
+    aY <- seq(from=minBase10,to=maxBase10,by=1)
+    if(length(aY)>11)aY <- aY[seq(from=1,to=length(aY),by=2)]
+} else {
+    aY <- axTicks(2)
+}
 
 Temps <- MyRate[,1]
 ## 3-sigma uncertainties
@@ -306,20 +313,22 @@ axis(3,at=minorx,labels=FALSE,tcl=0.4)
 
 
 ## and the Y-axis
-
-axis(2,at=10^aY,label=axTexpr(2,10^aY),cex.axis=par("cex.axis")*ticklabelscale)
-axis(4,at=10^aY,labels=FALSE)
-
-majory <- aY
-majory <- c(10^majory[1],10^majory,10^majory[length(majory)]*10)
-minory<-array(0,dim=10*(length(majory)-1))
-## for y-ticks, extend further
-for(i in 1:(length(majory-1))){
-    minory[(1+(i-1)*10):(i*10)] <- seq(majory[i],majory[i]*10,majory[i])
+if(YRangeLog){
+    axis(2,at=10^aY,label=axTexpr(2,10^aY),cex.axis=par("cex.axis")*ticklabelscale)
+    axis(4,at=10^aY,labels=FALSE)
+    majory <- aY
+    majory <- c(10^majory[1],10^majory,10^majory[length(majory)]*10)
+    minory<-array(0,dim=10*(length(majory)-1))
+    ## for y-ticks, extend further
+    for(i in 1:(length(majory-1))){
+	minory[(1+(i-1)*10):(i*10)] <- seq(majory[i],majory[i]*10,majory[i])
+    }
+    axis(2,at=minory,labels=FALSE,tcl=0.4)
+    axis(4,at=minory,labels=FALSE,tcl=0.4)
+} else {
+    axis(2)
+    axis(4,labels=FALSE)
 }
-axis(2,at=minory,labels=FALSE,tcl=0.4)
-axis(4,at=minory,labels=FALSE,tcl=0.4)
-
 
 
 abline(h=1,lty=2,lwd=2)
