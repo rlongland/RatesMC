@@ -12,8 +12,8 @@ extraSuper <- ""            ## Use to put a superscript at the end
                             ## e.g. "g" for ^{26}Al^g
 
 ## Y-axis 
-YRangeUser <- NULL     ## range (set to NULL for automatic plotting)
-YRangeLog  <- TRUE     ## Set to FALSE for linear range
+YRangeUser <- NULL          ## range (set to NULL for automatic plotting)
+YRangeLog  <- TRUE          ## Set to FALSE for linear range
 
 
 ## Is literature a RatesMC.out file?
@@ -241,12 +241,17 @@ mypdf(file="GraphUncertainties.pdf",width=6,height=6,onefile=F)
 ## set up the parameters for plotting
 ##oldsettings <- par(cex.lab=2.2,cex.axis=1.8,tcl=0.8)
 logs <- "x"
-if(YRangeLog)logs <- "xy"
+yaxss <- "i"
+if(YRangeLog){
+    logs <- "xy"
+    yaxss <- 'r'
+}
 ## Finally make the plot.
 plot(1,1,type='n',
      xlim=c(TMin,TMax),
      ylim=YRange,
      xaxs='i',
+     yaxs=yaxss,
      log=logs,
      yaxt='n',xaxt='n',
      xlab="", ylab="Reaction Rate Ratio",
@@ -294,7 +299,11 @@ if(LitBool){
 
 if(drawGrid){
     abline(v=10^aX,lty="dotted",col="grey",lwd=0.5)
-    abline(h=10^aY[aY!=0],lty="dotted",col="grey",lwd=0.5)
+    if(YRangeLog){
+	abline(h=10^aY[aY!=0],lty="dotted",col="grey",lwd=0.5)
+    } else {
+	abline(h=aY,lty="dotted",col="grey",lwd=0.5)
+    }
 }
 
 ## Now add the X-axis ticks
@@ -328,6 +337,20 @@ if(YRangeLog){
 } else {
     axis(2)
     axis(4,labels=FALSE)
+
+    by <- 0.25
+    while(TRUE){
+	minory <- seq(from=-1,to=10,by=by)
+	print(length(minory))
+	if(length(minory)<25)break
+	by <- by*2
+    } 
+##    for (i in 1:(length(aY)-1)){
+##	seq_minors <- seq(aY[i], aY[i+1], length.out=5)
+##	minory <- c(minory, seq_minors)
+##    }
+    axis(2,at=minory,labels=FALSE,tcl=0.3)
+    axis(4,at=minory,labels=FALSE,tcl=0.3)
 }
 
 
@@ -341,6 +364,7 @@ yy <- grconvertY(0.87,from="nfc",to="user")
 text(parse(text=ReacName),x=xx,y=yy,cex=1.7,adj=c(1,1))
 
 dev.off()
+
 
 ##TODO
 ## if(LitBool){
