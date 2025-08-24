@@ -1519,8 +1519,10 @@ void writeRates(std::vector<double> Rates, double ARate, double Temperature) {
     Low2Rate = 0.0;
   if (High2Rate < 1.0e-99)
     High2Rate = 0.0;
-  if (MedianRate < 1.0e-99)
+  if (MedianRate < 1.0e-99){
     MedianRate = 0.0;
+    fu = 0.0;
+  }
   if (MeanRate < 1.0e-99)
     MeanRate = 0.0;
   if (HighRate < 1.0e-99)
