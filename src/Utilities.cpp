@@ -1583,6 +1583,7 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate,
   // AD_f = floor(log(AD)/log(10.0));
   // AD_x = AD*pow(10.0,-AD_f);
   fu = exp(RateSigma);
+  //if(MedianRate < 1.0e-99)fu=0.0;
   fu_f = floor(log(fu) / log(10.0));
   fu_x = fu * pow(10.0, -fu_f);
 
@@ -1596,7 +1597,8 @@ void WriteLatex2(double Temperature, double LowRate, double MedianRate,
     median_f = 0.0;
     high_x = 0.0;
     high_f = 0.0;
-    fu = 1.0;
+    fu_x = 0.0;
+    fu_f = 0.0;
   }
 
   latexfile << std::setprecision(3) << low_x << "E" << std::setprecision(0)
